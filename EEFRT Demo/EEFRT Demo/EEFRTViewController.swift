@@ -66,6 +66,11 @@ class EEFRTViewController: UIViewController {
         super.init(nibName: nil, bundle: nil) // TODO: Need to serve the files using a server like the other theming apps to prevent CORS issues
     }
 
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        webView.configuration.userContentController.removeAllScriptMessageHandlers()
+    }
+
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -117,11 +122,6 @@ class EEFRTViewController: UIViewController {
 //        let keyboardMessage = messageKeyboardState(payload: messageKeyboardState.Payload(keyboardVisible: false))
 //        sendAppMessage(keyboardMessage)
 //    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        NotificationCenter.default.removeObserver(self)
-    }
 }
 
 extension EEFRTViewController: WKScriptMessageHandler {
