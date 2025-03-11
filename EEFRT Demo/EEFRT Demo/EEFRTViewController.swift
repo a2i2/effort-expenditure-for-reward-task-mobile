@@ -3,32 +3,50 @@ import SwiftUI
 import UIKit
 import WebKit
 
-// protocol SurveyViewControllerDelegate: AnyObject {
-//    func surveyViewController(_ controller: SurveyViewController, didFinishWithResult result: Result<Void, SurveyFailure>)
-//    func surveyViewController(_ controller: SurveyViewController, didBeginSubmission survey: Survey)
-//    func surveyViewController(_ controller: SurveyViewController, didCompleteSubmission survey: Survey, withResult result: Result<Void, Error>)
-// }
+protocol EEFRTViewControllerDelegate: AnyObject {
+    func eefrtViewControllerDidRequestClose(_ controller: EEFRTViewController)
+}
 
 struct EEFRTView: UIViewControllerRepresentable {
+    @Environment(\.presentationMode) var presentationMode
+
     func makeUIViewController(context: Context) -> EEFRTViewController {
-        EEFRTViewController()
+        var controller = EEFRTViewController()
+        controller.delegate = context.coordinator
+        return controller
     }
 
     func updateUIViewController(_ uiViewController: EEFRTViewController, context: Context) {
         // no-op
     }
 
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
     typealias UIViewControllerType = EEFRTViewController
+
+    class Coordinator: NSObject, EEFRTViewControllerDelegate {
+        var parent: EEFRTView
+
+        init(parent: EEFRTView) {
+            self.parent = parent
+        }
+
+        func eefrtViewControllerDidRequestClose(_ controller: EEFRTViewController) {
+            parent.presentationMode.wrappedValue.dismiss()
+        }
+    }
 }
 
 class EEFRTViewController: UIViewController {
 //    private static let loadedMessageKey = "surveyLoaded"
 //    private static let pageMessageKey = "pageChanged"
 //    private static let completedMessageKey = "completed"
-//    private static let closedMessageKey = "close"
+    private static let closedMessageKey = "close"
 //    private static let initialisedMessageKey = "initialised"
 
-//    weak var delegate: SurveyViewControllerDelegate?
+    weak var delegate: EEFRTViewControllerDelegate?
 
     private var webView: WKWebView!
 
@@ -62,7 +80,7 @@ class EEFRTViewController: UIViewController {
 //        config.userContentController.add(self, name: Self.loadedMessageKey)
 //        config.userContentController.add(self, name: Self.pageMessageKey)
 //        config.userContentController.add(self, name: Self.completedMessageKey)
-//        config.userContentController.add(self, name: Self.closedMessageKey)
+        config.userContentController.add(self, name: Self.closedMessageKey)
 //        config.userContentController.add(self, name: Self.initialisedMessageKey)
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
 
@@ -103,6 +121,20 @@ class EEFRTViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         NotificationCenter.default.removeObserver(self)
+    }
+}
+
+extension EEFRTViewController: WKScriptMessageHandler {
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        os_log(.info, log: .file, "Received %s message back from web view", message.name)
+
+        switch message.name {
+        case Self.closedMessageKey:
+            delegate?.eefrtViewControllerDidRequestClose(self)
+
+        default:
+            os_log(.error, "Message type %s not implemented yet!", message.name)
+        }
     }
 }
 
