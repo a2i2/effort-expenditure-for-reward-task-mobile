@@ -11,7 +11,7 @@ struct EEFRTView: UIViewControllerRepresentable {
     @Environment(\.presentationMode) var presentationMode
 
     func makeUIViewController(context: Context) -> EEFRTViewController {
-        var controller = EEFRTViewController()
+        let controller = EEFRTViewController()
         controller.delegate = context.coordinator
         return controller
     }
@@ -40,11 +40,7 @@ struct EEFRTView: UIViewControllerRepresentable {
 }
 
 class EEFRTViewController: UIViewController {
-//    private static let loadedMessageKey = "surveyLoaded"
-//    private static let pageMessageKey = "pageChanged"
-//    private static let completedMessageKey = "completed"
     private static let closedMessageKey = "close"
-//    private static let initialisedMessageKey = "initialised"
 
     weak var delegate: EEFRTViewControllerDelegate?
 
@@ -63,7 +59,7 @@ class EEFRTViewController: UIViewController {
 
         self.publicPath = publicPath
         self.indexFileUrl = indexFileUrl
-        super.init(nibName: nil, bundle: nil) // TODO: Need to serve the files using a server like the other theming apps to prevent CORS issues
+        super.init(nibName: nil, bundle: nil)
     }
 
     deinit {
@@ -82,11 +78,7 @@ class EEFRTViewController: UIViewController {
 
         let config = WKWebViewConfiguration()
         config.userContentController = WKUserContentController()
-//        config.userContentController.add(self, name: Self.loadedMessageKey)
-//        config.userContentController.add(self, name: Self.pageMessageKey)
-//        config.userContentController.add(self, name: Self.completedMessageKey)
         config.userContentController.add(self, name: Self.closedMessageKey)
-//        config.userContentController.add(self, name: Self.initialisedMessageKey)
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
 
         webView = WKWebView(frame: .zero, configuration: config)
@@ -109,19 +101,7 @@ class EEFRTViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         webView.loadFileURL(indexFileUrl, allowingReadAccessTo: URL(fileURLWithPath: publicPath))
-//        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillDisappear), name: UIResponder.keyboardWillHideNotification, object: nil)
-//        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillAppear), name: UIResponder.keyboardWillShowNotification, object: nil)
     }
-
-//    @objc func keyboardWillAppear() {
-//        let keyboardMessage = messageKeyboardState(payload: messageKeyboardState.Payload(keyboardVisible: true))
-//        sendAppMessage(keyboardMessage)
-//    }
-//
-//    @objc func keyboardWillDisappear() {
-//        let keyboardMessage = messageKeyboardState(payload: messageKeyboardState.Payload(keyboardVisible: false))
-//        sendAppMessage(keyboardMessage)
-//    }
 }
 
 extension EEFRTViewController: WKScriptMessageHandler {

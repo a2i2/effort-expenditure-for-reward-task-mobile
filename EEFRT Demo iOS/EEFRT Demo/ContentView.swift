@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  EEFRT Demo
-//
-//  Created by Nicholas on 5/3/2025.
-//
-
 import SwiftUI
 
 struct ContentView: View {
@@ -12,7 +5,8 @@ struct ContentView: View {
         NavigationStack {
             VStack {
                 NavigationLink(
-                    destination: EEFRTView(),
+                    destination: EEFRTView()
+                        .ignoresSafeArea(edges: [.bottom]),
                     label: {
                         Text("Begin EEFRT Task")
                     }
@@ -21,8 +15,6 @@ struct ContentView: View {
             .padding()
         }
     }
-
-    private func beginTask() {}
 }
 
 #Preview {
