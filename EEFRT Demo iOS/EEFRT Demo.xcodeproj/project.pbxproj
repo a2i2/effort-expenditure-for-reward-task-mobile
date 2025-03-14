@@ -14,7 +14,7 @@
 		8B34BEE92D78240000E73A72 /* EEFRT Demo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFolders = (
-				public,
+				assets,
 			);
 			path = "EEFRT Demo";
 			sourceTree = "<group>";

@@ -50,10 +50,10 @@ class EEFRTViewController: UIViewController {
     private let indexFileUrl: URL
 
     init() {
-        guard let publicPath = Bundle.main.path(forResource: "public", ofType: nil) else {
+        guard let publicPath = Bundle.main.path(forResource: "assets", ofType: nil) else {
             fatalError("Unable to locate 'public' folder in main bundle")
         }
-        guard let indexFileUrl = Bundle.main.url(forResource: "public/index", withExtension: "html") else {
+        guard let indexFileUrl = Bundle.main.url(forResource: "assets/index", withExtension: "html") else {
             fatalError("Unable to locate 'public/index.html' in main bundle")
         }
 
