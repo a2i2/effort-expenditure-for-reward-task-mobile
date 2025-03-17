@@ -2,9 +2,10 @@
 
 // import js game element modules (sprites, ui, outcome animations)
 import InstructionsPanel from "../elements/instructionsPanel.js";
+
 // import nCoins running total  
 // import { bonusRate, nTrials} from "../versionInfo.js";
-import { saveEndData } from "../saveData.js";
+// import { saveEndData } from "../saveData.js";
 import {
     bonusRate, complete_link,
     buttonText, maxCoins, completionBonus80, completionMin, demo_mode,
@@ -57,7 +58,7 @@ export default class TaskEndScene extends Phaser.Scene {
         }
 
         // save task data backup
-        saveEndData(this.registry.getAll());
+        // saveEndData(this.registry.getAll());
 
         var titleText = 'Game Over!'
         ///////////////////PAGE ONE////////////////////
@@ -101,48 +102,50 @@ export default class TaskEndScene extends Phaser.Scene {
         // end scene
         eventsCenter.once('page2complete', function () {
             if (runPractice == false) {
+                EmbedContext.sendMessage('close', {});
                 // for FU games without a practice, don't display prolific complete link
-                BeApp.postMessage(JSON.stringify({
-                    "type": "back",
-                    "backPayload": {
-                        "success": true,
-                        "score": 123, //test if score var was the problem 
-                        "showShareButton": false,
-                        "showPlayAgainButton": false,
-                        "goodbyeMessage": {
-                            "localizations": {
-                                "en": "All done! You can close this app now"
-                            }
-                        }
-                    }
-                }))
+                // BeApp.postMessage(JSON.stringify({
+                //     "type": "back",
+                //     "backPayload": {
+                //         "success": true,
+                //         "score": 123, //test if score var was the problem 
+                //         "showShareButton": false,
+                //         "showPlayAgainButton": false,
+                //         "goodbyeMessage": {
+                //             "localizations": {
+                //                 "en": "All done! You can close this app now"
+                //             }
+                //         }
+                //     }
+                // }))
             }
             else {
+                EmbedContext.sendMessage('close', {});
                 // for baseline games, display the complete link in postGame resources
-                BeApp.postMessage(JSON.stringify({
-                    "type": "back",
-                    "backPayload": {
-                        "success": true,
-                        "score": 123, //test if score var was the problem
-                        "showShareButton": false,
-                        "showPlayAgainButton": false,
-                        "postGameResources": [
-                            {
-                                "buttonText": {
-                                    "localizations": {
-                                        "en": "Return to Prolific!"
-                                    }
-                                },
-                                "urlDestination": complete_link
-                            }
-                        ],
-                        "goodbyeMessage": {
-                            "localizations": {
-                                "en": "Please confirm your Prolific login on the next page, then simply close this app. Thanks!"
-                            }
-                        }
-                    }
-                }))
+                // BeApp.postMessage(JSON.stringify({
+                //     "type": "back",
+                //     "backPayload": {
+                //         "success": true,
+                //         "score": 123, //test if score var was the problem
+                //         "showShareButton": false,
+                //         "showPlayAgainButton": false,
+                //         "postGameResources": [
+                //             {
+                //                 "buttonText": {
+                //                     "localizations": {
+                //                         "en": "Return to Prolific!"
+                //                     }
+                //                 },
+                //                 "urlDestination": complete_link
+                //             }
+                //         ],
+                //         "goodbyeMessage": {
+                //             "localizations": {
+                //                 "en": "Please confirm your Prolific login on the next page, then simply close this app. Thanks!"
+                //             }
+                //         }
+                //     }
+                // }))
             }
         }, this);
     }

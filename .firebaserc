@@ -1,9 +1,0 @@
-{
-  "projects": {
-    "default": "ema-motivation",
-    "test": "test-ema-motivation",
-    "ema": "ema-motivation"
-  },
-  "targets": {},
-  "etags": {}
-}

@@ -8,7 +8,7 @@ import TimerPanel from "../elements/timerPanelClicks.js";
 
 // import our custom events center for passsing info between scenes annd relevant data saving function
 import eventsCenter from '../eventsCenter.js'
-import { savePracTaskData, saveThresholdMax} from "../saveData.js";
+// import { savePracTaskData, saveThresholdMax} from "../saveData.js";
 
 // import effort info from versionInfo file
 import { effortTime, pracTrialEfforts, gemHeights, pracTrialRewards } from "../versionInfo.js";
@@ -217,7 +217,7 @@ export default class PracticeTask extends Phaser.Scene {
         ////////////MOVE ON TO NEXT SCENE WHEN ALL TRIALS HAVE RUN////////////////
         if (pracTrial == nPracTrials) {
             this.registry.set('maxPressCount', maxPressCount);
-            saveThresholdMax(this.registry.get("maxPressCount"));        // [for firebase]
+            // saveThresholdMax(this.registry.get("maxPressCount"));        // [for firebase]
             this.nextScene();
         }
     }
@@ -369,7 +369,7 @@ var pracTrialEnd = function () {
                                               maxPressCount: this.registry.get('maxPressCount')
                                              });
     // save data
-    savePracTaskData(pracTrial, this.registry.get(`pracTrial${pracTrial}`));    // [for firebase]
+    // savePracTaskData(pracTrial, this.registry.get(`pracTrial${pracTrial}`));    // [for firebase]
     //saveTrialDataPav(this.registry.get(`pracTrial${pracTrial}`));             // [for Pavlovia deployment]
     
     // iterate trial number

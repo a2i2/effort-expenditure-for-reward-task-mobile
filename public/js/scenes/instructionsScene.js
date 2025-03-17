@@ -5,7 +5,7 @@ import InstructionsPanel from "../elements/instructionsPanel.js";
 
 // import our custom events centre for passsing info between scenes and data saving function
 import eventsCenter from "../eventsCenter.js";
-import { saveStartTask } from "../saveData.js";
+// import { saveStartTask } from "../saveData.js";
 import { sceneOrder } from "../task.js";
 
 
@@ -116,10 +116,10 @@ export default class InstructionsScene extends Phaser.Scene {
 
         ///////////////////PAGE SIX////////////////////
         eventsCenter.once('page5complete', function () {
-            mainTxt = ("Power your umbrella \n\n" +
+            mainTxt = ("Power your umbrella \n" +
                 "by pressing \n\n" +
                 "[img=button] [color=#e45404]POWER[/color] [img=button]\n\n" +
-                "as fast as you can\n\n");
+                "as fast as you can\n");
             pageNo = 6;
             this.instructionsPanel = new InstructionsPanel(this,
                 gameWidth / 2, gameHeight / 2,
@@ -129,14 +129,14 @@ export default class InstructionsScene extends Phaser.Scene {
 
         ///////////////////PAGE SEVEN////////////////////
         eventsCenter.once('page6complete', function () {
-            mainTxt = ("Some routes\n\n" +
-                "require much less\n\n" +
+            mainTxt = ("Some routes\n" +
+                "require much less\n" +
                 "power.\n\n\n" +
-                "Read the route\n\n" +
-                "info carefully and\n\n" +
-                "[b]adjust your power\n\n" +
-                "to the route\n\n" +
-                "of your choice[/b]!\n\n");
+                "Read the route\n" +
+                "info carefully and\n" +
+                "[b]adjust your power\n" +
+                "to the route\n" +
+                "of your choice[/b]!\n");
             pageNo = 7;
             this.instructionsPanel = new InstructionsPanel(this,
                 gameWidth / 2, gameHeight / 2,
@@ -145,12 +145,12 @@ export default class InstructionsScene extends Phaser.Scene {
 
         ///////////////////PAGE EIGHT////////////////////
         eventsCenter.once('page7complete', function () {
-            mainTxt = ("Hold your\n\n"+
-                "phone in\n\n"+
-                "portrait mode,\n\n" +
-                "and use your\n\n" +
-                "dominant thumb or\n\n" +
-                "finger to power!\n\n");
+            mainTxt = ("Hold your\n"+
+                "phone in\n"+
+                "portrait mode,\n" +
+                "and use your\n" +
+                "dominant thumb or\n" +
+                "finger to power!\n");
             pageNo = 8;
             this.instructionsPanel = new InstructionsPanel(this,
                 gameWidth / 2, gameHeight / 2,
@@ -159,10 +159,10 @@ export default class InstructionsScene extends Phaser.Scene {
 
         ///////////////////PAGE NINE////////////////////
         eventsCenter.once('page8complete', function () {
-            mainTxt = ("Do not\n\n" +
-                "leave the\n\n" +
-                "game window during\n\n" +
-                "your journey!\n\n")
+            mainTxt = ("Do not\n" +
+                "leave the\n" +
+                "game window during\n" +
+                "your journey!\n")
             pageNo = 9;
             this.instructionsPanel = new InstructionsPanel(this,
                 gameWidth / 2, gameHeight / 2,
@@ -197,7 +197,7 @@ export default class InstructionsScene extends Phaser.Scene {
     }
     
     nextScene() {
-        saveStartTask(taskStartTime);           // [for firebase]
+        // saveStartTask(taskStartTime);           // [for firebase]
         this.scene.start('PracticeTask');
     } 
 }

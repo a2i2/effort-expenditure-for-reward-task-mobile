@@ -9,8 +9,9 @@ import BreakPanel from "../elements/takeABreak.js";
 
 // import our custom events center for passsing info between scenes and relevant data saving function
 import eventsCenter from '../eventsCenter.js'
-import { shuffleTrials, saveThresholdMax, saveTaskData, 
-    fetchThresholdMax } from "../saveData.js";
+import { shuffleTrials } from "../saveData.js";
+// import { shuffleTrials, saveThresholdMax, saveTaskData, 
+    // fetchThresholdMax } from "../saveData.js";
 // import version info
 import {sceneOrder, runPractice, effortTime, nBlocks, nCalibrates,
     trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet, debug_mode
@@ -59,17 +60,17 @@ var maxPressCount;
 var thresholdMax;
 var practiceorReal = 1; // use the main task instruction panels 
 // get threshold 
-(async () => {
-    try {
-        // get threshold 
-        thresholdMax = await fetchThresholdMax();
-        if (debug_mode) {
-            console.log('thresholdMax = ' + thresholdMax);
-        };
-    } catch (error) {
-        console.error('Error in main code:', error);
-    }
-})();
+// (async () => {
+//     try {
+//         // get threshold 
+//         thresholdMax = await fetchThresholdMax();
+//         if (debug_mode) {
+//             console.log('thresholdMax = ' + thresholdMax);
+//         };
+//     } catch (error) {
+//         console.error('Error in main code:', error);
+//     }
+// })();
 
 // pre-shuffle the trials here with nTrials specified in ./versionInfo.js
 const randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
@@ -259,7 +260,7 @@ export default class MainTask extends Phaser.Scene {
                 trialIdx: randTrialsIdx[trial]
             });
             // save data
-            saveTaskData(trial, this.registry.get(`trial${trial}`)); // [for firebase]
+            // saveTaskData(trial, this.registry.get(`trial${trial}`)); // [for firebase]
             if (debug_mode) { console.log('trial idx: ' + randTrialsIdx[trial]) }
         };
         // index trials from random index
@@ -568,7 +569,7 @@ var trialEnd = function () {
         // save thresholdMax
         this.registry.set("thresholdMax", { thresholdMax });
         // save it in its own document for easy retrieval later 
-        saveThresholdMax(this.registry.get("thresholdMax"));        // [for firebase]
+        // saveThresholdMax(this.registry.get("thresholdMax"));        // [for firebase]
     }
     else { // if we are past the first calibration trials 
         var recalibration = 0; // record recalibration didn't occur
@@ -598,7 +599,7 @@ var trialEnd = function () {
                                      });
 
     // save data
-    saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
+    // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
     //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
 
     // if end of task, display taskend screen 

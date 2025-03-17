@@ -1,5 +1,5 @@
 import QuestionPanel from "../elements/questionPanel.js";
-import { savePreTaskData } from "../saveData.js";
+// import { savePreTaskData } from "../saveData.js";
 import { questionsFile, debug_mode, sceneOrder } from "../versionInfo.js";
 
 
@@ -57,7 +57,7 @@ export default class Questions extends Phaser.Scene {
                 // save the data first 
                 let questionData = this.registry.get(`${gamePhase}question${questionNumber}`);
                 if (questionData) {
-                    savePreTaskData(questionNumber, questionData);
+                    // savePreTaskData(questionNumber, questionData);
                 }
                 // move to the next question
                 questionNumber++;

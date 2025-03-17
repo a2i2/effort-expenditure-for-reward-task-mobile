@@ -7,7 +7,7 @@ import StartTaskScene from "./scenes/startTaskScene.js";
 import MainTask from "./scenes/mainTask.js";
 import TaskEndScene from "./scenes/taskEndScene.js";
 import { debug_mode, randomiseOrder, sceneOrder } from "./versionInfo.js";
-import { saveStartData } from "./saveData.js";
+// import { saveStartData } from "./saveData.js";
 // log the scene order for checking
 if (debug_mode) { console.log('scene order: ' + sceneOrder) };
 
@@ -69,7 +69,7 @@ export function runTask() {
     resizeApp()
     window.addEventListener("resize", resizeApp) //resize if necessary
     var currentTime = new Date().toLocaleTimeString();
-    saveStartData(currentTime, randomiseOrder, sceneOrder);           // [for firebase] update !!
+    // saveStartData(currentTime, randomiseOrder, sceneOrder);           // [for firebase] update !!
 };
 
 export { resizeApp, sceneOrder}

@@ -3,8 +3,8 @@
 // import task-version relevant info and functions
 // import { uid } from "./firebaseAuth.js";
 import { briefStudyDescr, blockDesktop } from "./versionInfo.js";
-import { saveInitial } from "./saveData.js";
-import { uid } from "./firebaseInit.js";
+// import { saveInitial } from "./saveData.js";
+// import { uid } from "./firebaseInit.js";
 // loads runTask from either testVersion or full version (taskFU)
 import { runTask } from "./task.js";
 
@@ -37,19 +37,17 @@ window.mobileCheck = function () {
 
 // once pre-instructions startStudy button clicked, hide info and run task!
 var runStudy = function () {
-	if (uid) {
-		// block access on a desktop just in case the participant is being sneaky  
-		if (!window.mobileCheck()) {
-			alert("Sorry, you must play this study on a mobile device!")
-			return false // if on a deskptop - this will prevent the participant from continuing
-		} else {
-			// hide consent-container
-			document.getElementById('consent-container').style.display = "none";
-			// save start data
-			saveInitial(uid)
-			// run task!
-			runTask(uid);
-		}
+	// block access on a desktop just in case the participant is being sneaky  
+	if (!window.mobileCheck()) {
+		alert("Sorry, you must play this study on a mobile device!")
+		return false // if on a deskptop - this will prevent the participant from continuing
+	} else {
+		// hide consent-container
+		document.getElementById('consent-container').style.display = "none";
+		// save start data
+		// saveInitial(uid)
+		// run task!
+		runTask();
 	}
 };
 
