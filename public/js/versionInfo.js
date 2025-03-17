@@ -24,50 +24,24 @@ var buttonText = "Go back"; // text to display on the final button
 // define the possible scene orders as constants
 if (test_game == false) {
 	if (runPractice == true) {
-		const ORDER_1 = [
-			'questInstructionsScene',
-			'Questions',
+		var sceneOrder = [
 			'InstructionsScene',
+			'questInstructionsScene', // calls into Questions.js, no need to add it to this array
 			'practiceTask',
 			'StartTaskScene',
 			'MainTask',
 			'TaskEndScene'
 		];
-
-		const ORDER_2 = [
-			'InstructionsScene',
-			'practiceTask',
-			'StartTaskScene',
-			'MainTask',
-			'questInstructionsScene',
-			'Questions',
-			'TaskEndScene'
-		];
-
-		var sceneOrder = randomiseOrder ? (Math.random() < 0.5 ? ORDER_1 : ORDER_2) : ORDER_2;
 	}
 	else {
 		// no practice (follow-up version)
-		const ORDER_1 = [
-			'questInstructionsScene',
-			'Questions',
+		var sceneOrder = [
+			'InstructionsScene',
+			'questInstructionsScene', // calls into Questions.js, no need to add it to this array
 			'StartTaskScene',
 			'MainTask',
 			'TaskEndScene'
-		];
-
-		const ORDER_2 = [
-			'StartTaskScene',
-			'MainTask',
-			'questInstructionsScene',
-			'Questions',
-			'TaskEndScene'
-		];
-
-		// randomise the order or select the first order questions-- > game
-		var sceneOrder = randomiseOrder ? (Math.random() < 0.5 ? ORDER_1 : ORDER_2) : ORDER_2;
-
-
+        ];
     }
 }
 else {
