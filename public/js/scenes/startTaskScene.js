@@ -85,7 +85,7 @@ export default class StartTaskScene extends Phaser.Scene {
         SoT
         .once('button.click', function (button) {
             SoT.scaleDownDestroy(500);
-            this.nextScene();                           
+            this.nextScene();
         }, this)
         .on('button.over', function (button) {
             button.getElement('background').setStrokeStyle(2, 0xffffff);
