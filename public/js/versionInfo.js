@@ -26,10 +26,11 @@ if (test_game == false) {
 	if (runPractice == true) {
 		var sceneOrder = [
 			'InstructionsScene',
-			'questInstructionsScene', // calls into Questions.js, no need to add it to this array
 			'practiceTask',
 			'StartTaskScene',
 			'MainTask',
+			'questInstructionsScene',
+			'Questions',
 			'TaskEndScene'
 		];
 	}
@@ -37,9 +38,10 @@ if (test_game == false) {
 		// no practice (follow-up version)
 		var sceneOrder = [
 			'InstructionsScene',
-			'questInstructionsScene', // calls into Questions.js, no need to add it to this array
 			'StartTaskScene',
 			'MainTask',
+			'questInstructionsScene',
+			'Questions',
 			'TaskEndScene'
         ];
     }
