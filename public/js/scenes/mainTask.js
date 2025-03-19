@@ -599,6 +599,8 @@ var trialEnd = function () {
                                      });
 
     // save data
+    EmbedContext.sendMessage("trialResult", this.registry.get("trial" + trial));
+    console.log(this.registry.get("trial" + trial));
     // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
     //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
 

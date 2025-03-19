@@ -5,10 +5,13 @@ import WebKit
 
 protocol EEFRTViewControllerDelegate: AnyObject {
     func eefrtViewControllerDidRequestClose(_ controller: EEFRTViewController)
+    func eefrtViewControllerDidSubmitPracticeResult(practiceResult: PracticeTaskResult)
+    func eefrtViewControllerDidSubmitTaskResult(taskResult: TaskResult)
 }
 
 struct EEFRTView: UIViewControllerRepresentable {
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.presentationMode) private var presentationMode
+    @Environment(\.modelContext) private var context
 
     func makeUIViewController(context: Context) -> EEFRTViewController {
         let controller = EEFRTViewController()
@@ -27,6 +30,14 @@ struct EEFRTView: UIViewControllerRepresentable {
     typealias UIViewControllerType = EEFRTViewController
 
     class Coordinator: NSObject, EEFRTViewControllerDelegate {
+        func eefrtViewControllerDidSubmitPracticeResult(practiceResult: PracticeTaskResult) {
+            parent.context.insert(practiceResult)
+        }
+
+        func eefrtViewControllerDidSubmitTaskResult(taskResult: TaskResult) {
+            parent.context.insert(taskResult)
+        }
+
         var parent: EEFRTView
 
         init(parent: EEFRTView) {
@@ -41,6 +52,8 @@ struct EEFRTView: UIViewControllerRepresentable {
 
 class EEFRTViewController: UIViewController {
     private static let closedMessageKey = "close"
+    private static let practiceTriaResultMessageKey = "practiceTrialResult"
+    private static let trialResultMessageKey = "trialResult"
 
     weak var delegate: EEFRTViewControllerDelegate?
 
@@ -51,10 +64,10 @@ class EEFRTViewController: UIViewController {
 
     init() {
         guard let publicPath = Bundle.main.path(forResource: "assets", ofType: nil) else {
-            fatalError("Unable to locate 'public' folder in main bundle")
+            fatalError("Unable to locate 'assets' folder in main bundle")
         }
         guard let indexFileUrl = Bundle.main.url(forResource: "assets/index", withExtension: "html") else {
-            fatalError("Unable to locate 'public/index.html' in main bundle")
+            fatalError("Unable to locate 'assets/index.html' in main bundle")
         }
 
         self.publicPath = publicPath
@@ -79,6 +92,8 @@ class EEFRTViewController: UIViewController {
         let config = WKWebViewConfiguration()
         config.userContentController = WKUserContentController()
         config.userContentController.add(self, name: Self.closedMessageKey)
+        config.userContentController.add(self, name: Self.practiceTriaResultMessageKey)
+        config.userContentController.add(self, name: Self.trialResultMessageKey)
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
 
         webView = WKWebView(frame: .zero, configuration: config)
@@ -111,6 +126,28 @@ extension EEFRTViewController: WKScriptMessageHandler {
         switch message.name {
         case Self.closedMessageKey:
             delegate?.eefrtViewControllerDidRequestClose(self)
+
+        case Self.practiceTriaResultMessageKey:
+            guard let stringifiedData = (message.body as? String)?.data(using: .utf8) else { return }
+            do {
+                os_log(.debug, "%s", message.body as! String)
+                let decodedPracticeTaskResult = try JSONDecoder().decode(PracticeTaskResult.self, from: stringifiedData)
+                decodedPracticeTaskResult.createdAt = .now
+                delegate?.eefrtViewControllerDidSubmitPracticeResult(practiceResult: decodedPracticeTaskResult)
+            } catch {
+                os_log(.error, "Couldn't decode response from EEFRT task into a native object")
+            }
+
+        case Self.trialResultMessageKey:
+            guard let stringifiedData = (message.body as? String)?.data(using: .utf8) else { return }
+            do {
+                os_log(.debug, "%s", message.body as! String)
+                let decodedTaskResult = try JSONDecoder().decode(TaskResult.self, from: stringifiedData)
+                decodedTaskResult.createdAt = .now
+                delegate?.eefrtViewControllerDidSubmitTaskResult(taskResult: decodedTaskResult)
+            } catch {
+                os_log(.error, "Couldn't decode response from EEFRT task into a native object")
+            }
 
         default:
             os_log(.error, "Message type %s not implemented yet!", message.name)
