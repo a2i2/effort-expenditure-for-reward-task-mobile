@@ -1,9 +1,12 @@
+import OSLog
 import SwiftData
 import SwiftUI
 
 struct EventLogsView: View {
     @Query(sort: \PracticeTaskResult.createdAt, order: .reverse) var practiceTaskResults: [PracticeTaskResult]
     @Query(sort: \TaskResult.createdAt, order: .reverse) var taskResults: [TaskResult]
+    
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         List {
@@ -25,6 +28,7 @@ struct EventLogsView: View {
                         )
                     }
                 }
+                .onDelete(perform: deletePracticeTaskResult)
             }
 
             Section("Actual attempts") {
@@ -45,7 +49,34 @@ struct EventLogsView: View {
                         )
                     }
                 }
+                .onDelete(perform: deleteActualTaskResult)
             }
+        }
+    }
+    
+    private func deletePracticeTaskResult(at offsets: IndexSet) {
+        for index in offsets {
+            let practiceTaskResult = practiceTaskResults[index]
+            modelContext.delete(practiceTaskResult)
+        }
+        
+        do {
+            try modelContext.save()
+        } catch {
+            os_log("Unable to save changes to the PracticeTaskResults list")
+        }
+    }
+    
+    private func deleteActualTaskResult(at offsets: IndexSet) {
+        for index in offsets {
+            let taskResult = taskResults[index]
+            modelContext.delete(taskResult)
+        }
+        
+        do {
+            try modelContext.save()
+        } catch {
+            os_log("Unable to save changes to the TaskResults list")
         }
     }
 }
