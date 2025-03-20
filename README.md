@@ -16,7 +16,7 @@ To avoid CORS issues we are using a small Express.js server to serve the files i
 1. Navigate to the `/public` folder
 2. Switch to the required version of node
 3. Run `npm install` to install the required dependencies
-4. Start the server using `node index.js`
+4. Start the server using `npm run start`. Alternatively you can also run the server using `npm run dev` which enables auto-restarting when making changes to the codebase
 
 ## Running the EEFRT task on an iOS
 1. Ensure you have the local file server running before running the app.

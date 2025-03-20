@@ -369,6 +369,8 @@ var pracTrialEnd = function () {
                                               maxPressCount: this.registry.get('maxPressCount')
                                              });
     // save data
+    console.log(this.registry.get("pracTrial"+pracTrial));
+    EmbedContext.sendMessage("practiceTrialResult", this.registry.get("pracTrial"+pracTrial));
     // savePracTaskData(pracTrial, this.registry.get(`pracTrial${pracTrial}`));    // [for firebase]
     //saveTrialDataPav(this.registry.get(`pracTrial${pracTrial}`));             // [for Pavlovia deployment]
     

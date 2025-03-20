@@ -1,6 +1,9 @@
 package ai.a2i2.conductor.effrtdemoandroid.ui
 
 import ai.a2i2.conductor.effrtdemoandroid.R
+import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
+import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
+import ai.a2i2.conductor.effrtdemoandroid.ui.data.EefrtScreenViewModel
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
@@ -24,17 +27,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.ViewModel
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewAssetLoader.AssetsPathHandler
 import androidx.webkit.WebViewAssetLoader.DEFAULT_DOMAIN
 import androidx.webkit.WebViewClientCompat
+import com.google.gson.Gson
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun EefrtScreen(onBack: () -> Unit) {
+fun EefrtScreen(
+    eefrtViewModel: EefrtScreenViewModel,
+    onBack: () -> Unit
+) {
     val exitRequested = remember { mutableStateOf(false) }
     val webView = remember { mutableStateOf<WebView?>(null) }
 
@@ -90,7 +99,7 @@ fun EefrtScreen(onBack: () -> Unit) {
                         settings.javaScriptEnabled = true
                         addJavascriptInterface(
                             EefrtWebInterface { message ->
-                                handleMessage(message, onBack, exitRequested)
+                                handleMessage(message, onBack, exitRequested, eefrtViewModel)
                             },
                             "AndroidBridge"
                         )
@@ -109,7 +118,8 @@ private const val TAG = "EefrtScreen"
 private fun handleMessage(
     message: String,
     onBack: () -> Unit,
-    exitRequested: MutableState<Boolean>
+    exitRequested: MutableState<Boolean>,
+    eefrtViewModel: EefrtScreenViewModel,
 ) {
     try {
         val obj = JSONObject(message)
@@ -126,6 +136,22 @@ private fun handleMessage(
                     String.format("User has dismissed eefrt task")
                 )
                 dismiss(onBack)
+            }
+
+            "practiceTrialResult" -> {
+                val body = obj.getString("message")
+                val gson = Gson()
+                val practiceTaskAttempt = gson.fromJson(body, PracticeTaskAttempt::class.java)
+                practiceTaskAttempt.createdAt = Date()
+                eefrtViewModel.savePracticeTaskAttempt(practiceTaskAttempt)
+            }
+
+            "trialResult" -> {
+                val body = obj.getString("message")
+                val gson = Gson()
+                val taskAttempt = gson.fromJson(body, TaskAttempt::class.java)
+                taskAttempt.createdAt = Date()
+                eefrtViewModel.saveActualTaskAttempt(taskAttempt)
             }
 
             else -> Log.i(
