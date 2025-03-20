@@ -1,5 +1,6 @@
 package ai.a2i2.conductor.effrtdemoandroid.persistence
 
+import ai.a2i2.conductor.effrtdemoandroid.ui.data.EefrtTaskAttempt
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
@@ -21,7 +22,7 @@ data class PracticeTaskAttempt(
     @ColumnInfo(name = "trial_success") val trialSuccess: Int,
     @ColumnInfo(name = "gems_running_total") val gemsRunningTotal: Int,
     @ColumnInfo(name = "max_press_count") val maxPressCount: Int,
-)
+): EefrtTaskAttempt
 
 @Dao
 interface PracticeTaskAttemptDao {

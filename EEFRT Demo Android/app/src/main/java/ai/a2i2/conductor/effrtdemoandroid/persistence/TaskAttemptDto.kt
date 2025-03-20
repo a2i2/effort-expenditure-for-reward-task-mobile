@@ -1,5 +1,6 @@
 package ai.a2i2.conductor.effrtdemoandroid.persistence
 
+import ai.a2i2.conductor.effrtdemoandroid.ui.data.EefrtTaskAttempt
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
@@ -31,7 +32,7 @@ data class TaskAttempt(
     @ColumnInfo(name = "effort_time_limit") val effortTimeLimit: Int,
     @ColumnInfo(name = "recalibration") val recalibration: Int,
     @ColumnInfo(name = "threshold_max") val thresholdMax: Int,
-)
+): EefrtTaskAttempt
 
 @Dao
 interface TaskAttemptDto {

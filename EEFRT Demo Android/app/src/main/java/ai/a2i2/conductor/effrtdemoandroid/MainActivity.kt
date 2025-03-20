@@ -3,6 +3,7 @@ package ai.a2i2.conductor.effrtdemoandroid
 import ai.a2i2.conductor.effrtdemoandroid.persistence.DatabaseProvider
 import ai.a2i2.conductor.effrtdemoandroid.ui.EefrtScreen
 import ai.a2i2.conductor.effrtdemoandroid.ui.EventLogsView
+import ai.a2i2.conductor.effrtdemoandroid.ui.EefrtTrialDetailView
 import ai.a2i2.conductor.effrtdemoandroid.ui.data.EefrtScreenViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -30,6 +31,8 @@ enum class NavigationScreens(val route: String) {
     HOME("home"),
     EFFRT("eefrt"),
     EVENTS("events"),
+    PRACTICE_TRIAL_DETAILS("practice_trial_details"),
+    ACTUAL_TRIAL_DETAILS("actual_trial_details"),
 }
 
 class MainActivity : ComponentActivity() {
@@ -82,6 +85,34 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
         composable(NavigationScreens.EVENTS.route) {
             EventLogsView(
                 eefrtScreenViewModel = eefrtScreenViewModel,
+                practiceTaskItemPressed = { index ->
+                    navController.navigate("${NavigationScreens.PRACTICE_TRIAL_DETAILS}/${index}")
+                },
+                actualTaskItemPressed = { index ->
+                    navController.navigate("${NavigationScreens.ACTUAL_TRIAL_DETAILS}/${index}")
+                },
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable("${NavigationScreens.PRACTICE_TRIAL_DETAILS.route}/{index}") { navBackStackEntry ->
+            val routeIndex = navBackStackEntry.arguments?.getString("index")?.toInt() ?: 0
+            val practiceTrialItem = eefrtScreenViewModel.getPracticeTaskAttempts().value[routeIndex]
+            EefrtTrialDetailView(
+                eefrtTaskAttempt = practiceTrialItem,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable("${NavigationScreens.ACTUAL_TRIAL_DETAILS.route}/{index}") { navBackStackEntry ->
+            val routeIndex = navBackStackEntry.arguments?.getString("index")?.toInt() ?: 0
+            val trialItem = eefrtScreenViewModel.getActualTaskAttempts().value[routeIndex]
+            EefrtTrialDetailView(
+                eefrtTaskAttempt = trialItem,
                 onBack = {
                     navController.popBackStack()
                 }

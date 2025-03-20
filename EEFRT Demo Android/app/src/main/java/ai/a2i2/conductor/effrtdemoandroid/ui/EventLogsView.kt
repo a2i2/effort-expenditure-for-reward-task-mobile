@@ -5,12 +5,11 @@ import ai.a2i2.conductor.effrtdemoandroid.ui.data.EefrtScreenViewModel
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
-import android.widget.ScrollView
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,8 +28,11 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun EventLogsView(
     eefrtScreenViewModel: EefrtScreenViewModel,
-    onBack: () -> Unit
-) {
+    practiceTaskItemPressed: (Int) -> Unit,
+    actualTaskItemPressed: (Int) -> Unit,
+    onBack: () -> Unit,
+
+    ) {
     val practiceTaskAttempts = remember { eefrtScreenViewModel.getPracticeTaskAttempts() }
     val actualTaskAttempts = remember { eefrtScreenViewModel.getActualTaskAttempts() }
     val scrollState = rememberScrollState()
@@ -61,13 +63,17 @@ fun EventLogsView(
             ) {
                 Text(
                     "Practice Attempts",
-                    modifier = Modifier.padding(8f.dp)
+                    modifier = Modifier.padding(16.dp)
                 )
 
-                for (practiceAttemptData in practiceTaskAttempts.value) {
+                practiceTaskAttempts.value.forEachIndexed { index, practiceTaskAttempt ->
                     Text(
-                        text = practiceAttemptData.createdAt.toString(),
-                        modifier = Modifier.padding(8f.dp)
+                        text = practiceTaskAttempt.createdAt.toString(),
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .clickable {
+                                practiceTaskItemPressed(index)
+                            }
                     )
                 }
 
@@ -75,16 +81,19 @@ fun EventLogsView(
 
                 Text(
                     "Actual Attempts",
-                    modifier = Modifier.padding(8f.dp)
+                    modifier = Modifier.padding(16.dp)
                 )
 
-                for (attemptData in actualTaskAttempts.value) {
+                actualTaskAttempts.value.forEachIndexed { index, taskAttempt ->
                     Text(
-                        text = attemptData.createdAt.toString(),
-                        modifier = Modifier.padding(8f.dp)
+                        text = taskAttempt.createdAt.toString(),
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .clickable {
+                                actualTaskItemPressed(index)
+                            }
                     )
                 }
-
             }
         }
     )
