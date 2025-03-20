@@ -1,7 +1,7 @@
 // Scene to inform participants they can now start the main task, routes to Main Task scene
 
 // import task info from versionInfo file
-import { approxTime} from "../versionInfo.js";  // time participant will have to try and exert effort (ms)
+import { approxTime } from "../versionInfo.js";  // time participant will have to try and exert effort (ms)
 
 // // import some js from Pavlovia lib to enable data saving  [for Pavlovia deployment only]
 // import * as data from "../../lib/data-2020.2.js";

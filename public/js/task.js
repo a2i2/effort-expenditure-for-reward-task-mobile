@@ -62,7 +62,7 @@ function resizeApp() {
     };
 }
 
-// wrap game creation in a function so that it isn't created until consent completed
+// Start the game using the configuration defined above
 export function runTask() {
     // create new phaser game configured as above
     new Phaser.Game(config);

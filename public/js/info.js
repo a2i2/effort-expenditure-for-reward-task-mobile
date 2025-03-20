@@ -2,26 +2,11 @@
 
 // import task-version relevant info and functions
 // import { uid } from "./firebaseAuth.js";
-import { briefStudyDescr, blockDesktop } from "./versionInfo.js";
+import { blockDesktop } from "./versionInfo.js";
 // import { saveInitial } from "./saveData.js";
 // import { uid } from "./firebaseInit.js";
 // loads runTask from either testVersion or full version (taskFU)
 import { runTask } from "./task.js";
-
-// info / session description and start game button
-const infoText = "<div class=\"row\"> "+
-	" 	<div class=\"col-3\"></div> "+ 
-	" 	<div class=\"col-6\"> "+ 
-	"	<img src=\"./assets/imgs/ucl-banner-land-brightblue-rgb.png\" alt=\"UCL logo\" style=\"width:100%;\">" +
-	briefStudyDescr +
-	"<input type=\"submit\" id=\"start\" value=\"start!\" style=\"margin-left: 40%;\">"+
-	"<br><br> " + 
-	"</div> " + 
-	"<div class=\"col-3\"></div> " + 
-	"</div> ";
-
-// create info sheet and start game button in consent div within consent-container 
-document.getElementById('consent').innerHTML = infoText;
 
 // function to check if the browser is mobile 
 window.mobileCheck = function () {
@@ -37,13 +22,11 @@ window.mobileCheck = function () {
 
 // once pre-instructions startStudy button clicked, hide info and run task!
 var runStudy = function () {
-	// block access on a desktop just in case the participant is being sneaky  
+	// block access on a desktop just in case the participant is being sneaky
 	if (!window.mobileCheck()) {
 		alert("Sorry, you must play this study on a mobile device!")
-		return false // if on a deskptop - this will prevent the participant from continuing
+		return false // if on a desktop - this will prevent the participant from continuing
 	} else {
-		// hide consent-container
-		document.getElementById('consent-container').style.display = "none";
 		// save start data
 		// saveInitial(uid)
 		// run task!
@@ -51,7 +34,7 @@ var runStudy = function () {
 	}
 };
 
-// start after clicking
-document.getElementById('start').onclick = runStudy;
+// Start study
+runStudy();
 
 

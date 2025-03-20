@@ -24,17 +24,7 @@ var buttonText = "Go back"; // text to display on the final button
 // define the possible scene orders as constants
 if (test_game == false) {
 	if (runPractice == true) {
-		const ORDER_1 = [
-			'questInstructionsScene',
-			'Questions',
-			'InstructionsScene',
-			'practiceTask',
-			'StartTaskScene',
-			'MainTask',
-			'TaskEndScene'
-		];
-
-		const ORDER_2 = [
+		var sceneOrder = [
 			'InstructionsScene',
 			'practiceTask',
 			'StartTaskScene',
@@ -43,31 +33,17 @@ if (test_game == false) {
 			'Questions',
 			'TaskEndScene'
 		];
-
-		var sceneOrder = randomiseOrder ? (Math.random() < 0.5 ? ORDER_1 : ORDER_2) : ORDER_2;
 	}
 	else {
 		// no practice (follow-up version)
-		const ORDER_1 = [
-			'questInstructionsScene',
-			'Questions',
-			'StartTaskScene',
-			'MainTask',
-			'TaskEndScene'
-		];
-
-		const ORDER_2 = [
+		var sceneOrder = [
+			'InstructionsScene',
 			'StartTaskScene',
 			'MainTask',
 			'questInstructionsScene',
 			'Questions',
 			'TaskEndScene'
-		];
-
-		// randomise the order or select the first order questions-- > game
-		var sceneOrder = randomiseOrder ? (Math.random() < 0.5 ? ORDER_1 : ORDER_2) : ORDER_2;
-
-
+        ];
     }
 }
 else {
@@ -119,39 +95,8 @@ var nGames = 8;
 var MaxTotalBonus = completionBonus100 + (nGames * maxBonus);
 var completionMin = 80;
 
-// 5. study description for info/consent 
-if (test_game == false && demo_mode == false) {
-	var briefStudyDescr =
-		"<b>IMPORTANT: do not close the window before the game ends or " +
-		"	your progress may be lost, and you will not be able to restart" +
-		"</p>" +
-		"<p>" +
-		"Make sure you have a stable internet connection</b >" +
-		"</p>" +
-		"<p>" +
-		"Contact us via Prolific or email: s.hewitt.17@ucl.ac.uk if you encounter technical difficulties." +
-		"</p>" +
-		"<p>" +
-		"<b>Remember, you can earn:</b></p>"+
-		"<b>performance bonus</b> of " + bonusRate.toFixed(0) + "p per coin you collect in the games."+
-		"</p>" +
-		"<p><b>and</b></p>" +
-		"<b>completion bonus</b> of <b>&pound" + completionBonus80 + "</b > (if you complete more than 80% of the assessments) <b>OR &pound"
-		+ completionBonus100 + "</b> (if you complete 100%)</p >" +
-		"<p>" +
-		"You can earn up to <b>&pound" + MaxTotalBonus.toFixed(2) + "</b> in total." +
-		"</p>" +
-		"<p>Any bonus will be paid at the end of the study</p>" +
-		"<p><b> Please note, if you do not complete at least 80% of the notifications you will not be eligible for bonus payment</b>." +
-		"</p>" +
-		"<br> "
-} else {
-	var briefStudyDescr = "<b>Welcome to a demo version of the mobile reward-effort game. This game can only be played on a mobile device!.</b>";
-};
-
-
 export {demo_mode,
-	debug_mode, sceneOrder, briefStudyDescr, randomiseOrder, runPractice,
+	debug_mode, sceneOrder, randomiseOrder, runPractice,
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
 	blockDesktop, trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
 	effortTime, gemHeights, pracTrialRewards, pracTrialEfforts, minPressMax, nCalibrates, nBlocks, complete_link, buttonText};
