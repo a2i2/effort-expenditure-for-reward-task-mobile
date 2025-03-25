@@ -9,134 +9,157 @@ var backgrCol; var titleCol; var buttonCol;
 // make popup dialog box with instructions and choice buttons
 export default class ChoicePanel {
     constructor(scene, x, y, trialReward1, trialEffortPropMax1, trialEffort1, trialReward2, trialEffortPropMax2, trialEffort2) {
-    this.scene = scene;
-    
-    // set properties of the panel (text content and colours)    
-    var titleTxt; var mainTxt; var buttonTxt;
-    titleTxt = 'Make your choice!';
-    mainTxt = ('[color=#FFD700]'+trialReward1+' coins[/color]        '+
-               '[color=#FFD700]'+trialReward2+' coins[/color]\n'+
-               '[color=#FFD700]'+(trialEffortPropMax1*100).toFixed()+'% POWER[/color]      '+        
-               '[color=#FFD700]'+(trialEffortPropMax2*100).toFixed()+'% POWER[/color]');      ////#8BE1EB 
-    backgrCol = 0x815532;
-    titleCol = 0xf57f17;  
-    buttonCol = 0xf57f17;
+        this.scene = scene;
+        this.timeoutText = 5;
+        this.timeoutInterval = null;
+        
+        // set properties of the panel (text content and colours)    
+        var titleTxt = 'Make your choice!';
+        var mainTxt = ('[color=#FFD700]'+trialReward1+' coins[/color]        '+
+                   '[color=#FFD700]'+trialReward2+' coins[/color]\n'+
+                   '[color=#FFD700]'+(trialEffortPropMax1*100).toFixed()+'% POWER[/color]      '+        
+                   '[color=#FFD700]'+(trialEffortPropMax2*100).toFixed()+'% POWER[/color]');
+        
+        backgrCol = 0x815532;
+        titleCol = 0xf57f17;  
+        buttonCol = 0xf57f17;
 
-    var mainPanel = createMainPanel(scene, titleTxt, mainTxt, buttonTxt)
-        .setPosition(x,y)
-        .layout()
-        //.drawBounds(scene.add.graphics(), 0xff0000) // for debugging only
-        .popUp(750); 
+        this.mainPanel = this.createMainPanel(titleTxt, mainTxt)
+            .setPosition(x,y)
+            .layout()
+            .popUp(750);
+            
+        this.startTimer();
     }
-    
-}
 
-////////////////////functions for making in-scene graphics//////////////////////////
-///////////create main panel////////////
-var createMainPanel = function (scene, titleTxt, mainTxt, buttonTxt) {
-    // create global registry var to pass choice output between scenes
-    scene.registry.set('choice', []);
-    
-    // create components
-    var dialog = createDialog(scene, titleTxt, mainTxt, buttonTxt);
-    var mainPanel = scene.rexUI.add.fixWidthSizer({
-        orientation: 'x' // vertical stacking
-        }).add(
-            dialog, // child
-            0, // proportion
-            'center', // align
-            0, // paddingConfig
-            false, // expand
-        )
-    .layout();
-    
-    // add some interactivity and ability to save choices
-    dialog
-        .once('button.click', function (button, groupName, index) {
-            let choice = button.text;        // get chosen button label (string)
-            //let choice = index;            // get chosen button index (0=accept, 1=reject)
-            scene.registry.set('choice', choice);  // set choice value as global var
-            dialog.scaleDownDestroy(250);          // destroy ratings panel components
-            eventsCenter.emit('choiceComplete');   // emit choice completion event
-        }, this)
-        .on('button.over', function (button, groupName, index) {
-            button.getElement('background').setStrokeStyle(2, 0xffffff); // when hover
-        })
-        .on('button.out', function (button, groupName, index) {
-            button.getElement('background').setStrokeStyle();            // when un-hover
-        });
+    createMainPanel(titleTxt, mainTxt) {
+        // create global registry var to pass choice output between scenes
+        this.scene.registry.set('choice', []);
+        
+        // create components
+        this.dialog = this.createDialog(titleTxt, mainTxt);
+        var mainPanel = this.scene.rexUI.add.fixWidthSizer({
+            orientation: 'x'
+            }).add(
+                this.dialog,
+                0,
+                'center',
+                0,
+                false,
+            )
+        .layout();
+        
+        // add some interactivity and ability to save choices
+        this.dialog
+            .once('button.click', (button) => {
+                this.clearTimer();
+                let choice = button.text;
+                this.scene.registry.set('choice', choice);
+                this.dialog.scaleDownDestroy(250);
+                eventsCenter.emit('choiceComplete');
+            })
+            .on('button.over', (button) => {
+                button.getElement('background').setStrokeStyle(2, 0xffffff);
+            })
+            .on('button.out', (button) => {
+                button.getElement('background').setStrokeStyle();
+            });
 
-    return mainPanel;
-};
+        return mainPanel;
+    }
 
-///////////create popup dialog box//////
-var createDialog = function (scene, titleTxt, mainTxt, buttonTxt) {
-    var textbox = scene.rexUI.add.dialog({
-    background: scene.rexUI.add.roundRectangle(0, 0, 150, 500, 20, backgrCol),
-    
-    title: scene.rexUI.add.label({
-        background: scene.rexUI.add.roundRectangle(0, 0, 25, 40, 20, titleCol),
-        text: scene.add.text(0, 0, titleTxt, {
-            fontSize: '20px'
-            }),
-        align: 'center',
+    startTimer() {
+        this.timeoutInterval = setInterval(() => {
+            if (this.timeoutText > 0) {
+                this.timeoutText--;
+                // update UI element
+                // // TODO: Update the UI to not replace the existing text but include the timer element
+                const currentText = this.dialog.getElement('content').text;
+                const baseText = currentText.substring(0, currentText.lastIndexOf(':') + 2);
+                this.dialog.getElement('content').setText(baseText + this.timeoutText);
+            } else {
+                this.clearTimer();
+                this.scene.registry.set('choice', "timeout");
+                this.dialog.scaleDownDestroy(250);
+                eventsCenter.emit('choiceComplete');
+            }
+        }, 1000);
+    }
+
+    clearTimer() {
+        if (this.timeoutInterval) {
+            clearInterval(this.timeoutInterval);
+            this.timeoutInterval = null;
+        }
+    }
+
+    createDialog(titleTxt, mainTxt) {
+        var textbox = this.scene.rexUI.add.dialog({
+        background: this.scene.rexUI.add.roundRectangle(0, 0, 150, 500, 20, backgrCol),
+        
+        title: this.scene.rexUI.add.label({
+            background: this.scene.rexUI.add.roundRectangle(0, 0, 25, 40, 20, titleCol),
+            text: this.scene.add.text(0, 0, titleTxt, {
+                fontSize: '20px'
+                }),
+            align: 'center',
+            space: {
+                left: 10,
+                right: 10,
+                top: 10,
+                bottom: 10
+            }
+        }),
+
+        content: this.scene.rexUI.add.BBCodeText(0, 0, mainTxt, {fontSize: '24px', 
+                                                            //font: '20px monospace', 
+                                                            align: 'center' //color: '#222222'
+                                                            }),
+
+        actions: [
+            this.createLabel('route 1'),
+            this.createLabel('route 2')
+        ],
+
         space: {
+            title: 25,
+            content: 20,
+            action: 60,
             left: 10,
             right: 10,
             top: 10,
-            bottom: 10
+            bottom: 10,
+        },
+            
+        align: {
+            actions: 'center',
+        },
+
+        expand: {
+            content: false, 
         }
-    }),
-
-    content: scene.rexUI.add.BBCodeText(0, 0, mainTxt, {fontSize: '24px', 
-                                                        //font: '20px monospace', 
-                                                        align: 'center' //color: '#222222'
-                                                        }),
-
-    actions: [
-        createLabel(scene, 'route 1'),
-        createLabel(scene, 'route 2')
-    ],
-
-    space: {
-        title: 25,
-        content: 20,
-        action: 60,
-        left: 10,
-        right: 10,
-        top: 10,
-        bottom: 10,
-    },
+        })
+        .layout();
         
-    align: {
-        actions: 'center',
-    },
-
-    expand: {
-        content: false, 
+        return textbox;
     }
-    })
-    .layout();
-    
-    return textbox;
-};
 
-/////////create button labels/////////////////
-var createLabel = function (scene, text) {
-    return scene.rexUI.add.label({
-        background: scene.rexUI.add.roundRectangle(0, 0, 50, 50, 20, buttonCol),
-        text: scene.add.text(0, 0, text, {
-            fontSize: '20px',
-            //font: '18px monospace',
-        }),
-        align: 'center',
-        width: 80,
-        height: 100,
-        space: {
-            left: 15,
-            right: 15,
-            top: 20,
-            bottom: 5
-        }
-    });
-};
+    createLabel(text) {
+        return this.scene.rexUI.add.label({
+            background: this.scene.rexUI.add.roundRectangle(0, 0, 50, 50, 20, buttonCol),
+            text: this.scene.add.text(0, 0, text, {
+                fontSize: '20px',
+                //font: '18px monospace',
+            }),
+            align: 'center',
+            width: 80,
+            height: 100,
+            space: {
+                left: 15,
+                right: 15,
+                top: 20,
+                bottom: 5
+            }
+        });
+    }
+}
