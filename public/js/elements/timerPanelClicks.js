@@ -2,13 +2,14 @@
 
 // import our custom events centre for passsing info between scenes
 import eventsCenter from '../eventsCenter.js'
+import { powerupDelay } from '../versionInfo.js'
 
 // initiliaze timer variables
 var timedEvent;
 var timedEvent2;
 
 export default class TimerPanel {
-    constructor(scene, x, y, timeLimit, trialEffort, practiceOrReal) {
+    constructor(scene, x, y, timeLimit, trialEffort, practiceOrReal, coundownDelay = powerupDelay) {
         this.scene = scene; 
         
         // initialize time left and press count variables (attach to scene to pass between elements)
@@ -41,17 +42,35 @@ export default class TimerPanel {
         //.drawBounds(scene.add.graphics(), 0xff0000)   // for debugging only
         .popUp(500); 
         
-        // every 200ms call updateTimer function (to update 'time left' text in panel)
-        var timerDelay = 200;    
-        var timerRepeat = (timeLimit/timerDelay)-1;
-        timedEvent = scene.time.addEvent({ delay: timerDelay, callback: updateTimer, 
-                                               args: [scene, trialEffort, timeText, timeLimit, timerDelay, mainPanel, practiceOrReal],
-                                               callbackScope: this, repeat: timerRepeat });
+        setTimeout(() => {
+            // every 200ms call updateTimer function (to update 'time left' text in panel)
+            const timerDelay = 200;    
+            const timerRepeat = (timeLimit / timerDelay) - 1;
+            
+            timedEvent = scene.time.addEvent({ 
+                delay: timerDelay, 
+                callback: updateTimer, 
+                args: [
+                    scene, 
+                    trialEffort, 
+                    timeText, 
+                    timeLimit, 
+                    timerDelay, 
+                    mainPanel, 
+                    practiceOrReal
+                ],
+                callbackScope: this, 
+                repeat: timerRepeat 
+            });
         
-        // and at end of time limit call endTimer function (to end timer panel scene)
-        timedEvent2 = scene.time.addEvent({ delay: timeLimit, callback: endTimer, 
-                                                args: [scene, mainPanel, practiceOrReal],
-                                                callbackScope: this });
+            // and at end of time limit call endTimer function (to end timer panel scene)
+            timedEvent2 = scene.time.addEvent({ 
+                delay: timeLimit, 
+                callback: endTimer, 
+                args: [scene, mainPanel, practiceOrReal],
+                callbackScope: this 
+            }); 
+        }, coundownDelay);
     }
     
    update() { }

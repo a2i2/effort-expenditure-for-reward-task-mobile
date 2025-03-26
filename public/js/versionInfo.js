@@ -19,6 +19,7 @@ var catchIdx = 13; // specify the catch trial manually
 // End behaviour: 
 var complete_link = "https://app.prolific.co/submissions/complete?cc=8B6EC8FC";  // link offered by brain explorer
 var buttonText = "Go back"; // text to display on the final button
+var powerupDelay = 200; // delay in ms before powerup timer is started
 
 // remainder of settings are automatic (except Practice parameters below)
 // define the possible scene orders as constants
@@ -99,4 +100,4 @@ export {demo_mode,
 	debug_mode, sceneOrder, randomiseOrder, runPractice,
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
 	blockDesktop, trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
-	effortTime, gemHeights, pracTrialRewards, pracTrialEfforts, minPressMax, nCalibrates, nBlocks, complete_link, buttonText};
+	effortTime, gemHeights, pracTrialRewards, pracTrialEfforts, minPressMax, nCalibrates, nBlocks, complete_link, buttonText, powerupDelay};
