@@ -1,7 +1,8 @@
 import eventsCenter from '../eventsCenter.js'
+import { timeout } from '../versionInfo.js'
 
 export default class CountdownPanel {
-    constructor(scene, x, y, duration = 5000) {
+    constructor(scene, x, y, duration = timeout) {
         this.scene = scene;
         this.duration = duration;
         this.timeLeft = duration;
