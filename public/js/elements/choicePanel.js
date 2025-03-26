@@ -2,19 +2,18 @@
 
 // import our custom events centre for passsing info between scenes
 import eventsCenter from '../eventsCenter.js'
+import CountdownPanel from './CountdownPanel.js'
 
-// initialize diplay vars
+// initialize display vars
 var backgrCol; var titleCol; var buttonCol;
 
 // make popup dialog box with instructions and choice buttons
 export default class ChoicePanel {
     constructor(scene, x, y, trialReward1, trialEffortPropMax1, trialEffort1, trialReward2, trialEffortPropMax2, trialEffort2) {
         this.scene = scene;
-        this.timeoutText = 5;
-        this.timeoutInterval = null;
         
         // set properties of the panel (text content and colours)    
-        var titleTxt = 'Make your choice!';
+        var titleTxt = 'Choose a route';
         var mainTxt = ('[color=#FFD700]'+trialReward1+' coins[/color]        '+
                    '[color=#FFD700]'+trialReward2+' coins[/color]\n'+
                    '[color=#FFD700]'+(trialEffortPropMax1*100).toFixed()+'% POWER[/color]      '+        
@@ -29,7 +28,12 @@ export default class ChoicePanel {
             .layout()
             .popUp(750);
             
-        this.startTimer();
+        // Listen for countdown completion
+        eventsCenter.once('countdownComplete', () => {
+            this.scene.registry.set('choice', "timeout");
+            this.dialog.scaleDownDestroy(250);
+            eventsCenter.emit('choiceComplete');
+        });
     }
 
     createMainPanel(titleTxt, mainTxt) {
@@ -68,80 +72,69 @@ export default class ChoicePanel {
         return mainPanel;
     }
 
-    startTimer() {
-        this.timeoutInterval = setInterval(() => {
-            if (this.timeoutText > 0) {
-                this.timeoutText--;
-                // update UI element
-                // // TODO: Update the UI to not replace the existing text but include the timer element
-                const currentText = this.dialog.getElement('content').text;
-                const baseText = currentText.substring(0, currentText.lastIndexOf(':') + 2);
-                this.dialog.getElement('content').setText(baseText + this.timeoutText);
-            } else {
-                this.clearTimer();
-                this.scene.registry.set('choice', "timeout");
-                this.dialog.scaleDownDestroy(250);
-                eventsCenter.emit('choiceComplete');
-            }
-        }, 1000);
-    }
-
-    clearTimer() {
-        if (this.timeoutInterval) {
-            clearInterval(this.timeoutInterval);
-            this.timeoutInterval = null;
-        }
-    }
-
     createDialog(titleTxt, mainTxt) {
-        var textbox = this.scene.rexUI.add.dialog({
-        background: this.scene.rexUI.add.roundRectangle(0, 0, 150, 500, 20, backgrCol),
-        
-        title: this.scene.rexUI.add.label({
-            background: this.scene.rexUI.add.roundRectangle(0, 0, 25, 40, 20, titleCol),
-            text: this.scene.add.text(0, 0, titleTxt, {
-                fontSize: '20px'
-                }),
-            align: 'center',
+        // Create the dialog first
+        var dialog = this.scene.rexUI.add.dialog({
+            background: this.scene.rexUI.add.roundRectangle(0, 0, 150, 500, 20, backgrCol),
+            
+            title: this.scene.rexUI.add.label({
+                background: this.scene.rexUI.add.roundRectangle(0, 0, 25, 40, 20, titleCol),
+                text: this.scene.rexUI.add.sizer({
+                    orientation: 'horizontal',
+                    space: { left: 20, right: 20 }
+                })
+                .add(
+                    this.scene.add.text(0, 0, titleTxt, {
+                        fontSize: '20px',
+                        color: '#ffffff'
+                    }).setOrigin(0.5, 0.5),
+                    1, 'center', { left: 80, right: 50 }, true
+                )
+                .add(
+                    new CountdownPanel(this.scene, 0, 0).container,
+                    0, 'right', 0, false
+                ),
+                space: {
+                    left: 15,
+                    right: 15,
+                    top: 10,
+                    bottom: 10
+                }
+            }),
+
+            content: this.scene.rexUI.add.BBCodeText(0, 0, mainTxt, {
+                fontSize: '24px', 
+                align: 'center'
+            }),
+
+            actions: [
+                this.createLabel('route 1'),
+                this.createLabel('route 2')
+            ],
+
             space: {
+                title: 25,
+                content: 20,
+                action: 60,
                 left: 10,
                 right: 10,
                 top: 10,
-                bottom: 10
-            }
-        }),
-
-        content: this.scene.rexUI.add.BBCodeText(0, 0, mainTxt, {fontSize: '24px', 
-                                                            //font: '20px monospace', 
-                                                            align: 'center' //color: '#222222'
-                                                            }),
-
-        actions: [
-            this.createLabel('route 1'),
-            this.createLabel('route 2')
-        ],
-
-        space: {
-            title: 25,
-            content: 20,
-            action: 60,
-            left: 10,
-            right: 10,
-            top: 10,
-            bottom: 10,
-        },
+                bottom: 10,
+            },
             
-        align: {
-            actions: 'center',
-        },
+            align: {
+                actions: 'center',
+            },
 
-        expand: {
-            content: false, 
-        }
+            expand: {
+                content: false, 
+            }
         })
         .layout();
+
+        this.dialog = dialog;
         
-        return textbox;
+        return dialog;
     }
 
     createLabel(text) {
