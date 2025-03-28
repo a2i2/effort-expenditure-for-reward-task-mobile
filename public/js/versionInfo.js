@@ -69,6 +69,7 @@ Object.freeze(sceneOrder);
 
 // 2. set effort-related calibration variables: 
 var effortTime = 10000;	// time participant will have to try and exert effort (ms)
+var timeout = 5000; // time to wait for participant to make a choice (ms)
 var pracTrialEfforts = [75, 63, 70];   // practice effort level (presses)
 var pracTrialRewards = [5, 3, 4]; // reward values of gems
 var gemHeights = [255, 180, 220]; // arbitrary heights 
@@ -100,4 +101,4 @@ export {demo_mode,
 	debug_mode, sceneOrder, randomiseOrder, runPractice,
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
 	blockDesktop, trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
-	effortTime, gemHeights, pracTrialRewards, pracTrialEfforts, minPressMax, nCalibrates, nBlocks, complete_link, buttonText, powerupDelay};
+	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, minPressMax, nCalibrates, nBlocks, complete_link, buttonText, powerupDelay};
