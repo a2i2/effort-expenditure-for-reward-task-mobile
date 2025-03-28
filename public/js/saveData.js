@@ -79,6 +79,7 @@ import { userHash, attemptHash} from "./getUserBEX.js";
 //     }, { merge: true });
 // };
 
+const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
 // function to shuffle trials
 var shuffleTrials= function (nTrials, catchIdx, nCalibrates) {
     // Create a shuffled array of trial indices
@@ -93,7 +94,7 @@ var shuffleTrials= function (nTrials, catchIdx, nCalibrates) {
     // If catchIdx is below nCalibrates, swap it with an alternative random value >= nCalibrates
     if (catchIdxIndex < nCalibrates) {
         // Find a random index from nCalibrates to nTrials
-        const randomIndex = Math.floor(Math.random() * (nTrials - nCalibrates)) + nCalibrates;
+        const randomIndex = clamp(Math.floor(Math.random() * (nTrials - nCalibrates)) + nCalibrates, 0, nTrials - 1);
 
         // Swap catchIdx with the random index
         [trialIndices[catchIdxIndex], trialIndices[randomIndex]] = [trialIndices[randomIndex], trialIndices[catchIdxIndex]];
