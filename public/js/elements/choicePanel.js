@@ -27,12 +27,14 @@ export default class ChoicePanel {
             .setPosition(x,y)
             .layout()
             .popUp(750);
-            
+
         // Listen for countdown completion
         eventsCenter.once('countdownComplete', () => {
             this.scene.registry.set('choice', "timeout");
-            this.dialog.scaleDownDestroy(250);
-            eventsCenter.emit('choiceComplete');
+            setTimeout(() => {
+                this.dialog.scaleDownDestroy(250);
+                eventsCenter.emit('choiceComplete');
+            }, 100);
         });
     }
 
@@ -52,15 +54,17 @@ export default class ChoicePanel {
                 false,
             )
         .layout();
-        
+
         // add some interactivity and ability to save choices
         this.dialog
             .once('button.click', (button) => {
-                this.clearTimer();
                 let choice = button.text;
                 this.scene.registry.set('choice', choice);
-                this.dialog.scaleDownDestroy(250);
-                eventsCenter.emit('choiceComplete');
+                eventsCenter.emit('destroyCountdown');
+                setTimeout(() => {
+                    this.dialog.scaleDownDestroy(250);
+                    eventsCenter.emit('choiceComplete');
+                }, 100);
             })
             .on('button.over', (button) => {
                 button.getElement('background').setStrokeStyle(2, 0xffffff);
