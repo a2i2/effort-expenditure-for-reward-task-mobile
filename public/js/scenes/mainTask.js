@@ -98,7 +98,13 @@ export default class MainTask extends Phaser.Scene {
     preload() {
         ////////////////////PRELOAD GAME ASSETS///////////////////////////////////
         // load tilemap and tileset created using Tiled (see below)
-        this.load.tilemapTiledJSON('map', './assets/tilemaps/tilemap-main.json'); 
+        // pick either a grass or a snow level
+        let num = Math.random(); // value between 0.0 and 1.0
+        let mapPath = './assets/tilemaps/tilemap-main-grass.json'; // default
+        if (num > 0.8) { // we mainly want grass rather than snow levels
+            this.load.tilemapTiledJSON('map', './assets/tilemaps/tilemap-main-snow.json');
+        }
+        this.load.tilemapTiledJSON('map', mapPath);
         this.load.image('tiles', './assets/tilesets/tiles_edited_70px_extruded.png');
 
         // load player sprite
