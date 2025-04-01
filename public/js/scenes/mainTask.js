@@ -663,8 +663,9 @@ var trialEnd = function () {
     if ((trial==(nTrials/nBlocks - 1) && trial != nTrials - 1)) {
         this.player.sprite.setVelocityX(0);
         this.player.sprite.anims.play('wait', true);
-        this.breakPanel = new BreakPanel(this, mapWidth-gameWidth/2, 600, nCoins);
-        this.events.once('breakover', function () {
+        EmbedContext.sendMessage("break");
+        // this.breakPanel = new BreakPanel(this, mapWidth-gameWidth/2, 600, nCoins);
+        eventsCenter.once('breakover', function () {
             //  restart coin total from 0 after each block
             // nCoins=0; - keep coins to gamify
             // iterate trial number

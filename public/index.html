@@ -57,5 +57,12 @@
                 "This browser doesn't support modules, so the study can't run. Please try the latest version of Chrome, Firefox or Safari!"
             );
         </script>
+
+        <script type="module">
+            import eventsCenter from './js/eventsCenter.js';
+            window.breakOver = function() {
+                eventsCenter.emit('breakover');
+            };
+        </script>
     </body>
 </html>
