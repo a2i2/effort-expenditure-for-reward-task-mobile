@@ -370,7 +370,7 @@ var displayChoicePanel = function () {
                                        trialReward2, trialEffortPropMax2, trialEffort2); 
     
     // once choice is entered, get choice info and route to relevant next step
-    eventsCenter.once('choiceComplete', doChoice, this);       
+    eventsCenter.once('choiceComplete', doChoice, this);
 };
 
 // 2. Once choice (to accept or reject proposed option) has been made, route to relevant components 
@@ -381,8 +381,7 @@ var doChoice = function () {
     // and get info on chosen option
     choice = this.registry.get('choice');  
     
-    // if participant chooses the high effort option
-    if (choice == 'route 1') {
+    if (choice == 'route 1') {  // if participant chooses the high effort option
         // timer panel pops up  
         this.timerPanel = new TimerPanel(this, decisionPointX - 60, gameHeight / 1.5, effortTime, trialEffort1, practiceorReal)
         // and play player 'power-up' animation
@@ -390,18 +389,23 @@ var doChoice = function () {
         // until time limit reached:
         eventsCenter.once('timesup', effortOutcome, this)
         }
-    else {  // if participant chooses the low effort option
+    else if (choice == 'route 2') {  // if participant chooses the low effort option
         // timer panel pops up  
         this.timerPanel = new TimerPanel(this, decisionPointX - 60, gameHeight / 1.5, effortTime, trialEffort2, practiceorReal)
         // and play player 'power-up' animation
         this.player.sprite.anims.play('powerup', true);
         // until time limit reached:
         eventsCenter.once('timesup', effortOutcome, this)
+    } else { // user failed to make a choice before timeout
+        // No TimerPanel to emit the timesup event, so we emit it manually so the 'this' context can be passed through
+        eventsCenter.once('timesup', effortOutcome, this);
+        eventsCenter.emit('timesup');
     }
 };
 
 // 3. If participant accepts effort proposal, record button presses and see if they meet threshold
 var effortOutcome = function() {
+    choice = this.registry.get('choice');
     // get number of achieved button presses 
     pressCount = this.registry.get('pressCount');
     pressTimes = this.registry.get('pressTimes');  // [?we want this - might make code run slow...]
@@ -480,7 +484,45 @@ var effortOutcome = function() {
                             },
                             callbackScope: this});
     }
-    else {  // else if fail to reach trial effort threshold
+    else if (choice == 'timeout') {
+        trialSuccess = 0;
+
+        // display failure message for a couple of seconds
+        feedback = this.add.text(decisionPointX-60, gameHeight/2-160,  
+                                 "Ran out of time to decide!", {
+                                    font: "20px monospace",
+                                    fill: "#ffffff",
+                                    align: 'center',
+                                    padding: { x: 20, y: 10 },
+                                    backgroundColor: "#000000"
+                                 })
+            .setOrigin(0.5, 1);
+        this.tweens.add({        
+            targets: feedback,
+            scaleX: { start: 0, to: 1 },
+            scaleY: { start: 0, to: 1 },
+            ease: 'Back',    
+            duration: feedbackTime,
+            repeat: 0,      
+            yoyo: true
+        });
+        // then play powerup fail anim and progress via slow route
+        this.time.addEvent({delay: feedbackTime+250, 
+                            callback: function(){
+                                feedback.destroy();
+                                // then play short 'powerup fail' anim:
+                                // this.player.sprite.anims.play('powerupfail', true);
+                                // and progress via bridge route (with sad face)
+                                    // player progresses via bridge and earns no extra reward
+                                this.player.sprite.setVelocityX(playerVelocity/5);   // 5,6
+                                this.player.sprite.anims.play('sadrun', true);
+                                this.physics.add.collider(this.player.sprite, this.bridgeEndPoint, 
+                                                            function(){eventsCenter.emit('bumpme');}, null, this); 
+                                eventsCenter.once('bumpme', onejump, this);
+                            },                         
+                            callbackScope: this});
+
+    } else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
         // display failure message for a couple of seconds
         feedback = this.add.text(decisionPointX-20, gameHeight/2-160,  
@@ -575,6 +617,18 @@ var trialEnd = function () {
         var recalibration = 0; // record recalibration didn't occur
         thresholdMax = maxPressCount // do not adjust thresholdMax 
     };
+
+    if (choice == 'timeout') {
+        // if the choice was a timeout then reset all the relevant variables so the payload doesn't retain the previous trial's data
+        trialEffortPropChosen = 0;
+        trialEffort = 0;
+        choiceRT = 0;
+        pressCount = 0;
+        pressTimes = [];
+        trialSuccess = 0;
+        pressStartTime = 0;
+        pressEndTime = 0;
+    }
 
     // set data to be saved into registry
     this.registry.set("trial" + trial, {
