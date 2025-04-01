@@ -26,9 +26,9 @@ var gameWidth;
 var mapWidth;
 var platforms;
 var bridge;
-const decisionPointX = 370;    // where the choice panel will be triggered (x coord in px)
-const midbridgeX = 735;        // where trial reward coins will be displayed (x coord in px)
-const endbridgeX = 900;        // where the player must jump up to cross bridge (x coord in px)
+const decisionPointX = 340;    // where the choice panel will be triggered (x coord in px)
+const midbridgeX = 605;        // where trial reward coins will be displayed (x coord in px)
+const endbridgeX = 765;        // where the player must jump up to cross bridge (x coord in px)
 const playerVelocity = 1000;   // baseline player velocity (rightward)
 // initialize task vars
 var trial = 0; // error in baseline game: only 23 trials run: var maxTrials = nTrials-1; 
@@ -132,6 +132,7 @@ export default class MainTask extends Phaser.Scene {
         // load trial type info from json array
         this.load.json('trials', './assets/' + trialsFile);
 
+        this.load.image('chapter-1-bg', './assets/imgs/chapter-1-bg.png');
     }
     
     create() {
@@ -147,6 +148,9 @@ export default class MainTask extends Phaser.Scene {
         gameWidth = this.sys.game.config.width;
         mapWidth = map.widthInPixels;
 
+        // background
+        this.background = this.add.tileSprite(mapWidth/2, gameHeight/2, 1107, 970, 'chapter-1-bg');
+
         // import scene layers (using names set up in Tiled)
         platforms = map.createStaticLayer("platforms", tileset, 0, 0);
         bridge = map.createStaticLayer("bridge", tileset, 0, 0);
@@ -157,12 +161,12 @@ export default class MainTask extends Phaser.Scene {
 
         // add scene sprites/images for texture (randomly positioned on each trial)
         // clouds
-        this.clouds = this.physics.add.staticGroup();
-        for (var i = 0; i < 4; i++) {
-            var x = Phaser.Math.RND.between(0, mapWidth);
-            var y = Phaser.Math.RND.between(0, gameHeight/3);  // only in top third
-            this.clouds.create(x, y, 'cloud1');
-        }
+        // this.clouds = this.physics.add.staticGroup();
+        // for (var i = 0; i < 4; i++) {
+        //     var x = Phaser.Math.RND.between(0, mapWidth);
+        //     var y = Phaser.Math.RND.between(0, gameHeight/3);  // only in top third
+        //     this.clouds.create(x, y, 'cloud1');
+        // }
         // bushes
         this.bushes = this.physics.add.staticGroup();
         for (var i = 0; i < 4; i++) {

@@ -27,7 +27,7 @@ const config = {
     dom: {
         createContainer: true    // to allow text input DOM element
     },
-    backgroundColor: "#d0f4f7",  // pale blue sky color [black="#222222"],
+    backgroundColor: "#CFEFFC",  // pale blue sky color [black="#222222"],
     scene: sceneOrder.map(sceneName => eval(sceneName)),         // construct the experiment from componenent scenes
     plugins: {
         scene: [{
