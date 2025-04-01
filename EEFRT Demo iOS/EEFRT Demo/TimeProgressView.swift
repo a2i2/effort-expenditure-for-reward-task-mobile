@@ -4,7 +4,7 @@ import UIKit
 struct TimeProgressView: View {
     private var countdownSeconds: Double
     private var timeoutHandler: () -> Void
-    
+
     @State private var timeLeft: Double
     @State private var endAngle: Angle = .degrees(360)
 
@@ -53,6 +53,7 @@ struct TimeProgressView: View {
                 .onReceive(timer) { _ in
                     if timeLeft == 0 {
                         timer.upstream.connect().cancel()
+                        timeoutHandler()
                     } else {
                         timeLeft -= 1
                         endAngle = Angle(degrees: Double((timeLeft / countdownSeconds) * 360))

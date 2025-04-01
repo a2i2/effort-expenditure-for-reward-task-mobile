@@ -126,6 +126,7 @@ class EEFRTViewController: UIViewController {
         guard bottomScreenDialogView == nil else { return }
 
         bottomScreenDialogView = UIHostingController(rootView: bottomScreenDialog)
+        bottomScreenDialogView?.view.backgroundColor = .clear
 
         DispatchQueue.main.async { [weak self] in
             guard let self, let bottomScreenDialogView else { return }
