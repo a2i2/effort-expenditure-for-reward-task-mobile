@@ -28,7 +28,7 @@ var platforms;
 var bridge;
 const decisionPointX = 370;    // where the choice panel will be triggered (x coord in px)
 const midbridgeX = 735;        // where trial reward coins will be displayed (x coord in px)
-const endbridgeX = 960;        // where the player must jump up to cross bridge (x coord in px)
+const endbridgeX = 900;        // where the player must jump up to cross bridge (x coord in px)
 const playerVelocity = 1000;   // baseline player velocity (rightward)
 // initialize task vars
 var trial = 0; // error in baseline game: only 23 trials run: var maxTrials = nTrials-1; 
@@ -277,13 +277,13 @@ export default class MainTask extends Phaser.Scene {
         this.bridgeEndPoint.displayHeight = gameHeight;  
         this.bridgeEndPoint.immovable = true;
         this.bridgeEndPoint.body.moves = false;
-        this.bridgeEndPoint.allowGravity = false; 
+        this.bridgeEndPoint.allowGravity = false;
         // 0.3 point where a new trial is triggered:
         this.trialEndPoint = this.physics.add.sprite(mapWidth-20, gameHeight/2);
         this.trialEndPoint.displayHeight = gameHeight;  
         this.trialEndPoint.immovable = true;
         this.trialEndPoint.body.moves = false;
-        this.trialEndPoint.allowGravity = false;   
+        this.trialEndPoint.allowGravity = false;
         
         // 1. Upon entering scene, player moves right until they encounter the decisionPoint
         this.player.sprite.setVelocityX(playerVelocity*2.5);  // positive X velocity -> move R
@@ -350,7 +350,7 @@ var displayChoicePanel = function () {
     
     // display reward coins for each option
     this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 115, trialReward1); // coins in sky
-    this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 285, trialReward2); // coins on bridge
+    this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 240, trialReward2); // coins on bridge
     
     // popup choice panel with relevant trial info
     this.choicePanel = new ChoicePanel(this, decisionPointX-60, gameHeight/1.5, 
@@ -676,10 +676,10 @@ var trialEnd = function () {
 // used on reject and unsucessful accept trials
 var onejump = function () {
     this.bridgeEndPoint.destroy();
-    this.player.sprite.setVelocityY(-350);
-    this.time.addEvent(750,  // also make a bit faster once over bridge [DOESN'T SEEM TO WORK]
-                       function(){this.player.sprite.setVelocityX(playerVelocity*2);},
-                       null, this);
+    let jumpHeight = -400;
+    this.player.sprite.setVelocityY(jumpHeight);
+    let jumpAnimDuration = 1100;
+    this.time.delayedCall(jumpAnimDuration, () => { this.player.sprite.setVelocityX(playerVelocity/5); }, null, this);
 };
 
 // function to make coin sprites disappear upon contact with player
