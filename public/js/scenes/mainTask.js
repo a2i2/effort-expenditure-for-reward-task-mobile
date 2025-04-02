@@ -23,6 +23,7 @@ import {sceneOrder, runPractice, effortTime, nBlocks, nCalibrates,
 // initialize all the global vars (must be a better way of doing this...)
 var gameHeight; 
 var gameWidth;
+var mapHeight;
 var mapWidth;
 var platforms;
 var bridge;
@@ -132,7 +133,27 @@ export default class MainTask extends Phaser.Scene {
         // load trial type info from json array
         this.load.json('trials', './assets/' + trialsFile);
 
-        this.load.image('chapter-1-bg', './assets/imgs/chapter-1-bg.png');
+        // Chapter 1 has two different backgrounds, rather than five
+        this.load.image('chapter-1-1', './assets/imgs/chapter-1-1.svg');
+        this.load.image('chapter-1-2', './assets/imgs/chapter-1-2.svg');
+        // Chapter 2 to 4 have five backgrounds
+        this.load.image('chapter-2-1', './assets/imgs/chapter-2-1.svg');
+        this.load.image('chapter-2-2', './assets/imgs/chapter-2-2.svg');
+        this.load.image('chapter-2-3', './assets/imgs/chapter-2-3.svg');
+        this.load.image('chapter-2-4', './assets/imgs/chapter-2-4.svg');
+        this.load.image('chapter-2-5', './assets/imgs/chapter-2-5.svg');
+
+        this.load.image('chapter-3-1', './assets/imgs/chapter-3-1.svg');
+        this.load.image('chapter-3-2', './assets/imgs/chapter-3-2.svg');
+        this.load.image('chapter-3-3', './assets/imgs/chapter-3-3.svg');
+        this.load.image('chapter-3-4', './assets/imgs/chapter-3-4.svg');
+        this.load.image('chapter-3-5', './assets/imgs/chapter-3-5.svg');
+
+        this.load.image('chapter-4-1', './assets/imgs/chapter-4-1.svg');
+        this.load.image('chapter-4-2', './assets/imgs/chapter-4-2.svg');
+        this.load.image('chapter-4-3', './assets/imgs/chapter-4-3.svg');
+        this.load.image('chapter-4-4', './assets/imgs/chapter-4-4.svg');
+        this.load.image('chapter-4-5', './assets/imgs/chapter-4-5.svg');
     }
     
     create() {
@@ -146,10 +167,11 @@ export default class MainTask extends Phaser.Scene {
         // grab some size variables that will be helpful later
         gameHeight = this.sys.game.config.height;
         gameWidth = this.sys.game.config.width;
+        mapHeight = map.heightInPixels;
         mapWidth = map.widthInPixels;
 
         // background
-        this.background = this.add.tileSprite(mapWidth/2, gameHeight/2, 1107, 970, 'chapter-1-bg');
+        this.background = this.add.tileSprite(mapWidth/2, mapHeight/2.2, 1107, 970, 'chapter-2-1'); // TODO: load background based on 'chapter'
 
         // import scene layers (using names set up in Tiled)
         platforms = map.createStaticLayer("platforms", tileset, 0, 0);
