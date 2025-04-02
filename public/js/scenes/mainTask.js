@@ -193,21 +193,21 @@ export default class MainTask extends Phaser.Scene {
         this.bushes = this.physics.add.staticGroup();
         for (var i = 0; i < 4; i++) {
             var x = Phaser.Math.RND.between(0, mapWidth);
-            var y = gameHeight/2 - 57;        // only at ground height
+            var y = gameHeight/1.7 + 15;        // only at ground height
             if ( x <  280 || x > 1000) {       // only place on grass tiles
                 this.bushes.create(x, y, 'bush').setScale(0.5).refreshBody();
             }
         };
 
         // sign at decision point
-        this.sign = this.add.image(decisionPointX, (gameHeight / 2) - 74, 'sign');
+        this.sign = this.add.image(decisionPointX, (gameHeight / 1.7) - 2, 'sign');
 
         // set the boundaries of the world
         this.physics.world.bounds.width = mapWidth;
         this.physics.world.bounds.height = gameHeight;
 
         //////////////ADD PLAYER SPRITE////////////////////
-        this.player = new Player(this, 0, 200); // (this, spawnPoint.x, spawnPoint.y);
+        this.player = new Player(this, 0, 350); // (this, spawnPoint.x, spawnPoint.y);
         this.physics.add.collider(this.player.sprite, platforms); 
         this.physics.add.collider(this.player.sprite, bridge);       // player walks on platforms and bridge
 
@@ -375,8 +375,8 @@ var displayChoicePanel = function () {
     this.decisionPoint.destroy();
     
     // display reward coins for each option
-    this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 115, trialReward1); // coins in sky
-    this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 240, trialReward2); // coins on bridge
+    this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 235, trialReward1); // coins in sky
+    this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 360, trialReward2); // coins on bridge
     
     // popup choice panel with relevant trial info
     this.choicePanel = new ChoicePanel(this, decisionPointX-60, gameHeight/1.5, 
@@ -454,8 +454,8 @@ var effortOutcome = function() {
                                 feedback.destroy();
                                 this.player.sprite.anims.play('float', true);    
                                 this.player.sprite.setVelocityX(playerVelocity/3);
-                                this.time.addEvent({ delay: 150, 
-                                                     callback: function(){this.player.sprite.setVelocityY(-230);},
+                                this.time.addEvent({ delay: 120,
+                                                     callback: function(){this.player.sprite.setVelocityY(-280);},
                                                      callbackScope: this, 
                                                      repeat: 5 });
                             },
@@ -491,8 +491,8 @@ var effortOutcome = function() {
                                 feedback.destroy();
                                 this.player.sprite.anims.play('float', true);    
                                 this.player.sprite.setVelocityX(playerVelocity/3);
-                                this.time.addEvent({ delay: 150, 
-                                                     callback: function(){this.player.sprite.setVelocityY(-100);},
+                                this.time.addEvent({ delay: 100,
+                                                     callback: function(){this.player.sprite.setVelocityY(-120);},
                                                      callbackScope: this, 
                                                      repeat: 8 });
                             },
