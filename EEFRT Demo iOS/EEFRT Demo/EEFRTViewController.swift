@@ -68,12 +68,19 @@ class EEFRTViewController: UIViewController {
         guard let publicPath = Bundle.main.path(forResource: "assets", ofType: nil) else {
             fatalError("Unable to locate 'assets' folder in main bundle")
         }
-        guard let indexFileUrl = Bundle.main.url(forResource: "assets/index", withExtension: "html") else {
-            fatalError("Unable to locate 'assets/index.html' in main bundle")
+        var indexFileURL: URL?
+
+#if DEBUG
+        indexFileURL = Bundle.main.url(forResource: "assets/index-debug", withExtension: "html")
+#else
+        indexFileURL = Bundle.main.url(forResource: "assets/index", withExtension: "html")
+#endif
+        guard let indexFile = indexFileURL else {
+            fatalError("Unable to locate 'assets/index-debug.html' in main bundle")
         }
 
         self.publicPath = publicPath
-        self.indexFileUrl = indexFileUrl
+        self.indexFileUrl = indexFile
         super.init(nibName: nil, bundle: nil)
     }
 
