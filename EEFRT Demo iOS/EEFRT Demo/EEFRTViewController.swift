@@ -127,6 +127,7 @@ class EEFRTViewController: UIViewController {
 
         bottomScreenDialogView = UIHostingController(rootView: bottomScreenDialog)
         bottomScreenDialogView?.view.backgroundColor = .clear
+        bottomScreenDialogView?.view.alpha = 0
 
         DispatchQueue.main.async { [weak self] in
             guard let self, let bottomScreenDialogView else { return }
@@ -142,28 +143,35 @@ class EEFRTViewController: UIViewController {
                 bottomScreenDialogView.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                 bottomScreenDialogView.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             ])
+
+            UIView.animate { [weak self] in
+                guard let self else { return }
+                self.bottomScreenDialogView?.view.alpha = 1
+            }
         }
     }
 
     private func detatchBottomScreenDialog() {
         DispatchQueue.main.async { [weak self] in
-            guard let self, let bottomScreenDialogView else { return }
+            UIView.animate(withDuration: 0.4, animations: { [weak self] in
+                guard let self, let bottomScreenDialogView else { return }
 
-            bottomScreenDialogView.willMove(toParent: nil)
-            bottomScreenDialogView.view.removeFromSuperview()
-            bottomScreenDialogView.removeFromParent()
-            self.bottomScreenDialogView = nil
-            self.view.layoutIfNeeded()
+                bottomScreenDialogView.view.alpha = 0
+            }) { [weak self] _ in
+                guard let self, let bottomScreenDialogView else { return }
+
+                bottomScreenDialogView.willMove(toParent: nil)
+                bottomScreenDialogView.view.removeFromSuperview()
+                bottomScreenDialogView.removeFromParent()
+                self.bottomScreenDialogView = nil
+                self.view.layoutIfNeeded()
+                self.resumeTask()
+            }
         }
     }
 
     private func resumeTask() {
         webView.evaluateJavaScript("breakOver();")
-    }
-
-    private func removeDialogAndResumeTask() {
-        detatchBottomScreenDialog()
-        resumeTask()
     }
 }
 
@@ -203,14 +211,13 @@ extension EEFRTViewController: WKScriptMessageHandler {
                 subtitleText: "You're doing an amazing job!\nTake a short break if you need one. The task will automatically continue after 2 minutes.",
                 actionButtonText: "Continue",
                 timeoutSeconds: 120,
-                hostingWebview: webView,
                 dismissHandler: { [weak self] in
                     guard let self else { return }
-                    removeDialogAndResumeTask()
+                    detatchBottomScreenDialog()
                 },
                 timeoutHandler: { [weak self] in
                     guard let self else { return }
-                    removeDialogAndResumeTask()
+                    detatchBottomScreenDialog()
                 }
             )
             attachBottomScreenDialog(bottomScreenDialog: bottomScreenDialog)

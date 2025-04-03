@@ -6,16 +6,14 @@ struct BottomScreenDialogView: View {
     private var subtitleText: String
     private var actionButtonText: String
     private var timeoutSeconds: TimeInterval
-    private var hostingWebview: WKWebView
     private var dismissHandler: () -> Void
     private var timeoutHandler: () -> Void
     
-    init(titleText: String, subtitleText: String, actionButtonText: String, timeoutSeconds: TimeInterval, hostingWebview: WKWebView, dismissHandler: @escaping () -> Void, timeoutHandler: @escaping () -> Void) {
+    init(titleText: String, subtitleText: String, actionButtonText: String, timeoutSeconds: TimeInterval, dismissHandler: @escaping () -> Void, timeoutHandler: @escaping () -> Void) {
         self.titleText = titleText
         self.subtitleText = subtitleText
         self.actionButtonText = actionButtonText
         self.timeoutSeconds = timeoutSeconds
-        self.hostingWebview = hostingWebview
         self.dismissHandler = dismissHandler
         self.timeoutHandler = timeoutHandler
     }
@@ -87,7 +85,6 @@ struct BottomScreenDialogView: View {
         subtitleText: "Continue within the next 2 mins to keep collecting coins.",
         actionButtonText: "Continue",
         timeoutSeconds: 120.0,
-        hostingWebview: WKWebView(),
         dismissHandler: {},
         timeoutHandler: {}
     )
