@@ -84,7 +84,7 @@ if (runPractice == true) {
 else {
 	var nCalibrates = 0;
 }
-const nBlocks = 2;					
+const nBlocks = 4;					
 
 // 3. time and payment:
 var approxTime = 6;   	// approx time to complete this version of the experiment (minutes)
@@ -97,8 +97,9 @@ var nGames = 8;
 var MaxTotalBonus = completionBonus100 + (nGames * maxBonus);
 var completionMin = 80;
 
-export {demo_mode,
-	debug_mode, sceneOrder, randomiseOrder, runPractice,
+export {
+	demo_mode, debug_mode, sceneOrder, randomiseOrder, runPractice,
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
 	blockDesktop, trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
-	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, minPressMax, nCalibrates, nBlocks, complete_link, buttonText, powerupDelay};
+	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, minPressMax, nCalibrates, nBlocks, complete_link, buttonText, powerupDelay
+};

@@ -660,12 +660,13 @@ var trialEnd = function () {
 
     // if end of task, display taskend screen 
     // if end of block, display end of block screen
-    // change to calculate break at halfway only 
-    if ((trial==(nTrials/2))) {
+    let trialsPerBlock = nTrials / nBlocks;
+    if ((trial + 1) % trialsPerBlock == 0 && trial != nTrials - 1) {
         this.player.sprite.setVelocityX(0);
         this.player.sprite.anims.play('wait', true);
-        this.breakPanel = new BreakPanel(this, mapWidth-gameWidth/2, 600, nCoins);
-        this.events.once('breakover', function () {
+        EmbedContext.sendMessage("break");
+        // this.breakPanel = new BreakPanel(this, mapWidth-gameWidth/2, 600, nCoins);
+        eventsCenter.once('breakover', function () {
             //  restart coin total from 0 after each block
             // nCoins=0; - keep coins to gamify
             // iterate trial number
@@ -701,4 +702,3 @@ var collectCoins = function(player, coin, trial){
     coinsText.setText('coins: ' + nCoins);  // and coins total and text updates
 
 };
-

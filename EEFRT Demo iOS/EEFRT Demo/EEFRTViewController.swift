@@ -54,10 +54,12 @@ class EEFRTViewController: UIViewController {
     private static let closedMessageKey = "close"
     private static let practiceTriaResultMessageKey = "practiceTrialResult"
     private static let trialResultMessageKey = "trialResult"
+    private static let breakMessageKey = "break"
 
     weak var delegate: EEFRTViewControllerDelegate?
 
     private var webView: WKWebView!
+    private var bottomScreenDialogView: UIHostingController<BottomScreenDialogView>?
 
     private let publicPath: String
     private let indexFileUrl: URL
@@ -94,6 +96,8 @@ class EEFRTViewController: UIViewController {
         config.userContentController.add(self, name: Self.closedMessageKey)
         config.userContentController.add(self, name: Self.practiceTriaResultMessageKey)
         config.userContentController.add(self, name: Self.trialResultMessageKey)
+        config.userContentController.add(self, name: Self.breakMessageKey)
+
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
 
         webView = WKWebView(frame: .zero, configuration: config)
@@ -116,6 +120,58 @@ class EEFRTViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         webView.loadFileURL(indexFileUrl, allowingReadAccessTo: URL(fileURLWithPath: publicPath))
+    }
+
+    private func attachBottomScreenDialog(bottomScreenDialog: BottomScreenDialogView) {
+        guard bottomScreenDialogView == nil else { return }
+
+        bottomScreenDialogView = UIHostingController(rootView: bottomScreenDialog)
+        bottomScreenDialogView?.view.backgroundColor = .clear
+        bottomScreenDialogView?.view.alpha = 0
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let bottomScreenDialogView else { return }
+
+            bottomScreenDialogView.view.translatesAutoresizingMaskIntoConstraints = false
+            addChild(bottomScreenDialogView)
+            bottomScreenDialogView.view.willMove(toSuperview: view)
+            view.addSubview(bottomScreenDialogView.view)
+
+            NSLayoutConstraint.activate([
+                bottomScreenDialogView.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                bottomScreenDialogView.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                bottomScreenDialogView.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                bottomScreenDialogView.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            ])
+
+            UIView.animate { [weak self] in
+                guard let self else { return }
+                self.bottomScreenDialogView?.view.alpha = 1
+            }
+        }
+    }
+
+    private func detatchBottomScreenDialog() {
+        DispatchQueue.main.async { [weak self] in
+            UIView.animate(withDuration: 0.3, animations: { [weak self] in
+                guard let self, let bottomScreenDialogView else { return }
+
+                bottomScreenDialogView.view.alpha = 0
+            }) { [weak self] _ in
+                guard let self, let bottomScreenDialogView else { return }
+
+                bottomScreenDialogView.willMove(toParent: nil)
+                bottomScreenDialogView.view.removeFromSuperview()
+                bottomScreenDialogView.removeFromParent()
+                self.bottomScreenDialogView = nil
+                self.view.layoutIfNeeded()
+                self.resumeTask()
+            }
+        }
+    }
+
+    private func resumeTask() {
+        webView.evaluateJavaScript("breakOver();")
     }
 }
 
@@ -148,6 +204,23 @@ extension EEFRTViewController: WKScriptMessageHandler {
             } catch {
                 os_log(.error, "Couldn't decode response from EEFRT task into a native object")
             }
+
+        case Self.breakMessageKey:
+            let bottomScreenDialog = BottomScreenDialogView(
+                titleText: "Break time",
+                subtitleText: "You're doing an amazing job!\nTake a short break if you need one. The task will automatically continue after 2 minutes.",
+                actionButtonText: "Continue",
+                timeoutSeconds: 120,
+                dismissHandler: { [weak self] in
+                    guard let self else { return }
+                    detatchBottomScreenDialog()
+                },
+                timeoutHandler: { [weak self] in
+                    guard let self else { return }
+                    detatchBottomScreenDialog()
+                }
+            )
+            attachBottomScreenDialog(bottomScreenDialog: bottomScreenDialog)
 
         default:
             os_log(.error, "Message type %s not implemented yet!", message.name)
