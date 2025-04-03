@@ -1,5 +1,6 @@
 package ai.a2i2.conductor.effrtdemoandroid.ui
 
+import ai.a2i2.conductor.effrtdemoandroid.BuildConfig
 import ai.a2i2.conductor.effrtdemoandroid.R
 import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
@@ -116,7 +117,7 @@ fun EefrtScreen(
                                 "AndroidBridge"
                             )
                             // An unused domain reserved for Android applications to intercept requests for app assets.
-                            loadUrl("https://$DEFAULT_DOMAIN/assets/index.html")
+                            loadUrl("https://$DEFAULT_DOMAIN/assets/${getIndexFileName()}")
                         }
                     },
                     Modifier.padding(top = paddingValues.calculateTopPadding())
@@ -136,6 +137,10 @@ fun EefrtScreen(
             }
         }
     )
+}
+
+private fun getIndexFileName(): String {
+    return if (BuildConfig.DEBUG) "index-debug.html" else "index.html"
 }
 
 private const val TAG = "EefrtScreen"
