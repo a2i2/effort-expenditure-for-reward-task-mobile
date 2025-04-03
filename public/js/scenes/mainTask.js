@@ -6,6 +6,7 @@ import Coins from "../elements/coins.js";
 import ChoicePanel from "../elements/choicePanel.js";       
 import TimerPanel from "../elements/timerPanelClicks.js";
 import BreakPanel from "../elements/takeABreak.js";
+import StaticObjects from "../elements/staticObjects.js";
 
 // import our custom events center for passsing info between scenes and relevant data saving function
 import eventsCenter from '../eventsCenter.js'
@@ -94,6 +95,8 @@ export default class MainTask extends Phaser.Scene {
         super({
             key: 'MainTask'
         });
+
+        this.staticObjManager = new StaticObjects(this);
     }
 
     preload() {
@@ -115,10 +118,10 @@ export default class MainTask extends Phaser.Scene {
         });
         
         // load scene images to add some texture to background
-        this.load.image('cloud1', './assets/imgs/cloud1.png');
-        this.load.image('bush', './assets/imgs/bush.png');
         this.load.image('button', './assets/imgs/button.png');
         this.load.image('sign', './assets/imgs/sign.png');       // and sign for decision point
+        // SVGs
+        this.staticObjManager.loadImages();
 
         // lightning bolt power:
         this.load.image('powerOFF', './assets/imgs/lightning-bolt-80_empty.png')
@@ -182,22 +185,13 @@ export default class MainTask extends Phaser.Scene {
         bridge.setCollisionByProperty({ collide: true });
 
         // add scene sprites/images for texture (randomly positioned on each trial)
-        // clouds
-        // this.clouds = this.physics.add.staticGroup();
-        // for (var i = 0; i < 4; i++) {
-        //     var x = Phaser.Math.RND.between(0, mapWidth);
-        //     var y = Phaser.Math.RND.between(0, gameHeight/3);  // only in top third
-        //     this.clouds.create(x, y, 'cloud1');
-        // }
-        // bushes
-        this.bushes = this.physics.add.staticGroup();
-        for (var i = 0; i < 4; i++) {
-            var x = Phaser.Math.RND.between(0, mapWidth);
-            var y = gameHeight/1.7 + 15;        // only at ground height
-            if ( x <  280 || x > 1000) {       // only place on grass tiles
-                this.bushes.create(x, y, 'bush').setScale(0.5).refreshBody();
-            }
-        };
+        let objManager = new StaticObjects(this);
+        // determine x coordinate for left of bridge before the sign
+        var x = Phaser.Math.RND.between(50, decisionPointX-60);
+        objManager.addRandomObject(x);
+        // determine x coordinate for right of bridge
+        x = Phaser.Math.RND.between(860, mapWidth-100);
+        objManager.addRandomObject(x);
 
         // sign at decision point
         this.sign = this.add.image(decisionPointX, (gameHeight / 1.7) - 2, 'sign');
