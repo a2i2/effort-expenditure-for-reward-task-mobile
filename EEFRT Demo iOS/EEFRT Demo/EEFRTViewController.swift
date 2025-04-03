@@ -153,7 +153,7 @@ class EEFRTViewController: UIViewController {
 
     private func detatchBottomScreenDialog() {
         DispatchQueue.main.async { [weak self] in
-            UIView.animate(withDuration: 0.4, animations: { [weak self] in
+            UIView.animate(withDuration: 0.3, animations: { [weak self] in
                 guard let self, let bottomScreenDialogView else { return }
 
                 bottomScreenDialogView.view.alpha = 0

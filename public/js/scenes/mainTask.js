@@ -660,7 +660,8 @@ var trialEnd = function () {
 
     // if end of task, display taskend screen 
     // if end of block, display end of block screen
-    if ((trial==(nTrials/nBlocks - 1) && trial != nTrials - 1)) {
+    let trialsPerBlock = nTrials / nBlocks;
+    if ((trial + 1) % trialsPerBlock == 0 && trial != nTrials - 1) {
         this.player.sprite.setVelocityX(0);
         this.player.sprite.anims.play('wait', true);
         EmbedContext.sendMessage("break");
