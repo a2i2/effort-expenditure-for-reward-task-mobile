@@ -8,8 +8,8 @@ struct TimeProgressView: View {
     @State private var timeLeft: Double
     @State private var endAngle: Angle = .degrees(360)
 
-    private let clockBackgroundColor: Color = .init(hex: "#666666")
-    private let clockForegroundColor: Color = .init(hex: "#333333")
+    private let clockBackgroundColor: Color = .init(hex: "#D0D5DD")
+    private let clockForegroundColor: Color = .init(hex: "#98A2B3")
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     init(countdownSeconds: Double, timeoutHandler: @escaping () -> Void) {
@@ -48,7 +48,7 @@ struct TimeProgressView: View {
                         .fill(clockForegroundColor)
                     }
                 }
-                .frame(width: 20, height: 20, alignment: .center)
+                .frame(width: 16, height: 16, alignment: .center)
                 .aspectRatio(1, contentMode: .fit)
                 .onReceive(timer) { _ in
                     if timeLeft == 0 {
@@ -64,10 +64,10 @@ struct TimeProgressView: View {
                     .font(Font.custom("Roboto-Bold", size: 16))
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 16)
         .padding(.vertical, 4)
-        .background(Color.gray.opacity(0.2))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(Color.init(hex: "#F2F4F7"))
+        .cornerRadius(CGFloat(6))
     }
 
     func timeFormatter(timeRemaining: Double) -> String {

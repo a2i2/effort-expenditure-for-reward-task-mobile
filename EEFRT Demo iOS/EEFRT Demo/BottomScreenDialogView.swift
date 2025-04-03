@@ -56,14 +56,15 @@ struct BottomScreenDialogView: View {
                         Button {
                             dismissHandler()
                         } label: {
+                            let color = Color(hex: "#D64204")
                             ZStack {
-                                RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color.orange, lineWidth: 2)
-                                    .frame(height: 48)
+                                RoundedRectangle(cornerRadius: 100)
+                                    .stroke(color, lineWidth: 2)
+                                    .frame(height: 60)
                                     .foregroundStyle(Color.white)
 
                                 Text(actionButtonText.uppercased())
-                                    .foregroundStyle(Color.orange)
+                                    .foregroundStyle(color)
                                     .bold()
                             }
                         }
