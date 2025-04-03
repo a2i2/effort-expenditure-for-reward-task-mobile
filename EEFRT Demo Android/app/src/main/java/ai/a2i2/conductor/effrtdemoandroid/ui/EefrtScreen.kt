@@ -13,7 +13,11 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -24,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
@@ -67,48 +72,68 @@ fun EefrtScreen(
             )
         },
         content = { paddingValues ->
-            AndroidView(
-                factory = {
-                    // https://developer.android.com/reference/androidx/webkit/WebViewAssetLoader
-                    // We use a WebViewAssetLoader to load the files as if they're being hosted via a server.
-                    // This is a safer and compatible with Same-Origin policy (CORS)–a CORS error was being thrown
-                    // because our HTML file links JS files in another directory.
-                    val assetLoader = WebViewAssetLoader.Builder()
-                        // Handler class to open a file from assets directory in the application APK.
-                        .addPathHandler("/assets/", AssetsPathHandler(it))
-                        .build()
-                    WebView.setWebContentsDebuggingEnabled(true)
-                    val realWebView = WebView(it)
-                    webView.value = realWebView
-                    realWebView.apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            MATCH_PARENT,
-                            MATCH_PARENT
-                        )
-                        webViewClient = object : WebViewClientCompat() {
-                            override fun shouldInterceptRequest(
-                                view: WebView?,
-                                request: WebResourceRequest?
-                            ): WebResourceResponse? {
-                                // Attempt to resolve the url to an application resource or asset
-                                return request?.let { req ->
-                                    assetLoader.shouldInterceptRequest(req.url)
+            Box(contentAlignment = Alignment.Center) {
+                AndroidView(
+                    factory = {
+                        // https://developer.android.com/reference/androidx/webkit/WebViewAssetLoader
+                        // We use a WebViewAssetLoader to load the files as if they're being hosted via a server.
+                        // This is a safer and compatible with Same-Origin policy (CORS)–a CORS error was being thrown
+                        // because our HTML file links JS files in another directory.
+                        val assetLoader = WebViewAssetLoader.Builder()
+                            // Handler class to open a file from assets directory in the application APK.
+                            .addPathHandler("/assets/", AssetsPathHandler(it))
+                            .build()
+                        WebView.setWebContentsDebuggingEnabled(true)
+                        val realWebView = WebView(it)
+                        webView.value = realWebView
+                        realWebView.apply {
+                            layoutParams = ViewGroup.LayoutParams(
+                                MATCH_PARENT,
+                                MATCH_PARENT
+                            )
+                            webViewClient = object : WebViewClientCompat() {
+                                override fun shouldInterceptRequest(
+                                    view: WebView?,
+                                    request: WebResourceRequest?
+                                ): WebResourceResponse? {
+                                    // Attempt to resolve the url to an application resource or asset
+                                    return request?.let { req ->
+                                        assetLoader.shouldInterceptRequest(req.url)
+                                    }
                                 }
                             }
+                            settings.javaScriptEnabled = true
+                            addJavascriptInterface(
+                                EefrtWebInterface { message ->
+                                    handleMessage(
+                                        message,
+                                        onBack,
+                                        exitRequested,
+                                        eefrtViewModel,
+                                        webView.value
+                                    )
+                                },
+                                "AndroidBridge"
+                            )
+                            // An unused domain reserved for Android applications to intercept requests for app assets.
+                            loadUrl("https://$DEFAULT_DOMAIN/assets/index.html")
                         }
-                        settings.javaScriptEnabled = true
-                        addJavascriptInterface(
-                            EefrtWebInterface { message ->
-                                handleMessage(message, onBack, exitRequested, eefrtViewModel)
-                            },
-                            "AndroidBridge"
+                    },
+                    Modifier.padding(top = paddingValues.calculateTopPadding())
+                )
+
+                AnimatedVisibility(
+                    visible = eefrtViewModel.bottomScreenDialogVisible.value,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    eefrtViewModel.getBottomScreenConfig()?.let {
+                        BottomScreenDialog(
+                            config = eefrtViewModel.getBottomScreenConfig()!!
                         )
-                        // An unused domain reserved for Android applications to intercept requests for app assets.
-                        loadUrl("https://$DEFAULT_DOMAIN/assets/index.html")
                     }
-                },
-                Modifier.padding(top = paddingValues.calculateTopPadding())
-            )
+                }
+            }
         }
     )
 }
@@ -120,6 +145,7 @@ private fun handleMessage(
     onBack: () -> Unit,
     exitRequested: MutableState<Boolean>,
     eefrtViewModel: EefrtScreenViewModel,
+    maybeWebview: WebView?
 ) {
     try {
         val obj = JSONObject(message)
@@ -152,6 +178,30 @@ private fun handleMessage(
                 val taskAttempt = gson.fromJson(body, TaskAttempt::class.java)
                 taskAttempt.createdAt = Date()
                 eefrtViewModel.saveActualTaskAttempt(taskAttempt)
+            }
+
+            "break" -> {
+                val config = BottomScreenDialogConfig(
+                    titleText = "Break time",
+                    subtitleText = "You're doing an amazing job!\nTake a short break if you need one. The task will automatically continue after 2 minutes.",
+                    actionButtonText = "Continue",
+                    durationSeconds = 120,
+                    actionButtonHandler = {
+                        eefrtViewModel.bottomScreenDialogVisible.value = false
+                        eefrtViewModel.setBottomScreenConfig(null)
+                        maybeWebview?.evaluateJavascript("breakOver();", null)
+                        Log.i(TAG, "hide bottom screen dialog")
+                    },
+                    timeoutHandler = {
+                        eefrtViewModel.bottomScreenDialogVisible.value = false
+                        eefrtViewModel.setBottomScreenConfig(null)
+                        maybeWebview?.evaluateJavascript("breakOver();", null)
+                        Log.i(TAG, "hide bottom screen dialog")
+                    }
+                )
+                eefrtViewModel.setBottomScreenConfig(config)
+                eefrtViewModel.bottomScreenDialogVisible.value = true
+                Log.i(TAG, "Show bottom screen dialog")
             }
 
             else -> Log.i(
