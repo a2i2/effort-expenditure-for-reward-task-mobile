@@ -58,7 +58,7 @@ struct BottomScreenDialogView: View {
                         } label: {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 25)
-                                    .stroke(Color.orange, lineWidth: 4)
+                                    .stroke(Color.orange, lineWidth: 2)
                                     .frame(height: 48)
                                     .foregroundStyle(Color.white)
 

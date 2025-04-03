@@ -7,10 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -23,7 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,12 +31,14 @@ data class BottomScreenDialogConfig(
     val durationSeconds: Int,
     val actionButtonText: String,
     val actionButtonHandler: () -> Unit,
-    val timeoutHandler: () -> Unit
+    val timeoutHandler: () -> Unit,
 )
+
+val red = Color(214, 66, 4)
 
 @Composable
 fun BottomScreenDialog(
-    config: BottomScreenDialogConfig
+    config: BottomScreenDialogConfig,
 ) {
     Column(
         modifier = Modifier
@@ -108,22 +107,23 @@ fun BottomScreenDialog(
                 Button(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
-                        contentColor = Color(255, 125, 125),
+                        contentColor = red,
                     ),
                     onClick = config.actionButtonHandler,
                     modifier = Modifier
+                        .height(60.dp)
                         .border(
                             BorderStroke(
-                                4.dp,
-                                Color(255, 125, 125)
+                                2.dp,
+                                red
                             ),
-                            shape = RoundedCornerShape(25.dp)
+                            shape = RoundedCornerShape(100.dp)
                         )
                         .fillMaxWidth(0.9F)
                 ) {
                     Text(
                         config.actionButtonText.uppercase(),
-                        fontSize = 16.sp,
+                        fontSize = 16.sp
                     )
                 }
 

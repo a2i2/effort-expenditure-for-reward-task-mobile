@@ -1,12 +1,8 @@
 package ai.a2i2.conductor.effrtdemoandroid.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.content.MediaType.Companion.Text
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,23 +13,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import kotlin.time.Duration
 
 @Composable
 fun TimeProgressView(
     durationSeconds: Int,
-    onTimeUpHandler: () -> Unit
+    onTimeUpHandler: () -> Unit,
 ) {
     var timeLeft by remember { mutableIntStateOf(durationSeconds) }
     val percentage =
@@ -47,40 +39,36 @@ fun TimeProgressView(
         onTimeUpHandler()
     }
 
-    Box(
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .clip(
-                RoundedCornerShape(12.dp)
-            )
-            .background(Color.Gray.copy(alpha = 0.2f))
-            .padding(horizontal = 12.dp, vertical = 3.dp)
+            .background(color = Color(0xFFF2F4F7), shape = RoundedCornerShape(size = 6.dp))
+            .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box {
-                Canvas(modifier = Modifier.size(20.dp)) {
-                    drawArc(
-                        color = Color.Gray,
-                        startAngle = 270f,
-                        sweepAngle = 360f,
-                        useCenter = true,
-                    )
-                }
-
-                Canvas(modifier = Modifier.size(20.dp)) {
-                    drawArc(
-                        color = Color.Black,
-                        startAngle = 270f,
-                        sweepAngle = 360 * percentage.value,
-                        useCenter = true,
-                    )
-                }
+        Box {
+            Canvas(modifier = Modifier.size(20.dp)) {
+                drawArc(
+                    color = Color(208, 213, 221),
+                    startAngle = 270f,
+                    sweepAngle = 360f,
+                    useCenter = true,
+                )
             }
 
-            Text(
-                formatTimeLeft(timeLeft),
-                modifier = Modifier.padding(start = 4.dp)
-            )
+            Canvas(modifier = Modifier.size(20.dp)) {
+                drawArc(
+                    color = Color(152, 162, 179),
+                    startAngle = 270f,
+                    sweepAngle = 360 * percentage.value,
+                    useCenter = true,
+                )
+            }
         }
+
+        Text(
+            formatTimeLeft(timeLeft),
+            modifier = Modifier.padding(start = 4.dp),
+        )
     }
 }
 
