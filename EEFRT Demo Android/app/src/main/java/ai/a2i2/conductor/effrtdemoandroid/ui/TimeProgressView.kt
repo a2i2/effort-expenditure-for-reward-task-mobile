@@ -46,7 +46,7 @@ fun TimeProgressView(
             .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
         Box {
-            Canvas(modifier = Modifier.size(20.dp)) {
+            Canvas(modifier = Modifier.size(16.dp)) {
                 drawArc(
                     color = Color(208, 213, 221),
                     startAngle = 270f,
@@ -55,7 +55,7 @@ fun TimeProgressView(
                 )
             }
 
-            Canvas(modifier = Modifier.size(20.dp)) {
+            Canvas(modifier = Modifier.size(16.dp)) {
                 drawArc(
                     color = Color(152, 162, 179),
                     startAngle = 270f,
