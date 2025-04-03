@@ -10,7 +10,7 @@ const debug_mode = false; // turns on console logging
 const test_game = false; // test the game only (for testing)
 const demo_mode = true; // a demo game without study info
 // UPDATE runPRACTICE to false for FU games ///
-const runPractice = true; // run a practice i.e., a baseline version or without practice (FU)
+const runPractice = false; // run a practice i.e., a baseline version or without practice (FU)
 // trials:
 const trialsFile = "trials24.json" // name of the json file which includes trials
 const questionsFile = "questions.json" // json file storing the ema questions
@@ -38,11 +38,8 @@ if (test_game == false) {
 	else {
 		// no practice (follow-up version)
 		var sceneOrder = [
-			'InstructionsScene',
 			'StartTaskScene',
 			'MainTask',
-			'questInstructionsScene',
-			'Questions',
 			'TaskEndScene'
         ];
     }

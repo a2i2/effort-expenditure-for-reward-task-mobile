@@ -28,7 +28,7 @@ var platforms;
 var bridge;
 const decisionPointX = 370;    // where the choice panel will be triggered (x coord in px)
 const midbridgeX = 735;        // where trial reward coins will be displayed (x coord in px)
-const endbridgeX = 960;        // where the player must jump up to cross bridge (x coord in px)
+const endbridgeX = 900;        // where the player must jump up to cross bridge (x coord in px)
 const playerVelocity = 1000;   // baseline player velocity (rightward)
 // initialize task vars
 var trial = 0; // error in baseline game: only 23 trials run: var maxTrials = nTrials-1; 
@@ -98,7 +98,13 @@ export default class MainTask extends Phaser.Scene {
     preload() {
         ////////////////////PRELOAD GAME ASSETS///////////////////////////////////
         // load tilemap and tileset created using Tiled (see below)
-        this.load.tilemapTiledJSON('map', './assets/tilemaps/tilemap-main.json'); 
+        // pick either a grass or a snow level
+        let num = Math.random(); // value between 0.0 and 1.0
+        let mapPath = './assets/tilemaps/tilemap-main-grass.json'; // default
+        if (num > 0.8) { // we mainly want grass rather than snow levels
+            this.load.tilemapTiledJSON('map', './assets/tilemaps/tilemap-main-snow.json');
+        }
+        this.load.tilemapTiledJSON('map', mapPath);
         this.load.image('tiles', './assets/tilesets/tiles_edited_70px_extruded.png');
 
         // load player sprite
@@ -112,8 +118,6 @@ export default class MainTask extends Phaser.Scene {
         this.load.image('bush', './assets/imgs/bush.png');
         this.load.image('button', './assets/imgs/button.png');
         this.load.image('sign', './assets/imgs/sign.png');       // and sign for decision point
-        this.load.image('bones', './assets/imgs/icons8-bones-fish.png');
-        this.load.image('bones2', './assets/imgs/dinosaur-bones.png');
 
         // lightning bolt power:
         this.load.image('powerOFF', './assets/imgs/lightning-bolt-80_empty.png')
@@ -163,31 +167,15 @@ export default class MainTask extends Phaser.Scene {
         this.bushes = this.physics.add.staticGroup();
         for (var i = 0; i < 4; i++) {
             var x = Phaser.Math.RND.between(0, mapWidth);
-            var y = gameHeight/2 - 50;        // only at ground height
+            var y = gameHeight/2 - 57;        // only at ground height
             if ( x <  280 || x > 1000) {       // only place on grass tiles
                 this.bushes.create(x, y, 'bush').setScale(0.5).refreshBody();
             }
         };
 
         // sign at decision point
-        this.sign = this.add.image(decisionPointX, (gameHeight / 2) - 65, 'sign');
-        // underground objects
-        // bones
-        this.bones = this.physics.add.staticGroup();
-        for (var i = 0; i < 1; i++) {
-            var x = Phaser.Math.RND.between(0, decisionPointX);
-            var y = gameHeight / 2 + 50;        // underground height
-            this.bones.create(x, y, 'bones').setScale(0.5).setRotation(45).refreshBody();
-        };
-        this.bones2 = this.physics.add.staticGroup();
-        for (var i = 0; i < 1; i++) {
-            var x = Phaser.Math.RND.between(0, decisionPointX);
-            var y = gameHeight / 2 + 180;        // underground height
-            this.bones.create(x, y, 'bones2').setScale(0.1).refreshBody();
-        }
+        this.sign = this.add.image(decisionPointX, (gameHeight / 2) - 74, 'sign');
 
-
-        
         // set the boundaries of the world
         this.physics.world.bounds.width = mapWidth;
         this.physics.world.bounds.height = gameHeight;
@@ -289,13 +277,13 @@ export default class MainTask extends Phaser.Scene {
         this.bridgeEndPoint.displayHeight = gameHeight;  
         this.bridgeEndPoint.immovable = true;
         this.bridgeEndPoint.body.moves = false;
-        this.bridgeEndPoint.allowGravity = false; 
+        this.bridgeEndPoint.allowGravity = false;
         // 0.3 point where a new trial is triggered:
         this.trialEndPoint = this.physics.add.sprite(mapWidth-20, gameHeight/2);
         this.trialEndPoint.displayHeight = gameHeight;  
         this.trialEndPoint.immovable = true;
         this.trialEndPoint.body.moves = false;
-        this.trialEndPoint.allowGravity = false;   
+        this.trialEndPoint.allowGravity = false;
         
         // 1. Upon entering scene, player moves right until they encounter the decisionPoint
         this.player.sprite.setVelocityX(playerVelocity*2.5);  // positive X velocity -> move R
@@ -362,7 +350,7 @@ var displayChoicePanel = function () {
     
     // display reward coins for each option
     this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 115, trialReward1); // coins in sky
-    this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 285, trialReward2); // coins on bridge
+    this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 240, trialReward2); // coins on bridge
     
     // popup choice panel with relevant trial info
     this.choicePanel = new ChoicePanel(this, decisionPointX-60, gameHeight/1.5, 
@@ -688,10 +676,10 @@ var trialEnd = function () {
 // used on reject and unsucessful accept trials
 var onejump = function () {
     this.bridgeEndPoint.destroy();
-    this.player.sprite.setVelocityY(-350);
-    this.time.addEvent(750,  // also make a bit faster once over bridge [DOESN'T SEEM TO WORK]
-                       function(){this.player.sprite.setVelocityX(playerVelocity*2);},
-                       null, this);
+    let jumpHeight = -400;
+    this.player.sprite.setVelocityY(jumpHeight);
+    let jumpAnimDuration = 1100;
+    this.time.delayedCall(jumpAnimDuration, () => { this.player.sprite.setVelocityX(playerVelocity/5); }, null, this);
 };
 
 // function to make coin sprites disappear upon contact with player
