@@ -3,8 +3,6 @@
 // import our custom events centre for passsing info between scenes
 import eventsCenter from '../eventsCenter.js'
 
-const endbridgeX = 980;
-
 export default class Player {
     constructor(scene, x, y) {
     this.scene = scene;
