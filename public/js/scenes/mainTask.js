@@ -33,7 +33,7 @@ const midbridgeX = 605;        // where trial reward coins will be displayed (x 
 const endbridgeX = 765;        // where the player must jump up to cross bridge (x coord in px)
 const playerVelocity = 1000;   // baseline player velocity (rightward)
 // initialize task vars
-var trial = 0; // error in baseline game: only 23 trials run: var maxTrials = nTrials-1; 
+var trialNo = 0; // error in baseline game: only 23 trials run: var maxTrials = nTrials-1;
 var maxTrials = nTrials; // fixed for FU games 28.06.2023 (study1)
 var trialReward1;
 var trialEffort1; var trialEffortPropMax1;
@@ -45,7 +45,8 @@ var nCoins = 0;
 var coinsText;
 var feedback;
 var feedbackTime = 1000;
-var blockLength;
+var blockNo = 0;
+var trialsPerBlock;
 // initialize timing and response vars
 var trialStartTime;
 var choicePopupTime;
@@ -100,15 +101,12 @@ export default class MainTask extends Phaser.Scene {
     }
 
     preload() {
+        trialsPerBlock = nTrials / nBlocks;  // blocks divide trials
+
         ////////////////////PRELOAD GAME ASSETS///////////////////////////////////
         // load tilemap and tileset created using Tiled (see below)
-        // pick either a grass or a snow level
-        let num = Math.random(); // value between 0.0 and 1.0
-        let mapPath = './assets/tilemaps/tilemap-main-grass.json'; // default
-        if (num > 0.8) { // we mainly want grass rather than snow levels
-            this.load.tilemapTiledJSON('map', './assets/tilemaps/tilemap-main-snow.json');
-        }
-        this.load.tilemapTiledJSON('map', mapPath);
+        this.load.tilemapTiledJSON('grass-map', './assets/tilemaps/tilemap-main-grass.json');
+        this.load.tilemapTiledJSON('snow-map', './assets/tilemaps/tilemap-main-snow.json');
         this.load.image('tiles', './assets/tilesets/tiles_edited_70px_extruded.png');
 
         // load player sprite
@@ -164,7 +162,9 @@ export default class MainTask extends Phaser.Scene {
         // game world created in Tiled (https://www.mapeditor.org/)
         // import tilemap
 
-        var map = this.make.tilemap({ key: "map" });
+        // 3rd block is a "snow" level
+        var mapKey = (blockNo == 2) ? 'snow-map' : 'grass-map';
+        var map = this.make.tilemap({ key: mapKey });
         var tileset = map.addTilesetImage("tiles_edited_70px_extruded", "tiles"); // first arg must be name used for the tileset in Tiled
 
         // grab some size variables that will be helpful later
@@ -173,8 +173,18 @@ export default class MainTask extends Phaser.Scene {
         mapHeight = map.heightInPixels;
         mapWidth = map.widthInPixels;
 
-        // background
-        this.background = this.add.tileSprite(mapWidth/2, mapHeight/2.2, 1107, 970, 'chapter-2-1'); // TODO: load background based on 'chapter'
+        // determine the background based on the current block (chapter)
+        var bgStr = 'chapter-1-1';
+        var i = 0;
+        if (blockNo == 0) {
+            i = Math.floor(Math.random() * 2) + 1; // only 2 variants
+            bgStr = `chapter-1-${i}`;
+        } else {
+            i = Math.floor(Math.random() * 5) + 1; // 5 variants
+            bgStr = `chapter-${blockNo+1}-${i}`;
+        }
+
+        this.background = this.add.tileSprite(mapWidth/2, mapHeight/2.2, 1107, 970, bgStr);
 
         // import scene layers (using names set up in Tiled)
         platforms = map.createStaticLayer("platforms", tileset, 0, 0);
@@ -188,10 +198,10 @@ export default class MainTask extends Phaser.Scene {
         let objManager = new StaticObjects(this);
         // determine x coordinate for left of bridge before the sign
         var x = Phaser.Math.RND.between(50, decisionPointX-60);
-        objManager.addRandomObject(x);
+        objManager.addRandomObject(x, blockNo === 1);
         // determine x coordinate for right of bridge
         x = Phaser.Math.RND.between(860, mapWidth-100);
-        objManager.addRandomObject(x);
+        objManager.addRandomObject(x, blockNo === 1);
 
         // sign at decision point
         this.sign = this.add.image(decisionPointX, (gameHeight / 1.7) - 2, 'sign');
@@ -237,11 +247,10 @@ export default class MainTask extends Phaser.Scene {
         //////////////////////////GET TRIAL INFO//////////////////////////////////  
         // load trial info (must be done within create())
         let trials = this.cache.json.get("trials"); // automates trials from version info 
-        blockLength = Math.round(nTrials-1 / nBlocks);  // blocks divide trials
 
         // if a practice is run, take the minPressMax from the practice task
         // otherwise assign maxPressCount as the fetched threshold max
-        if (runPractice == true && trial == 0) {
+        if (runPractice == true && trialNo == 0) {
             maxPressCount = this.registry.get('maxPressCount');
             if (maxPressCount < minPressMax) {
                 // enforce minimum to guard against gaming from practice
@@ -261,22 +270,22 @@ export default class MainTask extends Phaser.Scene {
         // randomly select the order of trials for ema study:
         // save the random index:
         // set data to be saved into registry
-        if (debug_mode) { console.log('trial number: '+trial)}
-        if (trial < (nTrials)) {
+        if (debug_mode) { console.log('trial number: '+trialNo)}
+        if (trialNo < (nTrials)) {
             // error on baseline game (nTrials-1) means some participants did not get catchTrial 28.06.23
-            this.registry.set("trial" + trial, {
-                trialIdx: randTrialsIdx[trial]
+            this.registry.set("trial" + trialNo, {
+                trialIdx: randTrialsIdx[trialNo]
             });
             // save data
             // saveTaskData(trial, this.registry.get(`trial${trial}`)); // [for firebase]
-            if (debug_mode) { console.log('trial idx: ' + randTrialsIdx[trial]) }
+            if (debug_mode) { console.log('trial idx: ' + randTrialsIdx[trialNo]) }
         };
         // index trials from random index
-        trialReward1 = trials.reward1[randTrialsIdx[trial]];
-        trialEffortPropMax1 = trials.effort1[randTrialsIdx[trial]];
+        trialReward1 = trials.reward1[randTrialsIdx[trialNo]];
+        trialEffortPropMax1 = trials.effort1[randTrialsIdx[trialNo]];
         trialEffort1 = Math.round(trialEffortPropMax1*maxPressCount); 
-        trialReward2 = trials.reward2[randTrialsIdx[trial]];
-        trialEffortPropMax2 = trials.effort2[randTrialsIdx[trial]];
+        trialReward2 = trials.reward2[randTrialsIdx[trialNo]];
+        trialEffortPropMax2 = trials.effort2[randTrialsIdx[trialNo]];
         trialEffort2 = Math.round(trialEffortPropMax2*maxPressCount); 
         
         // log trial start time
@@ -341,7 +350,7 @@ export default class MainTask extends Phaser.Scene {
         this.player.update(); 
         
         ////////////MOVE ON TO NEXT SCENE WHEN ALL TRIALS HAVE RUN////////////////
-        if (trial == maxTrials) {
+        if (trialNo == maxTrials) {
             this.nextScene();
         }
     }
@@ -459,7 +468,7 @@ var effortOutcome = function() {
     else if (choice == 'route 2' && pressCount >= trialEffort2)  {
         trialSuccess = 1;
         // add overlap colliders so coins disappear when overlap with player body
-        this.physics.add.overlap(this.player.sprite, this.coins2.sprite, collectCoins, null, this, trial); 
+        this.physics.add.overlap(this.player.sprite, this.coins2.sprite, collectCoins, null, this, trialNo); 
         // display success message for a couple of seconds,
         feedback = this.add.text(decisionPointX-20, gameHeight/2-160,  
                                  "Nice work!", {
@@ -578,7 +587,7 @@ var trialEnd = function () {
 
     // n.b. nCalibrates now set in versionInfo.js
     // we only recalibrate if a practice was run first
-    if (trial < nCalibrates) {
+    if (trialNo < nCalibrates) {
         // get variables to use 
         pressTimes = this.registry.get('pressTimes');
         pressCount = this.registry.get('pressCount');
@@ -639,8 +648,8 @@ var trialEnd = function () {
     }
 
     // set data to be saved into registry
-    this.registry.set("trial" + trial, {
-                                    trialNo: trial,
+    this.registry.set("trial" + trialNo, {
+                                    trialNo: trialNo,
                                     trialStartTime: trialStartTime,
                                     trialReward1: trialReward1,
                                     trialEffort1: trialEffort1,
@@ -661,15 +670,14 @@ var trialEnd = function () {
                                      });
 
     // save data
-    EmbedContext.sendMessage("trialResult", this.registry.get("trial" + trial));
-    console.log(this.registry.get("trial" + trial));
+    EmbedContext.sendMessage("trialResult", this.registry.get("trial" + trialNo));
+    console.log(this.registry.get("trial" + trialNo));
     // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
     //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
 
     // if end of task, display taskend screen 
     // if end of block, display end of block screen
-    let trialsPerBlock = nTrials / nBlocks;
-    if ((trial + 1) % trialsPerBlock == 0 && trial != nTrials - 1) {
+    if ((trialNo + 1) % trialsPerBlock == 0 && trialNo != nTrials - 1) {
         this.player.sprite.setVelocityX(0);
         this.player.sprite.anims.play('wait', true);
         EmbedContext.sendMessage("break");
@@ -678,14 +686,15 @@ var trialEnd = function () {
             //  restart coin total from 0 after each block
             // nCoins=0; - keep coins to gamify
             // iterate trial number
-            trial++;
+            trialNo++;
+            blockNo++;
             // move to next trial
             this.scene.restart();    // [?wrap in delay function to ensure saving works]
         }, this);      
     } 
     else {
         // iterate trial number
-        trial++;                
+        trialNo++;     
         // move to next trial
         this.scene.restart();        // [?wrap in delay function to ensure saving works]
     }
