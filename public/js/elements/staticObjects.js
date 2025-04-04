@@ -31,9 +31,13 @@ export default class StaticObjects {
      * Add a random object from our defined dictionary to the scene
      * @param {int} x coordinate for the object to be placed
      */
-    addRandomObject(x) {
+    addRandomObject(x, ignoreTrees) {
+        if (ignoreTrees === undefined) {
+            ignoreTrees = false;
+        }
         this.scene.obj = this.scene.physics.add.staticGroup();
         let randomIndex = Math.floor(Math.random() * staticObjects.length);
+        if ([7,8,9].includes(randomIndex) && ignoreTrees) return; // ignore trees if we need to, e.g. desert level
         let randomObj = staticObjects[randomIndex];
         if (randomObj.key === 'nothing') return; // sometimes we don't want to add an object
         this.scene.obj.create(x, randomObj.y, randomObj.key).refreshBody();

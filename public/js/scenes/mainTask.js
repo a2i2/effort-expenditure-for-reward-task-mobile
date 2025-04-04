@@ -198,10 +198,10 @@ export default class MainTask extends Phaser.Scene {
         let objManager = new StaticObjects(this);
         // determine x coordinate for left of bridge before the sign
         var x = Phaser.Math.RND.between(50, decisionPointX-60);
-        objManager.addRandomObject(x);
+        objManager.addRandomObject(x, blockNo === 1);
         // determine x coordinate for right of bridge
         x = Phaser.Math.RND.between(860, mapWidth-100);
-        objManager.addRandomObject(x);
+        objManager.addRandomObject(x, blockNo === 1);
 
         // sign at decision point
         this.sign = this.add.image(decisionPointX, (gameHeight / 1.7) - 2, 'sign');
