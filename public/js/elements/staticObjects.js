@@ -22,7 +22,7 @@ export default class StaticObjects {
      * Preload images into memory during the Phaser.Scene.preload() call
      */
     loadImages() {
-        for (let i = 0; i < staticObjects.length; i++) {
+        for (let i = 0; i < staticObjects.length-1; i++) { // ignoring 'nothing'
             this.scene.load.image(staticObjects[i].key, `./assets/imgs/${staticObjects[i].key}.svg`);
         }
     }
