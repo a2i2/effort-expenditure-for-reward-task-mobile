@@ -42,7 +42,6 @@ var trialEffort2;
 var trialEffortPropChosen
 var trialEffort;
 var nCoins = 0; 
-var coinsText;
 var feedback;
 var feedbackTime = 1000;
 var blockNo = 0;
@@ -229,15 +228,6 @@ export default class MainTask extends Phaser.Scene {
 //                backgroundColor: "#1ea7e1"
 //            })
 //            .setScrollFactor(0);
-        // add coin count text in a fixed position on the screen
-        coinsText = this.add
-            .text(gameWidth-160, 16, "coins: "+nCoins, {
-                font: "18px monospace",
-                fill: "#FFD700",
-                padding: { x: 20, y: 10 },
-                backgroundColor: "#000000"
-            })
-            .setScrollFactor(0);
         
         /////////////UI: CHOICES AND RATINGS///////////////
         // UI functionality built using Rex UI plugins for phaser3 
@@ -715,7 +705,5 @@ var onejump = function () {
 // (so player appears to 'collect' them)
 var collectCoins = function(player, coin, trial){
     coin.disableBody(true, true);   // individual coins from group become invisible upon overlap
-    nCoins++; 
-    coinsText.setText('coins: ' + nCoins);  // and coins total and text updates
-
+    nCoins++;
 };
