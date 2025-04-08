@@ -27,13 +27,14 @@ export default class ProgressBar extends Phaser.GameObjects.Container {
         // Create background segments
         for (let i = 0; i < this.segments; i++) {
             const x = (i === 0) ? 0 : i * this.segmentWidth;
+            // Place a graphics object at the x, y coordinates within the scene x, y coordinates set in the constructor
             const segment = this.scene.add.graphics({ x: x, y: 0 });
 
             const fillColor = (i <= progress) ? this.config.fillColor : this.config.backgroundColor;
-            // Set fill style (with full opacity here, change alpha as needed)
             segment.fillStyle(fillColor, 1);
 
-            var rectRadius = 0;
+            var rectRadius = 0; // no rounded corners
+            // Apply rounded corners to first and last segments
             if (i === 0) {
                 rectRadius = {
                     tl: this.config.cornerRadius,
@@ -50,10 +51,10 @@ export default class ProgressBar extends Phaser.GameObjects.Container {
                 }
             }
 
-            // Draw rounded rect with custom per-corner radii
+            // Draw a rounded rectangle within the graphics x, y coordinates
             segment.fillRoundedRect(
-                0,
-                0,
+                0, // x: 0 as it's determined by the graphics object's x, y coordinates
+                0, // y: 0 as it's determined by the graphics object's x, y coordinates
                 this.segmentWidth - this.config.padding,
                 this.config.height,
                 rectRadius
