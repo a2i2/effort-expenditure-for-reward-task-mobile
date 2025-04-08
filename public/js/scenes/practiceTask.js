@@ -40,6 +40,7 @@ var trialSuccess;
 var maxPressCount;
 // initiliaze timing and response vars
 var pracFeedbackTime = 1500;
+var pracAnimationTime = 400;
 const practiceOrReal = 0;
 
 // this function extends Phaser.Scene and includes the core logic for the game
@@ -295,10 +296,10 @@ var effortOutcome = function() {
             targets: feedback,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
-            ease: 'Back',    
-            duration: pracFeedbackTime,
+            ease: 'Linear',    
+            duration: pracAnimationTime,
             repeat: 0,      
-            yoyo: true
+            yoyo: false
         });
         // then player floats across 'high route' and collects coins
         this.time.addEvent({delay: pracFeedbackTime+250, 
@@ -332,7 +333,7 @@ var effortOutcome = function() {
         feedbackBg.strokeRoundedRect((gameWidth - width)/2 + 120, yPosition - height, width, height, 10);
         
         // add text on top of the background container
-        feedback = this.add.text(gameWidth/2 + 120, yPosition - 5,  
+        feedback = this.add.text(gameWidth/2 + 120, yPosition - 10,  
                                  "Not enough power this time!", {
                                     font: "16px monospace",
                                     fill: "#000000",
@@ -344,10 +345,10 @@ var effortOutcome = function() {
             targets: feedback,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
-            ease: 'Back',    
-            duration: pracFeedbackTime,
+            ease: 'Linear',    
+            duration: pracAnimationTime,
             repeat: 0,      
-            yoyo: true
+            yoyo: false
         });
         // then play powerup fail anim and progress via slow route
         this.time.addEvent({delay: pracFeedbackTime+250, 

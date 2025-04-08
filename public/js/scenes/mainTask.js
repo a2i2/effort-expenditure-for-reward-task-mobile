@@ -44,6 +44,7 @@ var trialEffort;
 var nCoins = 0; 
 var feedback;
 var feedbackTime = 1000;
+var animationTime = 400;
 var blockNo = 0;
 var trialsPerBlock;
 // initialize timing and response vars
@@ -450,10 +451,10 @@ var effortOutcome = function() {
             targets: feedback,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
-            ease: 'Back',    
-            duration: feedbackTime,
+            ease: 'Linear',    
+            duration: animationTime,
             repeat: 0,      
-            yoyo: true
+            yoyo: false
         });
 
         // then player floats across 'high route' and collects coins
@@ -503,10 +504,10 @@ var effortOutcome = function() {
             targets: feedback,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
-            ease: 'Back',    
-            duration: feedbackTime,
+            ease: 'Linear',    
+            duration: animationTime,
             repeat: 0,      
-            yoyo: true
+            yoyo: false
         });
 
         // then player floats across 'low route' and collects coins
@@ -554,10 +555,10 @@ var effortOutcome = function() {
             targets: feedback,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
-            ease: 'Back',    
-            duration: feedbackTime,
+            ease: 'Linear',    
+            duration: animationTime,
             repeat: 0,      
-            yoyo: true
+            yoyo: false
         });
         // then play powerup fail anim and progress via slow route
         this.time.addEvent({delay: feedbackTime+250, 
@@ -606,10 +607,10 @@ var effortOutcome = function() {
             targets: feedback,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
-            ease: 'Back',    
-            duration: feedbackTime,
+            ease: 'Linear',    
+            duration: animationTime,
             repeat: 0,      
-            yoyo: true
+            yoyo: false
         });
         // then play powerup fail anim and progress via slow route
         this.time.addEvent({delay: feedbackTime+250, 
