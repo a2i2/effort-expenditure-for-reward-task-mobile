@@ -17,12 +17,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,10 +40,10 @@ fun EventLogsView(
     practiceTaskItemPressed: (Int) -> Unit,
     actualTaskItemPressed: (Int) -> Unit,
     onBack: () -> Unit,
-
-    ) {
+) {
     val practiceTaskAttempts = remember { eefrtScreenViewModel.getPracticeTaskAttempts() }
     val actualTaskAttempts = remember { eefrtScreenViewModel.getActualTaskAttempts() }
+    val shouldShowDialog = remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -58,6 +61,23 @@ fun EventLogsView(
                             contentDescription = "Back",
                         )
                     }
+                },
+                actions = {
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    IconButton(
+                        onClick = {
+                            shouldShowDialog.value = true
+                        },
+                        modifier = Modifier.padding(end = 0.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.delete_forever_24dp),
+                            contentDescription = "Delete",
+                            modifier = Modifier
+                                .background(Color.Transparent)
+                        )
+                    }
                 }
             )
         },
@@ -66,6 +86,7 @@ fun EventLogsView(
                 modifier = Modifier
                     .verticalScroll(scrollState)
                     .padding(paddingValues)
+                    .padding(horizontal = 4.dp)
             ) {
                 Text(
                     "Practice Attempts",
@@ -133,6 +154,33 @@ fun EventLogsView(
                             )
                         }
                     }
+                }
+
+                if (shouldShowDialog.value) {
+                    AlertDialog(
+                        title = { Text("Delete all event logs") },
+                        text = { Text("Are you sure you want to remove all the practice and actual trial event log data?") },
+                        onDismissRequest = { shouldShowDialog.value = false },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    shouldShowDialog.value = false
+                                    eefrtScreenViewModel.deleteAllEvents()
+                                }
+                            ) {
+                                Text("Delete")
+                            }
+                        },
+                        dismissButton = {
+                            Button(
+                                onClick = {
+                                    shouldShowDialog.value = false
+                                }
+                            ) {
+                                Text("Cancel")
+                            }
+                        }
+                    )
                 }
             }
         }

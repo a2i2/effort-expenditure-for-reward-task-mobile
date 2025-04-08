@@ -44,4 +44,7 @@ interface TaskAttemptDto {
 
     @Query("SELECT * FROM trial_attempt_events ORDER BY created_at DESC")
     suspend fun getAllTrialEvents(): List<TaskAttempt>
+
+    @Query("DELETE FROM trial_attempt_events")
+    suspend fun deleteAllEvents()
 }

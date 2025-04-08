@@ -78,4 +78,12 @@ class EefrtScreenViewModel(
     fun getBottomScreenConfig(): BottomScreenDialogConfig? {
         return bottomScreenDialogConfig
     }
+
+    fun deleteAllEvents() {
+        viewModelScope.launch {
+            appDatabase.taskAttemptDao().deleteAllEvents()
+            appDatabase.practiceTaskAttemptDao().deleteAllEvents()
+            refreshData()
+        }
+    }
 }
