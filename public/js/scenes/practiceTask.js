@@ -284,7 +284,7 @@ var effortOutcome = function() {
         
         // add text on top of the background container
         feedback = this.add.text(gameWidth/2 + 120, yPosition - 5,  
-                                 "<b>Great effort!</b>\nLet's try again\npractice makes perfect.", {
+                                 "Great effort!\nLet's try again\npractice makes perfect.", {
                                     font: "16px monospace",
                                     fill: "#000000",
                                     align: 'center',
