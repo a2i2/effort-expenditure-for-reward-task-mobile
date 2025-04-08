@@ -1,7 +1,6 @@
 package ai.a2i2.conductor.effrtdemoandroid.ui
 
 import ai.a2i2.conductor.effrtdemoandroid.BuildConfig
-import ai.a2i2.conductor.effrtdemoandroid.R
 import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.ui.data.EefrtScreenViewModel
@@ -17,23 +16,15 @@ import android.webkit.WebView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.ViewModel
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewAssetLoader.AssetsPathHandler
 import androidx.webkit.WebViewAssetLoader.DEFAULT_DOMAIN
@@ -43,100 +34,77 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.Date
 
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun EefrtScreen(
     eefrtViewModel: EefrtScreenViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val exitRequested = remember { mutableStateOf(false) }
     val webView = remember { mutableStateOf<WebView?>(null) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("") },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            exitRequested.value = true
-                            dismiss(onBack)
-                        }
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.arrow_left),
-                            contentDescription = "Back",
-                        )
-                    }
-                }
-            )
-        },
-        content = { paddingValues ->
-            Box(contentAlignment = Alignment.Center) {
-                AndroidView(
-                    factory = {
-                        // https://developer.android.com/reference/androidx/webkit/WebViewAssetLoader
-                        // We use a WebViewAssetLoader to load the files as if they're being hosted via a server.
-                        // This is a safer and compatible with Same-Origin policy (CORS)–a CORS error was being thrown
-                        // because our HTML file links JS files in another directory.
-                        val assetLoader = WebViewAssetLoader.Builder()
-                            // Handler class to open a file from assets directory in the application APK.
-                            .addPathHandler("/assets/", AssetsPathHandler(it))
-                            .build()
-                        WebView.setWebContentsDebuggingEnabled(true)
-                        val realWebView = WebView(it)
-                        webView.value = realWebView
-                        realWebView.apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                MATCH_PARENT,
-                                MATCH_PARENT
-                            )
-                            webViewClient = object : WebViewClientCompat() {
-                                override fun shouldInterceptRequest(
-                                    view: WebView?,
-                                    request: WebResourceRequest?
-                                ): WebResourceResponse? {
-                                    // Attempt to resolve the url to an application resource or asset
-                                    return request?.let { req ->
-                                        assetLoader.shouldInterceptRequest(req.url)
-                                    }
-                                }
+    Box(contentAlignment = Alignment.Center) {
+        AndroidView(
+            factory = {
+                // https://developer.android.com/reference/androidx/webkit/WebViewAssetLoader
+                // We use a WebViewAssetLoader to load the files as if they're being hosted via a server.
+                // This is a safer and compatible with Same-Origin policy (CORS)–a CORS error was being thrown
+                // because our HTML file links JS files in another directory.
+                val assetLoader = WebViewAssetLoader.Builder()
+                    // Handler class to open a file from assets directory in the application APK.
+                    .addPathHandler("/assets/", AssetsPathHandler(it))
+                    .build()
+                WebView.setWebContentsDebuggingEnabled(true)
+                val realWebView = WebView(it)
+                webView.value = realWebView
+                realWebView.apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        MATCH_PARENT,
+                        MATCH_PARENT
+                    )
+                    webViewClient = object : WebViewClientCompat() {
+                        override fun shouldInterceptRequest(
+                            view: WebView?,
+                            request: WebResourceRequest?,
+                        ): WebResourceResponse? {
+                            // Attempt to resolve the url to an application resource or asset
+                            return request?.let { req ->
+                                assetLoader.shouldInterceptRequest(req.url)
                             }
-                            settings.javaScriptEnabled = true
-                            addJavascriptInterface(
-                                EefrtWebInterface { message ->
-                                    handleMessage(
-                                        message,
-                                        onBack,
-                                        exitRequested,
-                                        eefrtViewModel,
-                                        webView.value
-                                    )
-                                },
-                                "AndroidBridge"
-                            )
-                            // An unused domain reserved for Android applications to intercept requests for app assets.
-                            loadUrl("https://$DEFAULT_DOMAIN/assets/${getIndexFileName()}")
                         }
-                    },
-                    Modifier.padding(top = paddingValues.calculateTopPadding())
-                )
-
-                AnimatedVisibility(
-                    visible = eefrtViewModel.bottomScreenDialogVisible.value,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    eefrtViewModel.getBottomScreenConfig()?.let {
-                        BottomScreenDialog(
-                            config = eefrtViewModel.getBottomScreenConfig()!!
-                        )
                     }
+                    settings.javaScriptEnabled = true
+                    addJavascriptInterface(
+                        EefrtWebInterface { message ->
+                            handleMessage(
+                                message,
+                                onBack,
+                                exitRequested,
+                                eefrtViewModel,
+                                webView.value
+                            )
+                        },
+                        "AndroidBridge"
+                    )
+                    // An unused domain reserved for Android applications to intercept requests for app assets.
+                    loadUrl("https://$DEFAULT_DOMAIN/assets/${getIndexFileName()}")
                 }
+            },
+            Modifier.statusBarsPadding()
+        )
+
+        AnimatedVisibility(
+            visible = eefrtViewModel.bottomScreenDialogVisible.value,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            eefrtViewModel.getBottomScreenConfig()?.let {
+                BottomScreenDialog(
+                    config = eefrtViewModel.getBottomScreenConfig()!!
+                )
             }
         }
-    )
+    }
 }
 
 private fun getIndexFileName(): String {
@@ -150,7 +118,7 @@ private fun handleMessage(
     onBack: () -> Unit,
     exitRequested: MutableState<Boolean>,
     eefrtViewModel: EefrtScreenViewModel,
-    maybeWebview: WebView?
+    maybeWebview: WebView?,
 ) {
     try {
         val obj = JSONObject(message)
