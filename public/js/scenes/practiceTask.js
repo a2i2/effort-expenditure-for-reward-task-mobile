@@ -33,7 +33,6 @@ var nPracTrials = pracTrialRewards.length;
 var pracTrialReward;
 var pracTrialEffort;
 var gemHeight;
-var gemText;
 var feedback;
 var pressCount;
 var pressTimes;
@@ -143,15 +142,6 @@ export default class PracticeTask extends Phaser.Scene {
         //                backgroundColor: "#1ea7e1"
         //            })
         //            .setScrollFactor(0);
-        // add coin count text in a fixed position on the screen
-        gemText = this.add
-            .text(gameWidth - 160, 16, "gems: " + nGems, {
-                font: "18px monospace",
-                fill: "#fc94c4",
-                padding: { x: 20, y: 10 },
-                backgroundColor: "#000000"
-            })
-            .setScrollFactor(0);
 
         /////////////UI: CHOICES AND RATINGS///////////////
         // UI functionality built using Rex UI plugins for phaser3 
@@ -384,8 +374,7 @@ var pracTrialEnd = function () {
 //////////////////////MISC FUNCTIONS/////////////////////
 // function to make coin sprites disappear upon contact with player
 // (so player appears to 'collect' them)
-var collectGems = function(player, gem){
+var collectGems = function(player, gem) {
     gem.disableBody(true, true);      // individual gems from physics group become invisible upon overlap
     nGems++; 
-    gemText.setText('gems: '+nGems);  // and gems total and text updates
 };
