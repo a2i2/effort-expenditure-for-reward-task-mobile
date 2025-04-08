@@ -266,14 +266,29 @@ var effortOutcome = function() {
         trialSuccess = 1;
         // add overlap colliders so coins  on either route disappear when overlap with player body
         this.physics.add.overlap(this.player.sprite, this.gems.sprite, collectGems, null, this); 
-        // display success message for a couple of seconds,
-        feedback = this.add.text(decisionPointX, gameHeight/2-100,  
-                                 "Nice work!", {
-                                    font: "22px monospace",
-                                    fill: "#ffffff",
+
+        // create a graphics object for the background
+        const feedbackBg = this.add.graphics();
+        feedbackBg.fillStyle(0xF6F8F9, 1);
+        feedbackBg.lineStyle(2, 0xD0D5DD, 1);
+        
+        // calculate the text width and height with padding
+        const padding = { x: 20, y: 10 };
+        const width = gameWidth * 0.8;  // 80% of screen width
+        const height = 85;        
+        const yPosition = 160;
+        
+        // draw the rounded rectangle background container centered on screen
+        feedbackBg.fillRoundedRect((gameWidth - width)/2 + 120, yPosition - height, width, height, 10);
+        feedbackBg.strokeRoundedRect((gameWidth - width)/2 + 120, yPosition - height, width, height, 10);
+        
+        // add text on top of the background container
+        feedback = this.add.text(gameWidth/2 + 120, yPosition - 5,  
+                                 "<b>Great effort!</b>\nLet's try again\npractice makes perfect.", {
+                                    font: "16px monospace",
+                                    fill: "#000000",
                                     align: 'center',
-                                    padding: { x: 20, y: 10 },
-                                    backgroundColor: "#1ea7e1"
+                                    padding: padding
                                  })
             .setOrigin(0.5, 1);
         this.tweens.add({        
@@ -289,6 +304,7 @@ var effortOutcome = function() {
         this.time.addEvent({delay: pracFeedbackTime+250, 
                             callback: function(){
                                 feedback.destroy();
+                                feedbackBg.destroy();
                                 this.player.sprite.anims.play('float', true);    
                                 this.player.sprite.setVelocityX(playerVelocity/3);
                                 this.time.addEvent({ delay: 150, 
@@ -301,13 +317,27 @@ var effortOutcome = function() {
     else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
         // display failure message for a couple of seconds
-        feedback = this.add.text(decisionPointX, gameHeight/2-100,  
-                                 "Not enough\npower this time!", {
-                                    font: "22px monospace",
-                                    fill: "#ffffff",
+        const feedbackBg = this.add.graphics();
+        feedbackBg.fillStyle(0xF6F8F9, 1);
+        feedbackBg.lineStyle(2, 0xD0D5DD, 1);
+        
+        // calculate the text width and height with padding
+        const padding = { x: 20, y: 10 };
+        const width = gameWidth * 0.85;  // 85% of screen width
+        const height = 60;
+        const yPosition = 130;
+        
+        // draw the rounded rectangle background container centered on screen
+        feedbackBg.fillRoundedRect((gameWidth - width)/2 + 120, yPosition - height, width, height, 10);
+        feedbackBg.strokeRoundedRect((gameWidth - width)/2 + 120, yPosition - height, width, height, 10);
+        
+        // add text on top of the background container
+        feedback = this.add.text(gameWidth/2 + 120, yPosition - 5,  
+                                 "Not enough power this time!", {
+                                    font: "16px monospace",
+                                    fill: "#000000",
                                     align: 'center',
-                                    padding: { x: 20, y: 10 },
-                                    backgroundColor: "#000000"
+                                    padding: padding
                                  })
             .setOrigin(0.5, 1);
         this.tweens.add({        
@@ -323,6 +353,7 @@ var effortOutcome = function() {
         this.time.addEvent({delay: pracFeedbackTime+250, 
                             callback: function(){
                                 feedback.destroy();
+                                feedbackBg.destroy();
                                 // then play short 'powerup fail' anim:
                                 this.player.sprite.anims.play('powerupfail', true);
                                 // and progress via bridge route (with sad face)
