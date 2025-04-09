@@ -19,6 +19,8 @@ import {sceneOrder, runPractice, effortTime, nBlocks, nCalibrates,
     trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet, debug_mode
 } from "../versionInfo.js";
 
+import Message from "../elements/message.js";
+
 // make sure that the scene order is evaluated
 //const evaluatedSceneOrder = sceneOrder.map(sceneName => eval(sceneName));
 
@@ -43,8 +45,9 @@ var trialEffort2;
 var trialEffortPropChosen
 var trialEffort;
 var nCoins = 0; 
-var feedback;
+var feedbackMessage;
 var feedbackTime = 1000;
+var animationTime = 400;
 var blockNo = 0;
 var trialsPerBlock;
 // initialize timing and response vars
@@ -444,28 +447,32 @@ var effortOutcome = function() {
         // add overlap colliders so coins disappear when overlap with player body
         this.physics.add.overlap(this.player.sprite, this.coins1.sprite, collectCoins, null, this); 
         // display success message for a couple of seconds,
-        feedback = this.add.text(decisionPointX-20, gameHeight/2-160,  
-                                 "Nice work!", {
-                                    font: "20px monospace",
-                                    fill: "#ffffff",
-                                    align: 'center',
-                                    padding: { x: 20, y: 10 },
-                                    backgroundColor: "#1ea7e1"
-                                 })
-            .setOrigin(0.5, 1);
+        this.feedbackMessage = new Message(
+            this,
+            gameWidth,
+            0xBCF3D4,
+            0x25D070,
+            "Nice work!",
+            "#10562F",
+            40,
+            100,
+            80,
+            0
+        );
         this.tweens.add({        
-            targets: feedback,
+            targets: this.feedbackMessage,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
-            ease: 'Back',    
-            duration: feedbackTime,
+            ease: 'Linear',    
+            duration: animationTime,
             repeat: 0,      
-            yoyo: true
+            yoyo: false
         });
+
         // then player floats across 'high route' and collects coins
         this.time.addEvent({delay: feedbackTime, 
                             callback: function(){
-                                feedback.destroy();
+                                this.feedbackMessage.destroy();
                                 this.player.sprite.anims.play('float', true);    
                                 this.player.sprite.setVelocityX(playerVelocity/3);
                                 this.time.addEvent({ delay: 120,
@@ -480,29 +487,34 @@ var effortOutcome = function() {
         trialSuccess = 1;
         // add overlap colliders so coins disappear when overlap with player body
         this.physics.add.overlap(this.player.sprite, this.coins2.sprite, collectCoins, null, this, trialNo); 
+
         // display success message for a couple of seconds,
-        feedback = this.add.text(decisionPointX-20, gameHeight/2-160,  
-                                 "Nice work!", {
-                                    font: "20px monospace",
-                                    fill: "#ffffff",
-                                    align: 'center',
-                                    padding: { x: 20, y: 10 },
-                                    backgroundColor: "#1ea7e1"
-                                 })
-            .setOrigin(0.5, 1);
+        this.feedbackMessage = new Message(
+            this,
+            gameWidth,
+            0xBCF3D4,
+            0x25D070,
+            "Nice work!",
+            "#10562F",
+            40,
+            100,
+            80,
+            0
+        );
         this.tweens.add({        
-            targets: feedback,
+            targets: this.feedbackMessage,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
-            ease: 'Back',    
-            duration: feedbackTime,
+            ease: 'Linear',    
+            duration: animationTime,
             repeat: 0,      
-            yoyo: true
+            yoyo: false
         });
+
         // then player floats across 'low route' and collects coins
         this.time.addEvent({delay: feedbackTime, 
-                            callback: function(){
-                                feedback.destroy();
+                            callback: function() {
+                                this.feedbackMessage.destroy();
                                 this.player.sprite.anims.play('float', true);    
                                 this.player.sprite.setVelocityX(playerVelocity/3);
                                 this.time.addEvent({ delay: 100,
@@ -516,28 +528,31 @@ var effortOutcome = function() {
         trialSuccess = 0;
 
         // display failure message for a couple of seconds
-        feedback = this.add.text(decisionPointX-60, gameHeight/2-160,  
-                                 "Ran out of time to decide!", {
-                                    font: "20px monospace",
-                                    fill: "#ffffff",
-                                    align: 'center',
-                                    padding: { x: 20, y: 10 },
-                                    backgroundColor: "#000000"
-                                 })
-            .setOrigin(0.5, 1);
+        this.feedbackMessage = new Message(
+            this,
+            gameWidth,
+            0xFFDBDB,
+            0xFF9696,
+            "Too slow - you only have 5\nseconds to choose a route",
+            "#9B0000",
+            60,
+            140,
+            80,
+            0
+        );
         this.tweens.add({        
-            targets: feedback,
+            targets: this.feedbackMessage,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
-            ease: 'Back',    
-            duration: feedbackTime,
+            ease: 'Linear',    
+            duration: animationTime,
             repeat: 0,      
-            yoyo: true
+            yoyo: false
         });
         // then play powerup fail anim and progress via slow route
         this.time.addEvent({delay: feedbackTime+250, 
-                            callback: function(){
-                                feedback.destroy();
+                            callback: function() {
+                                this.feedbackMessage.destroy();  // Add this line to destroy the background
                                 // then play short 'powerup fail' anim:
                                 // this.player.sprite.anims.play('powerupfail', true);
                                 // and progress via bridge route (with sad face)
@@ -553,28 +568,31 @@ var effortOutcome = function() {
     } else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
         // display failure message for a couple of seconds
-        feedback = this.add.text(decisionPointX-20, gameHeight/2-160,  
-                                 "Not enough\npower this time!", {
-                                    font: "20px monospace",
-                                    fill: "#ffffff",
-                                    align: 'center',
-                                    padding: { x: 20, y: 10 },
-                                    backgroundColor: "#000000"
-                                 })
-            .setOrigin(0.5, 1);
+        this.feedbackMessage = new Message(
+            this,
+            gameWidth,
+            0xFFDBDB,
+            0xFF9696,
+            "Not enough power this time!",
+            "#9B0000",
+            40,
+            100,
+            80,
+            0
+        );
         this.tweens.add({        
-            targets: feedback,
+            targets: this.feedbackMessage,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
-            ease: 'Back',    
-            duration: feedbackTime,
+            ease: 'Linear',    
+            duration: animationTime,
             repeat: 0,      
-            yoyo: true
+            yoyo: false
         });
         // then play powerup fail anim and progress via slow route
         this.time.addEvent({delay: feedbackTime+250, 
-                            callback: function(){
-                                feedback.destroy();
+                            callback: function() {
+                                this.feedbackMessage.destroy();
                                 // then play short 'powerup fail' anim:
                                 this.player.sprite.anims.play('powerupfail', true);
                                 // and progress via bridge route (with sad face)

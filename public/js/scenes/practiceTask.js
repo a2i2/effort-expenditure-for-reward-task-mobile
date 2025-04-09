@@ -13,6 +13,8 @@ import eventsCenter from '../eventsCenter.js'
 // import effort info from versionInfo file
 import { effortTime, pracTrialEfforts, gemHeights, pracTrialRewards } from "../versionInfo.js";
 
+import Message from "../elements/message.js";
+
 // // import some js from Pavlovia lib to enable data saving [for Pavlovia deployment only]
 // import * as data from "../../lib/data-2020.2.js";
 // import { saveTrialDataPav } from '../saveData.js';
@@ -33,14 +35,14 @@ var nPracTrials = pracTrialRewards.length;
 var pracTrialReward;
 var pracTrialEffort;
 var gemHeight;
-var gemText;
-var feedback;
+var feedbackMessage;
 var pressCount;
 var pressTimes;
 var trialSuccess;
 var maxPressCount;
 // initiliaze timing and response vars
 var pracFeedbackTime = 1500;
+var pracAnimationTime = 400;
 const practiceOrReal = 0;
 
 // this function extends Phaser.Scene and includes the core logic for the game
@@ -143,15 +145,6 @@ export default class PracticeTask extends Phaser.Scene {
         //                backgroundColor: "#1ea7e1"
         //            })
         //            .setScrollFactor(0);
-        // add coin count text in a fixed position on the screen
-        gemText = this.add
-            .text(gameWidth - 160, 16, "gems: " + nGems, {
-                font: "18px monospace",
-                fill: "#fc94c4",
-                padding: { x: 20, y: 10 },
-                backgroundColor: "#000000"
-            })
-            .setScrollFactor(0);
 
         /////////////UI: CHOICES AND RATINGS///////////////
         // UI functionality built using Rex UI plugins for phaser3 
@@ -276,29 +269,33 @@ var effortOutcome = function() {
         trialSuccess = 1;
         // add overlap colliders so coins  on either route disappear when overlap with player body
         this.physics.add.overlap(this.player.sprite, this.gems.sprite, collectGems, null, this); 
-        // display success message for a couple of seconds,
-        feedback = this.add.text(decisionPointX, gameHeight/2-100,  
-                                 "Nice work!", {
-                                    font: "22px monospace",
-                                    fill: "#ffffff",
-                                    align: 'center',
-                                    padding: { x: 20, y: 10 },
-                                    backgroundColor: "#1ea7e1"
-                                 })
-            .setOrigin(0.5, 1);
+
+        this.feedbackMessage = new Message(
+            this,
+            gameWidth,
+            0xF6F8F9,
+            0xD0D5DD,
+            "Great effort!\nLet's try again\npractice makes perfect.",
+            "#000000",
+            85,
+            160,
+            110,
+            -5
+          );
+          
         this.tweens.add({        
-            targets: feedback,
+            targets: this.feedbackMessage,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
-            ease: 'Back',    
-            duration: pracFeedbackTime,
+            ease: 'Linear',    
+            duration: pracAnimationTime,
             repeat: 0,      
-            yoyo: true
+            yoyo: false
         });
         // then player floats across 'high route' and collects coins
         this.time.addEvent({delay: pracFeedbackTime+250, 
                             callback: function(){
-                                feedback.destroy();
+                                this.feedbackMessage.destroy();
                                 this.player.sprite.anims.play('float', true);    
                                 this.player.sprite.setVelocityX(playerVelocity/3);
                                 this.time.addEvent({ delay: 150, 
@@ -311,28 +308,32 @@ var effortOutcome = function() {
     else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
         // display failure message for a couple of seconds
-        feedback = this.add.text(decisionPointX, gameHeight/2-100,  
-                                 "Not enough\npower this time!", {
-                                    font: "22px monospace",
-                                    fill: "#ffffff",
-                                    align: 'center',
-                                    padding: { x: 20, y: 10 },
-                                    backgroundColor: "#000000"
-                                 })
-            .setOrigin(0.5, 1);
+        this.feedbackMessage = new Message(
+            this,
+            gameWidth,
+            0xF6F8F9,
+            0xD0D5DD,
+            "Not enough power this time!",
+            "#000000",
+            60,
+            130,
+            110,
+            -10
+        );
+
         this.tweens.add({        
-            targets: feedback,
+            targets: this.feedbackMessage,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
-            ease: 'Back',    
-            duration: pracFeedbackTime,
+            ease: 'Linear',    
+            duration: pracAnimationTime,
             repeat: 0,      
-            yoyo: true
+            yoyo: false
         });
         // then play powerup fail anim and progress via slow route
         this.time.addEvent({delay: pracFeedbackTime+250, 
                             callback: function(){
-                                feedback.destroy();
+                                this.feedbackMessage.destroy();
                                 // then play short 'powerup fail' anim:
                                 this.player.sprite.anims.play('powerupfail', true);
                                 // and progress via bridge route (with sad face)
@@ -384,8 +385,7 @@ var pracTrialEnd = function () {
 //////////////////////MISC FUNCTIONS/////////////////////
 // function to make coin sprites disappear upon contact with player
 // (so player appears to 'collect' them)
-var collectGems = function(player, gem){
+var collectGems = function(player, gem) {
     gem.disableBody(true, true);      // individual gems from physics group become invisible upon overlap
     nGems++; 
-    gemText.setText('gems: '+nGems);  // and gems total and text updates
 };

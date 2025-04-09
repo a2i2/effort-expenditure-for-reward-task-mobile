@@ -22,7 +22,7 @@ data class PracticeTaskAttempt(
     @ColumnInfo(name = "trial_success") val trialSuccess: Int,
     @ColumnInfo(name = "gems_running_total") val gemsRunningTotal: Int,
     @ColumnInfo(name = "max_press_count") val maxPressCount: Int,
-): EefrtTaskAttempt
+) : EefrtTaskAttempt
 
 @Dao
 interface PracticeTaskAttemptDao {
@@ -34,4 +34,7 @@ interface PracticeTaskAttemptDao {
 
     @Query("SELECT * FROM practice_trial_events ORDER BY created_at DESC")
     suspend fun getAllPracticeTrialEvents(): List<PracticeTaskAttempt>
+
+    @Query("DELETE FROM practice_trial_events")
+    suspend fun deleteAllEvents()
 }
