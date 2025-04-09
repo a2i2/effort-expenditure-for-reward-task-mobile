@@ -68,19 +68,12 @@ class EEFRTViewController: UIViewController {
         guard let publicPath = Bundle.main.path(forResource: "assets", ofType: nil) else {
             fatalError("Unable to locate 'assets' folder in main bundle")
         }
-        var indexFileURL: URL?
-
-#if DEBUG
-        indexFileURL = Bundle.main.url(forResource: "assets/index-debug", withExtension: "html")
-#else
-        indexFileURL = Bundle.main.url(forResource: "assets/index", withExtension: "html")
-#endif
-        guard let indexFile = indexFileURL else {
-            fatalError("Unable to locate 'assets/index-debug.html' in main bundle")
+        guard let indexFileURL = Bundle.main.url(forResource: "assets/index", withExtension: "html") else {
+            fatalError("Unable to locate 'assets/index.html' in main bundle")
         }
 
         self.publicPath = publicPath
-        self.indexFileUrl = indexFile
+        self.indexFileUrl = indexFileURL
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -145,7 +138,7 @@ class EEFRTViewController: UIViewController {
             view.addSubview(bottomScreenDialogView.view)
 
             NSLayoutConstraint.activate([
-                bottomScreenDialogView.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                bottomScreenDialogView.view.topAnchor.constraint(equalTo: view.topAnchor),
                 bottomScreenDialogView.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 bottomScreenDialogView.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                 bottomScreenDialogView.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),

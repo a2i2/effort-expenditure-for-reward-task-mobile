@@ -1,6 +1,5 @@
 package ai.a2i2.conductor.effrtdemoandroid.ui
 
-import ai.a2i2.conductor.effrtdemoandroid.BuildConfig
 import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.ui.data.EefrtScreenViewModel
@@ -17,13 +16,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewAssetLoader.AssetsPathHandler
@@ -87,10 +84,9 @@ fun EefrtScreen(
                         "AndroidBridge"
                     )
                     // An unused domain reserved for Android applications to intercept requests for app assets.
-                    loadUrl("https://$DEFAULT_DOMAIN/assets/${getIndexFileName()}")
+                    loadUrl("https://$DEFAULT_DOMAIN/assets/index.html")
                 }
-            },
-            Modifier.statusBarsPadding()
+            }
         )
 
         AnimatedVisibility(
@@ -105,10 +101,6 @@ fun EefrtScreen(
             }
         }
     }
-}
-
-private fun getIndexFileName(): String {
-    return if (BuildConfig.DEBUG) "index-debug.html" else "index.html"
 }
 
 private const val TAG = "EefrtScreen"
