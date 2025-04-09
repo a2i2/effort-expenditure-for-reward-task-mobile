@@ -7,6 +7,7 @@ import ChoicePanel from "../elements/choicePanel.js";
 import TimerPanel from "../elements/timerPanelClicks.js";
 import BreakPanel from "../elements/takeABreak.js";
 import StaticObjects from "../elements/staticObjects.js";
+import ProgressBar from "../elements/progressBar.js";
 
 // import our custom events center for passsing info between scenes and relevant data saving function
 import eventsCenter from '../eventsCenter.js'
@@ -208,6 +209,16 @@ export default class MainTask extends Phaser.Scene {
         // set the boundaries of the world
         this.physics.world.bounds.width = mapWidth;
         this.physics.world.bounds.height = gameHeight;
+
+        //////////////ADD PROGRESS BAR////////////////////
+        // Create progress bar at the top of the screen with nBlocks segments
+        this.progressBar = new ProgressBar(this, 24, 20, 300, nBlocks, blockNo, {
+            height: 10,
+            padding: 4,
+            cornerRadius: 5
+        });
+        // Make it stay fixed on screen (not affected by camera)
+        this.progressBar.setScrollFactor(0);
 
         //////////////ADD PLAYER SPRITE////////////////////
         this.player = new Player(this, 0, 350); // (this, spawnPoint.x, spawnPoint.y);
