@@ -76,7 +76,7 @@ struct BottomScreenDialogView: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .ignoresSafeArea(edges: .bottom)
+        .ignoresSafeArea(edges: .vertical)
     }
 }
 

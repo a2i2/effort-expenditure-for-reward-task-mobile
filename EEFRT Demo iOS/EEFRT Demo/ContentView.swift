@@ -11,7 +11,9 @@ struct ContentView: View {
             VStack(spacing: 20) {
                 NavigationLink(
                     destination: EEFRTView()
-                        .ignoresSafeArea(edges: [.bottom]),
+                        .ignoresSafeArea()
+                        .navigationBarBackButtonHidden()
+                    ,
                     label: {
                         Text("Begin EEFRT Task")
                     }

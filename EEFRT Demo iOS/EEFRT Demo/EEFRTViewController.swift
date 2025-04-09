@@ -138,7 +138,7 @@ class EEFRTViewController: UIViewController {
             view.addSubview(bottomScreenDialogView.view)
 
             NSLayoutConstraint.activate([
-                bottomScreenDialogView.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                bottomScreenDialogView.view.topAnchor.constraint(equalTo: view.topAnchor),
                 bottomScreenDialogView.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 bottomScreenDialogView.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
                 bottomScreenDialogView.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
