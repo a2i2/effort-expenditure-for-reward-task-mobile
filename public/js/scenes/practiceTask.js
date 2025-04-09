@@ -13,6 +13,8 @@ import eventsCenter from '../eventsCenter.js'
 // import effort info from versionInfo file
 import { effortTime, pracTrialEfforts, gemHeights, pracTrialRewards } from "../versionInfo.js";
 
+import Message from "../elements/message.js";
+
 // // import some js from Pavlovia lib to enable data saving [for Pavlovia deployment only]
 // import * as data from "../../lib/data-2020.2.js";
 // import { saveTrialDataPav } from '../saveData.js';
@@ -33,7 +35,7 @@ var nPracTrials = pracTrialRewards.length;
 var pracTrialReward;
 var pracTrialEffort;
 var gemHeight;
-var feedback;
+var feedbackMessage;
 var pressCount;
 var pressTimes;
 var trialSuccess;
@@ -268,32 +270,21 @@ var effortOutcome = function() {
         // add overlap colliders so coins  on either route disappear when overlap with player body
         this.physics.add.overlap(this.player.sprite, this.gems.sprite, collectGems, null, this); 
 
-        // create a graphics object for the background
-        const feedbackBg = this.add.graphics();
-        feedbackBg.fillStyle(0xF6F8F9, 1);
-        feedbackBg.lineStyle(2, 0xD0D5DD, 1);
-        
-        // calculate the text width and height with padding
-        const padding = { x: 20, y: 10 };
-        const width = gameWidth * 0.8;  // 80% of screen width
-        const height = 85;        
-        const yPosition = 160;
-        
-        // draw the rounded rectangle background container centered on screen
-        feedbackBg.fillRoundedRect((gameWidth - width)/2 + 120, yPosition - height, width, height, 10);
-        feedbackBg.strokeRoundedRect((gameWidth - width)/2 + 120, yPosition - height, width, height, 10);
-        
-        // add text on top of the background container
-        feedback = this.add.text(gameWidth/2 + 120, yPosition - 5,  
-                                 "Great effort!\nLet's try again\npractice makes perfect.", {
-                                    font: "16px monospace",
-                                    fill: "#000000",
-                                    align: 'center',
-                                    padding: padding
-                                 })
-            .setOrigin(0.5, 1);
+        this.feedbackMessage = new Message(
+            this,
+            gameWidth,
+            0xF6F8F9,
+            0xD0D5DD,
+            "Great effort!\nLet's try again\npractice makes perfect.",
+            "#000000",
+            85,
+            160,
+            110,
+            -5
+          );
+          
         this.tweens.add({        
-            targets: feedback,
+            targets: this.feedbackMessage,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
             ease: 'Linear',    
@@ -304,8 +295,7 @@ var effortOutcome = function() {
         // then player floats across 'high route' and collects coins
         this.time.addEvent({delay: pracFeedbackTime+250, 
                             callback: function(){
-                                feedback.destroy();
-                                feedbackBg.destroy();
+                                this.feedbackMessage.destroy();
                                 this.player.sprite.anims.play('float', true);    
                                 this.player.sprite.setVelocityX(playerVelocity/3);
                                 this.time.addEvent({ delay: 150, 
@@ -318,31 +308,21 @@ var effortOutcome = function() {
     else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
         // display failure message for a couple of seconds
-        const feedbackBg = this.add.graphics();
-        feedbackBg.fillStyle(0xF6F8F9, 1);
-        feedbackBg.lineStyle(2, 0xD0D5DD, 1);
-        
-        // calculate the text width and height with padding
-        const padding = { x: 20, y: 10 };
-        const width = gameWidth * 0.85;  // 85% of screen width
-        const height = 60;
-        const yPosition = 130;
-        
-        // draw the rounded rectangle background container centered on screen
-        feedbackBg.fillRoundedRect((gameWidth - width)/2 + 120, yPosition - height, width, height, 10);
-        feedbackBg.strokeRoundedRect((gameWidth - width)/2 + 120, yPosition - height, width, height, 10);
-        
-        // add text on top of the background container
-        feedback = this.add.text(gameWidth/2 + 120, yPosition - 10,  
-                                 "Not enough power this time!", {
-                                    font: "16px monospace",
-                                    fill: "#000000",
-                                    align: 'center',
-                                    padding: padding
-                                 })
-            .setOrigin(0.5, 1);
+        this.feedbackMessage = new Message(
+            this,
+            gameWidth,
+            0xF6F8F9,
+            0xD0D5DD,
+            "Not enough power this time!",
+            "#000000",
+            60,
+            130,
+            110,
+            -10
+        );
+
         this.tweens.add({        
-            targets: feedback,
+            targets: this.feedbackMessage,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
             ease: 'Linear',    
@@ -353,8 +333,7 @@ var effortOutcome = function() {
         // then play powerup fail anim and progress via slow route
         this.time.addEvent({delay: pracFeedbackTime+250, 
                             callback: function(){
-                                feedback.destroy();
-                                feedbackBg.destroy();
+                                this.feedbackMessage.destroy();
                                 // then play short 'powerup fail' anim:
                                 this.player.sprite.anims.play('powerupfail', true);
                                 // and progress via bridge route (with sad face)
