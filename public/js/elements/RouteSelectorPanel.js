@@ -1,3 +1,4 @@
+import eventsCenter from '../eventsCenter.js'
 import CountdownPanel from './CountdownPanel.js';
 
 export default class RouteSelectorPanel {
@@ -39,6 +40,7 @@ export default class RouteSelectorPanel {
             fontSize: '20px',
             color: '#000',
             fontStyle: 'bold'
+            // TODO: Font family
         });
 
         titleRow.add(title, { expand: true });
@@ -61,6 +63,14 @@ export default class RouteSelectorPanel {
         this.container.add(optionsRow, { expand: true });
 
         this.container.layout();
+
+        // React when the countdown timer has finished
+        eventsCenter.once('countdownComplete', () => {
+            setTimeout(() => {
+                this.onSelect?.('timeout');
+                this.destroy();
+            }, 100);
+        });
     }
 
     createRouteButton(routeName, power, reward, coinColor, isLeft) {
@@ -143,8 +153,11 @@ export default class RouteSelectorPanel {
         sizer.setInteractive()
             .on('pointerdown', () => {
                 this.clearSelections();
-                bg.setFillStyle(0xffcccc); // light pink
-                this.onSelect?.(routeName);
+                bg.setFillStyle(0xFEE1D5); // light pink
+                setTimeout(() => {
+                    this.onSelect?.(routeName.toLowerCase());
+                    this.destroy();
+                }, 200);
             });
 
         // Keep track to reset background color
@@ -169,5 +182,13 @@ export default class RouteSelectorPanel {
 
     getContainer() {
         return this.container;
+    }
+
+    destroy() {
+        // Stop the countdown timer
+        eventsCenter.emit('destroyCountdown');
+        // Remove containers from the screen
+        this.panel?.destroy();
+        this.container?.destroy();
     }
 }

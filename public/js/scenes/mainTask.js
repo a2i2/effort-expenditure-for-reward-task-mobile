@@ -336,8 +336,13 @@ export default class MainTask extends Phaser.Scene {
         // 1. Upon entering scene, player moves right until they encounter the decisionPoint
         this.player.sprite.setVelocityX(playerVelocity*2.5);  // positive X velocity -> move R
         this.player.sprite.anims.play('run', true);
-        this.physics.add.collider(this.player.sprite, this.decisionPoint,
-                          function(){eventsCenter.emit('choicePanelOn');}, null, this); // once the player has collided with invisible decision point, emit event
+        this.physics.add.collider(
+            this.player.sprite,
+            this.decisionPoint,
+            () => { eventsCenter.emit('choicePanelOn'); },
+            null,
+            this
+        ); // once the player has collided with invisible decision point, emit event
         // once this event is detected, perform the function displayChoicePanel (only once)
         eventsCenter.once('choicePanelOn', displayChoicePanel, this);
         
@@ -388,21 +393,17 @@ export default class MainTask extends Phaser.Scene {
 
 ///////////////////////////////FUNCTIONS FOR CONTROLLING TRIAL SEQUENCE/////////////////////////////////////
 // 1. Once player has hit the decision point, pop up the choice panel with info for that trial
-var displayChoicePanel = function (context) {
-    if (this !== undefined) {
-        context = this;
-    }
-
+var displayChoicePanel = function () {
     // record time
-    choicePopupTime = context.time.now; 
+    choicePopupTime = this.time.now; 
     // update some stuff (stop player moving and remove decisionPoint sprite)
-    context.player.sprite.setVelocityX(0);
-    context.player.sprite.anims.play('wait', true);
-    context.decisionPoint.destroy();
+    this.player.sprite.setVelocityX(0);
+    this.player.sprite.anims.play('wait', true);
+    this.decisionPoint.destroy();
     
     // display reward coins for each option
-    context.coins1 = new Coins(context, midbridgeX-(trialReward1*30)/2, 235, trialReward1); // coins in sky
-    context.coins2 = new Coins(context, midbridgeX-(trialReward2*30)/2, 360, trialReward2); // coins on bridge
+    this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 235, trialReward1); // coins in sky
+    this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 360, trialReward2); // coins on bridge
 
     const camera = this.cameras.main;
     const centerX = camera.scrollX + camera.width / 2;
@@ -418,13 +419,14 @@ var displayChoicePanel = function (context) {
         trialReward2,
         trialEffortPropMax2,
         (selected) => {
-            console.log('Selected:', selected);
+            this.registry.set('choice', selected);
+            eventsCenter.emit('choiceComplete');
         }
     );
     this.add.existing(panel.container);
     
     // once choice is entered, get choice info and route to relevant next step
-    eventsCenter.once('choiceComplete', doChoice, context);
+    eventsCenter.once('choiceComplete', doChoice, this);
 };
 
 // 2. Once choice (to accept or reject proposed option) has been made, route to relevant components 

@@ -18,7 +18,7 @@ export default class CountdownPanel {
         this.countdownText = scene.add.text(this.circleRadius + 4, 0, this.formatTime(this.timeLeft), {
             fontFamily: 'monospace',
             fontSize: '20px',  // Match title text size
-            color: '#ffffff'
+            color: '#000000'
         }).setOrigin(0, 0.5);
         
         // Add both elements to the container
