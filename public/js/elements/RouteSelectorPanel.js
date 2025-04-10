@@ -1,5 +1,6 @@
 import eventsCenter from '../eventsCenter.js'
 import CountdownPanel from './CountdownPanel.js';
+import PowerMeterBar from './PowerMeterBar.js';
 
 export default class RouteSelectorPanel {
     constructor(scene, x, y, width, height, route1Coins, route1Power, route2Coins, route2Power, onSelect) {
@@ -151,7 +152,7 @@ export default class RouteSelectorPanel {
         rewardColumn.add(rewardValue, { align: 'center' });
         rewardColumn.add(coinIcon, { align: 'center' });
 
-        const powerMeter = this.createPowerMeterBar(power);
+        const powerMeter = new PowerMeterBar(this.scene, power).container;
 
         buttonSizer.add(titleLabel);
         buttonSizer.add(powerLabel);
@@ -177,35 +178,6 @@ export default class RouteSelectorPanel {
         sizer.__bg__ = bg;
 
         return sizer;
-    }
-
-    createPowerMeterBar(powerPercent) {
-        const barSizer = this.scene.rexUI.add.sizer({
-            orientation: 'horizontal',
-            space: { item: 2 },
-            align: 'center'
-        });
-
-        const totalBlocks = 10;
-        const filledBlocks = Math.round((powerPercent / 100) * totalBlocks);
-        const blockWidth = 5; // slightly bigger than the designs but looks better
-        const blockHeight = 14;
-        const cornerRadius = 1;
-
-        for (let i = 0; i < totalBlocks; i++) {
-            const color = i < filledBlocks ? 0x25D070 : 0xD0D5DD;
-
-            const block = this.scene.rexUI.add.roundRectangle(
-                0, 0,
-                blockWidth, blockHeight,
-                cornerRadius,
-                color
-            );
-
-            barSizer.add(block);
-        }
-
-        return barSizer;
     }
 
     clearSelections() {
