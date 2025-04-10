@@ -127,10 +127,21 @@ export default class RouteSelectorPanel {
             color: '#000000'
         });
 
+        const coinImageSizes = [
+            { width:24 },
+            { width:30 },
+            { width:36 },
+            { width:42 },
+            { width:48 },
+            { width:54 },
+            { width:60 },
+        ];
+
         // Dynamically select coin image based on reward amount
         const rewardAmount = parseInt(reward.replace(/\D/g, '')) || 1;
         const coinKey = `coins-${rewardAmount}`; // e.g., coins-7
-        const coinIcon = this.scene.add.image(0, 0, coinKey).setDisplaySize(24, 24);
+        const coinWidth = coinImageSizes[rewardAmount  -  1].width;
+        const coinIcon = this.scene.add.image(0, 0, coinKey).setDisplaySize(coinWidth, 24);
 
         // Arrange reward text above coin icon
         const rewardColumn = this.scene.rexUI.add.sizer({
