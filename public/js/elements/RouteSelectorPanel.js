@@ -79,7 +79,7 @@ export default class RouteSelectorPanel {
 
         const sizer = this.scene.rexUI.add.overlapSizer({
             orientation: 'vertical',
-            space: { top: 0, bottom: 10, left: 0, right: 0 }
+            space: { top: 0, bottom: 20, left: 0, right: 0 }
         });
 
         const buttonSizer = this.scene.rexUI.add.sizer({ orientation: 'vertical', space: { item: 6 } });

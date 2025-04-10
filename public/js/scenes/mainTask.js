@@ -413,7 +413,7 @@ var displayChoicePanel = function () {
         centerX,
         this.cameras.main.height - 150,
         gameWidth,
-        300,
+        340,
         trialReward1,
         trialEffortPropMax1,
         trialReward2,
