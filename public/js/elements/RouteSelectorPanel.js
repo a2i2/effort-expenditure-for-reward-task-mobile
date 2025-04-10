@@ -30,11 +30,11 @@ export default class RouteSelectorPanel {
             width: width,
             height: height,
             // padding-space, and space between items
-            space: { top: 20, bottom: 20, left: 20, right: 20, item: 10 }
+            space: { top: 20, bottom: 20, left: 20, right: 20, item: 20 }
         });
 
         // Header: Title + Timer
-        const titleRow = scene.rexUI.add.sizer({ orientation: 'horizontal', space: { item: 10 } });
+        const titleRow = scene.rexUI.add.sizer({ orientation: 'horizontal', space: { item: 40 } });
 
         const title = scene.add.text(0, 0, 'Choose a route', {
             fontSize: '20px',

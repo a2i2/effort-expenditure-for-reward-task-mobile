@@ -6,23 +6,27 @@ export default class CountdownPanel {
         this.scene = scene;
         this.duration = duration;
         this.timeLeft = duration;
+
+        // Background
+        this.panel = scene.rexUI.add.roundRectangle(27.5, 0, 100, 30, 6, 0xF2F4F7);
+        this.panel.setOrigin(0.5);
         
         // Create the main container for our countdown elements
         this.container = scene.add.container(0, 0);
         
         // Create the circular progress indicator first
-        this.circleRadius = 12;
+        this.circleRadius = 10;
         this.circle = scene.add.graphics();
         
         // Create the countdown text with formatted time
-        this.countdownText = scene.add.text(this.circleRadius + 4, 0, this.formatTime(this.timeLeft), {
+        this.countdownText = scene.add.text(this.circleRadius + 8, 0, this.formatTime(this.timeLeft), {
             fontFamily: 'monospace',
-            fontSize: '20px',  // Match title text size
+            fontSize: '16px',  // Match title text size
             color: '#000000'
         }).setOrigin(0, 0.5);
         
         // Add both elements to the container
-        this.container.add([this.circle, this.countdownText]);
+        this.container.add([this.panel, this.circle, this.countdownText]);
         
         // Draw initial circle state
         this.drawCircle(1);
@@ -40,12 +44,12 @@ export default class CountdownPanel {
         this.circle.clear();
         
         // Draw the dark gray background circle (filled)
-        this.circle.fillStyle(0x333333);
+        this.circle.fillStyle(0x98A2B3);
         this.circle.fillCircle(0, 0, this.circleRadius);
         
         if (progress < 1) {
             // Draw the lighter gray progress (revealing effect)
-            this.circle.fillStyle(0x666666);
+            this.circle.fillStyle(0xD0D5DD);
             this.circle.beginPath();
             
             // Calculate start and end angles for the arc
