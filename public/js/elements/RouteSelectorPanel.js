@@ -54,8 +54,8 @@ export default class RouteSelectorPanel {
         // Buttons
         const optionsRow = scene.rexUI.add.sizer({ orientation: 'horizontal', space: { item: 20 } });
 
-        const route1 = this.createRouteButton('Route 1', `${this.route1Power}%`, `${this.route1Coins} coins`, 0xffcc00, true);
-        const route2 = this.createRouteButton('Route 2', `${this.route2Power}%`, `${this.route2Coins} coins`, 0xffcc00, false);
+        const route1 = this.createRouteButton('Route 1', this.route1Power, this.route1Coins);
+        const route2 = this.createRouteButton('Route 2', this.route2Power, this.route2Coins);
 
         optionsRow.add(route1, { expand: true });
         optionsRow.add(route2, { expand: true });
@@ -73,7 +73,7 @@ export default class RouteSelectorPanel {
         });
     }
 
-    createRouteButton(routeName, power, reward, coinColor, isLeft) {
+    createRouteButton(routeName, power, reward) {
         const bg = this.scene.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0xFFFFFF).setStrokeStyle(2, 0xD64204);
 
         const sizer = this.scene.rexUI.add.overlapSizer({
@@ -110,7 +110,7 @@ export default class RouteSelectorPanel {
             align: 'center',
             space: { left: 6, right: 6, top: 20, bottom: 0 }
         });
-        const powerValue = this.scene.add.text(0, 0, power, { fontSize: '18px', color: '#000000' });
+        const powerValue = this.scene.add.text(0, 0, `${power}%`, { fontSize: '18px', color: '#000000' });
 
         // Reward label and value
         const rewardLabel = this.scene.rexUI.add.label({
@@ -122,7 +122,7 @@ export default class RouteSelectorPanel {
             space: { left: 6, right: 6, top: 20, bottom: 0 }
         });
 
-        const rewardValue = this.scene.add.text(0, 0, reward, {
+        const rewardValue = this.scene.add.text(0, 0, `${reward} coins`, {
             fontSize: '18px',
             color: '#000000'
         });
@@ -138,9 +138,8 @@ export default class RouteSelectorPanel {
         ];
 
         // Dynamically select coin image based on reward amount
-        const rewardAmount = parseInt(reward.replace(/\D/g, '')) || 1;
-        const coinKey = `coins-${rewardAmount}`; // e.g., coins-7
-        const coinWidth = coinImageSizes[rewardAmount  -  1].width;
+        const coinKey = `coins-${reward}`; // e.g., coins-7
+        const coinWidth = coinImageSizes[reward  -  1].width;
         const coinIcon = this.scene.add.image(0, 0, coinKey).setDisplaySize(coinWidth, 24);
 
         // Arrange reward text above coin icon
@@ -152,9 +151,12 @@ export default class RouteSelectorPanel {
         rewardColumn.add(rewardValue, { align: 'center' });
         rewardColumn.add(coinIcon, { align: 'center' });
 
+        const powerMeter = this.createPowerMeterBar(power);
+
         buttonSizer.add(titleLabel);
         buttonSizer.add(powerLabel);
         buttonSizer.add(powerValue);
+        buttonSizer.add(powerMeter, { align: 'center' });
         buttonSizer.add(rewardLabel);
         buttonSizer.add(rewardColumn);
 
@@ -175,6 +177,35 @@ export default class RouteSelectorPanel {
         sizer.__bg__ = bg;
 
         return sizer;
+    }
+
+    createPowerMeterBar(powerPercent) {
+        const barSizer = this.scene.rexUI.add.sizer({
+            orientation: 'horizontal',
+            space: { item: 2 },
+            align: 'center'
+        });
+
+        const totalBlocks = 10;
+        const filledBlocks = Math.round((powerPercent / 100) * totalBlocks);
+        const blockWidth = 5; // slightly bigger than the designs but looks better
+        const blockHeight = 14;
+        const cornerRadius = 1;
+
+        for (let i = 0; i < totalBlocks; i++) {
+            const color = i < filledBlocks ? 0x25D070 : 0xD0D5DD;
+
+            const block = this.scene.rexUI.add.roundRectangle(
+                0, 0,
+                blockWidth, blockHeight,
+                cornerRadius,
+                color
+            );
+
+            barSizer.add(block);
+        }
+
+        return barSizer;
     }
 
     clearSelections() {
