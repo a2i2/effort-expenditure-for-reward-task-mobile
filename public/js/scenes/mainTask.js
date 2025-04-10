@@ -411,7 +411,7 @@ var displayChoicePanel = function () {
     const panel = new RouteSelectorPanel(
         this,
         centerX,
-        this.cameras.main.height - 150,
+        this.cameras.main.height - 170,
         gameWidth,
         340,
         trialReward1,
