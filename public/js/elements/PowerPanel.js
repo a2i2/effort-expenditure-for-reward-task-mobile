@@ -14,7 +14,7 @@ export default class PowerPanel {
         this.timeLeft = timeLimit;
 
         // Main panel background
-        this.panelBg = scene.rexUI.add.roundRectangle(x, y, width, height, { tl: 30, tr: 30, bl: 0, br: 0 }, 0xffffff).setStrokeStyle(1, 0xeeeeee);
+        this.panelBg = scene.rexUI.add.roundRectangle(x, y, width, height, { tl: 30, tr: 30, bl: 0, br: 0 }, 0xFFFFFF);
 
         // Outer vertical container
         this.container = scene.rexUI.add.sizer({
@@ -108,7 +108,7 @@ export default class PowerPanel {
         const powerButtonText = scene.add.text(0, 0, 'POWER', {
             fontSize: '18px',
             fontStyle: 'bold',
-            color: '#ffffff'
+            color: '#FFFFFF'
         });
 
         const powerButton = scene.rexUI.add.label({
