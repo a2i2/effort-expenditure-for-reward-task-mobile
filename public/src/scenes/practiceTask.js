@@ -23,10 +23,13 @@ import Message from "../elements/message.js";
 var gameHeight;
 var gameWidth;
 var mapWidth;
+var mapHeight;
 var platforms;
+var bridge;
 var gemHeight;
 const decisionPointX = 370;    // where the info panel will be triggered (x coord in px)
 const midbridgeX = 735;        // where gems will be displayed (x coord in px)
+const endbridgeX = 765;        // where the player must jump up to cross bridge (x coord in px)
 const playerVelocity = 1000;   // baseline player velocity (rightward)
 // initialize practice task vars
 var pracTrial = 0;
@@ -56,8 +59,8 @@ export default class PracticeTask extends Phaser.Scene {
     preload() {
         ////////////////////PRELOAD GAME ASSETS///////////////////////////////////
         // load tilemap and tileset created using Tiled (see below)
-        this.load.tilemapTiledJSON('pmap', './src/assets/tilemaps/tilemap-practice.json'); 
-        this.load.image('tiles', './src/assets/tilesets/tiles_edited_70px_extruded.png');
+        this.load.tilemapTiledJSON('pmap', './src/assets/tilemaps/tilemap-main-grass.json');
+        this.load.image('tiles', '.src/assets/tilesets/tiles_edited_70px_extruded.png');
 
         // load player sprite
         this.load.spritesheet('player', './src/assets/spritesheets/player1.png', { 
@@ -65,10 +68,10 @@ export default class PracticeTask extends Phaser.Scene {
             frameHeight: 96
         });
         
+        this.load.image('chapter-1-1', './assets/imgs/chapter-1-1.svg');
+
         // load rock and plant sprites to add some texture to background
-        this.load.image('rock1', './src/assets/imgs/rockMoss.png');
-        this.load.image('rock2', './src/assets/imgs/rockMossAlt.png');
-        this.load.image('plant', './src/assets/imgs/plantPurple.png');
+        this.load.image('smallShrub', './src/assets/imgs/small-shrub.svg');
         this.load.image('cloud', './src/assets/imgs/cloud2.png');
         this.load.image('button', './src/assets/imgs/button.png');
         // lightning bolt power:
@@ -96,31 +99,24 @@ export default class PracticeTask extends Phaser.Scene {
         gameHeight = this.sys.game.config.height;
         gameWidth = this.sys.game.config.width;
         mapWidth = pmap.widthInPixels;
+        mapHeight = pmap.heightInPixels;
+
+        this.background = this.add.tileSprite(mapWidth/2, mapHeight/2.2, 1107, 970, "chapter-1-1");
 
         // import scene layers (using names set up in Tiled)
         platforms = pmap.createStaticLayer("platforms", tileset, 0, 0);
+        bridge = pmap.createStaticLayer("bridge", tileset, 0, 0);
 
         // set up collision property for tiles that can be walked on (set in Tiled)
         platforms.setCollisionByProperty({ collide: true });
+        bridge.setCollisionByProperty({ collide: true });
 
-        // add rock and plant sprites for texture (randomly positioned on each trial)
-        this.rocks1 = this.physics.add.staticGroup();
-        for (var i = 0; i < 2; i++) {
-            var x = Phaser.Math.RND.between(0, mapWidth);
-            var y = gameHeight / 2 -10;        // only at ground height
-            this.rocks1.create(x, y, 'rock1').setScale(1.2).refreshBody();
-        }
-        this.rocks2 = this.physics.add.staticGroup();
-        for (var i = 0; i < 2; i++) {
-            var x = Phaser.Math.RND.between(0, mapWidth);
-            var y = gameHeight / 2 -10;        // only at ground height
-            this.rocks2.create(x, y, 'rock2').setScale(1.2).refreshBody();
-        }
+        // add plant sprites for texture (randomly positioned on each trial)
         this.plants = this.physics.add.staticGroup();
         for (var i = 0; i < 2; i++) {
-            var x = Phaser.Math.RND.between(0, mapWidth);
-            var y = gameHeight / 2 -10;        // only at ground height
-            this.rocks2.create(x, y, 'plant').setScale(1.2).refreshBody();
+            var x = 25;
+            var y = 473;
+            this.plants.create(x, y, 'smallShrub').setScale(1.2).refreshBody();
         }
 
         // set the boundaries of the world
@@ -129,7 +125,8 @@ export default class PracticeTask extends Phaser.Scene {
 
         //////////////ADD PLAYER SPRITE////////////////////
         this.player = new Player(this, 0, 300); // (this, spawnPoint.x, spawnPoint.y);
-        this.physics.add.collider(this.player.sprite, platforms);    // player walks on platforms      
+        this.physics.add.collider(this.player.sprite, platforms);    // player walks on platforms 
+        this.physics.add.collider(this.player.sprite, bridge);       // player walks on platforms and bridge     
 
         //////////////CONTROL CAMERA///////////////////////
         this.cameras.main.startFollow(this.player.sprite);           // camera follows player
@@ -165,7 +162,13 @@ export default class PracticeTask extends Phaser.Scene {
         this.decisionPoint.immovable = true;
         this.decisionPoint.body.moves = false;
         this.decisionPoint.allowGravity = false;
-        // 0.2 point where a new trial is triggered:
+        // 0.2 end of bridge where our little man requires a gravity boost (reject & unsuccessful trials):
+        this.bridgeEndPoint = this.physics.add.sprite(endbridgeX, gameHeight/2);
+        this.bridgeEndPoint.displayHeight = gameHeight;  
+        this.bridgeEndPoint.immovable = true;
+        this.bridgeEndPoint.body.moves = false;
+        this.bridgeEndPoint.allowGravity = false;
+        // 0.3 point where a new trial is triggered:
         this.trialEndPoint = this.physics.add.sprite(mapWidth - 20, gameHeight / 2);
         this.trialEndPoint.displayHeight = gameHeight;
         this.trialEndPoint.immovable = true;
@@ -341,6 +344,9 @@ var effortOutcome = function() {
                                     // player progresses via bridge and earns no extra reward
                                     this.player.sprite.setVelocityX(playerVelocity/4);   // 4,5,6
                                     this.player.sprite.anims.play('run', true);
+                                    this.physics.add.collider(this.player.sprite, this.bridgeEndPoint, 
+                                        function(){eventsCenter.emit('bumpme');}, null, this);
+                                        eventsCenter.once('bumpme', onejump, this);
                                     });
                             },                         
                             callbackScope: this});
@@ -388,4 +394,14 @@ var pracTrialEnd = function () {
 var collectGems = function(player, gem) {
     gem.disableBody(true, true);      // individual gems from physics group become invisible upon overlap
     nGems++; 
+};
+
+// function to get player up other side of bridge by performing single jump
+// used on reject and unsucessful accept trials
+var onejump = function () {
+    this.bridgeEndPoint.destroy();
+    let jumpHeight = -400;
+    this.player.sprite.setVelocityY(jumpHeight);
+    let jumpAnimDuration = 1100;
+    this.time.delayedCall(jumpAnimDuration, () => { this.player.sprite.setVelocityX(playerVelocity/5); }, null, this);
 };

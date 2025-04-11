@@ -67,9 +67,9 @@ Object.freeze(sceneOrder);
 // 2. set effort-related calibration variables: 
 var effortTime = 10000;	// time participant will have to try and exert effort (ms)
 var timeout = 5000; // time to wait for participant to make a choice (ms)
-var pracTrialEfforts = [75, 63, 70];   // practice effort level (presses)
-var pracTrialRewards = [5, 3, 4]; // reward values of gems
-var gemHeights = [255, 180, 220]; // arbitrary heights 
+var pracTrialEfforts = [75, 63, 70, 75];   // practice effort level (presses)
+var pracTrialRewards = [5, 3, 4, 5]; // reward values of gems
+var gemHeights = [255, 180, 220, 255]; // arbitrary heights 
 // set a minimum on initial max press count to avoid gaming the practice trials (10% quantile from pilot1)
 var minPressMax = 58;   
 var thresholdAutoSet = 58;
