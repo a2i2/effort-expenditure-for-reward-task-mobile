@@ -120,17 +120,22 @@ export default class PowerPanel {
 
         powerButton.setInteractive()
             .on('pointerdown', () => {
-                powerButtonBg.setFillStyle(0x8A2A03); // Pressed color
-                // User has reached the goal
-                if (this.pressCount >= this.trialEffort) {
-                    this.countdownPanel?.removeTimer(); // immediately stop the timer
-                    setTimeout(() => { this.onComplete(); }, 100);
-                } else {
-                    this.incrementPower();
+                // Only show pressed colour if the user has not yet reached the goal
+                if (this.pressCount < this.trialEffort) {
+                    powerButtonBg.setFillStyle(0x8A2A03); // Pressed color
                 }
             })
             .on('pointerup', () => {
                 powerButtonBg.setFillStyle(0xD1440C); // Normal color
+                // User has not yet reached the goal so we can safely increment the count
+                if (this.pressCount < this.trialEffort) {
+                    this.incrementPower();
+                }
+                // User has reached the goal
+                if (this.pressCount >= this.trialEffort) {
+                    this.countdownPanel?.removeTimer(); // immediately stop the timer
+                    this.onComplete();
+                }
             })
             .on('pointerout', () => {
                 powerButtonBg.setFillStyle(0xD1440C); // Restore if dragged out
@@ -163,7 +168,7 @@ export default class PowerPanel {
         } else {
             eventsCenter.emit('timesup');
         }
-        this.destroy();
+        setTimeout(() => { this.destroy(); }, 100); // Keep the panel visible for a brief moment
     }
 
     destroy() {
