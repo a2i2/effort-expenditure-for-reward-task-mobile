@@ -165,13 +165,20 @@ export default class RouteSelectorPanel {
         sizer.add(buttonSizer, { align: 'center' });
 
         sizer.setInteractive()
-            .on('pointerdown', () => {
+            // User has dragged/touched their cursor/finger over/onto the button
+            .on('pointerover', () => {
                 this.clearSelections();
-                bg.setFillStyle(0xFEE1D5); // light pink
-                setTimeout(() => {
-                    this.onSelect?.(routeName.toLowerCase());
-                    this.destroy();
-                }, 200);
+                bg.setFillStyle(0xFEE1D5);
+            })
+            // User has dragger their cursor/finger off the button
+            .on('pointerout', () => {
+                this.clearSelections();
+            })
+            // User has released their cursor/finger to 'confirm' their selection
+            .on('pointerup', () => {
+                this.clearSelections();
+                this.onSelect?.(routeName.toLowerCase());
+                this.destroy();
             });
 
         // Keep track to reset background color
