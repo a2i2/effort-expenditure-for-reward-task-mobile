@@ -3,11 +3,11 @@
 // import js game element modules (sprites, ui, outcome animations, etc.)
 import Player from "../elements/player.js";
 import Coins from "../elements/coins.js";
-import ChoicePanel from "../elements/choicePanel.js";       
 import TimerPanel from "../elements/timerPanelClicks.js";
 import BreakPanel from "../elements/takeABreak.js";
 import StaticObjects from "../elements/staticObjects.js";
 import ProgressBar from "../elements/progressBar.js";
+import RouteSelectorPanel from "../elements/RouteSelectorPanel.js";
 
 // import our custom events center for passsing info between scenes and relevant data saving function
 import eventsCenter from '../eventsCenter.js'
@@ -161,6 +161,11 @@ export default class MainTask extends Phaser.Scene {
         this.load.image('chapter-4-3', './assets/imgs/chapter-4-3.svg');
         this.load.image('chapter-4-4', './assets/imgs/chapter-4-4.svg');
         this.load.image('chapter-4-5', './assets/imgs/chapter-4-5.svg');
+
+        // load coin images
+        for (let i = 1; i <= 7; i++) {
+            this.load.image(`coins-${i}`, `./assets/imgs/coins-${i}.svg`);
+        }
     }
     
     create() {
@@ -331,10 +336,15 @@ export default class MainTask extends Phaser.Scene {
         // 1. Upon entering scene, player moves right until they encounter the decisionPoint
         this.player.sprite.setVelocityX(playerVelocity*2.5);  // positive X velocity -> move R
         this.player.sprite.anims.play('run', true);
-        this.physics.add.collider(this.player.sprite, this.decisionPoint, 
-                          function(){eventsCenter.emit('choicePanelOn');}, null, this); // once the player has collided with invisible decision point, emit event
+        this.physics.add.collider(
+            this.player.sprite,
+            this.decisionPoint,
+            () => { eventsCenter.emit('choicePanelOn'); },
+            null,
+            this
+        ); // once the player has collided with invisible decision point, emit event
         // once this event is detected, perform the function displayChoicePanel (only once)
-        eventsCenter.once('choicePanelOn', displayChoicePanel, this);  
+        eventsCenter.once('choicePanelOn', displayChoicePanel, this);
         
         // 2. After trial outcome (reject, accept+successful, accept+unsuccessful), 
         // player moves right again until they encounter the trial end point
@@ -388,17 +398,32 @@ var displayChoicePanel = function () {
     choicePopupTime = this.time.now; 
     // update some stuff (stop player moving and remove decisionPoint sprite)
     this.player.sprite.setVelocityX(0);
-    this.player.sprite.anims.play('wait', true); 
+    this.player.sprite.anims.play('wait', true);
     this.decisionPoint.destroy();
     
     // display reward coins for each option
     this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 235, trialReward1); // coins in sky
     this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 360, trialReward2); // coins on bridge
-    
-    // popup choice panel with relevant trial info
-    this.choicePanel = new ChoicePanel(this, decisionPointX-60, gameHeight/1.5, 
-                                       trialReward1, trialEffortPropMax1, trialEffort1, 
-                                       trialReward2, trialEffortPropMax2, trialEffort2); 
+
+    const camera = this.cameras.main;
+    const centerX = camera.scrollX + camera.width / 2;
+
+    const panel = new RouteSelectorPanel(
+        this,
+        centerX,
+        this.cameras.main.height - 170,
+        gameWidth,
+        340,
+        trialReward1,
+        trialEffortPropMax1,
+        trialReward2,
+        trialEffortPropMax2,
+        (selected) => {
+            this.registry.set('choice', selected);
+            eventsCenter.emit('choiceComplete');
+        }
+    );
+    this.add.existing(panel.container);
     
     // once choice is entered, get choice info and route to relevant next step
     eventsCenter.once('choiceComplete', doChoice, this);
