@@ -38,7 +38,7 @@ export default class PowerPanel {
             color: '#000000'
         });
 
-        this.countdownPanel = new CountdownPanel(this.scene, 0, 0);
+        this.countdownPanel = new CountdownPanel(this.scene, 0, 0, 10000);
         headerRow.add(titleText, { expand: true });
         headerRow.add(this.countdownPanel.container);
 
