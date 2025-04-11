@@ -246,8 +246,46 @@ var displayInfoPanel = function () {
                                                    decisionPointX-60, gameHeight/1.4, 
                                                    pageNo, titleTxt, mainTxt, buttonTxt);
     
+    // each practice trial has a custom message displayed at the same time as the choice panel,
+    // work out which one to display based on the practice trial index
+    showMessageForCurrentPracticeTrial(this)
+
     // once choice is entered, get choice info and route to relevant next step
     eventsCenter.once('page4complete', doChoice, this);       
+};
+
+var showMessageForCurrentPracticeTrial = function (context) {
+    let messages = [
+        "First, let\'s learn how to fly!\nTap the button as fast as you can\nto help Pickle fly. Press \'ready\' to start'.",
+        "Great effort!\nLet's try again\npractice makes perfect.",
+        "Nice! Now, let\'s learn about routes.\nRoutes require different amounts of\neffort and offer different rewards.",
+        "Your turn!\nChoose the route you\'d prefer to take.\nYou have 5 seconds.",
+    ]
+
+    let messageTextForCurrentTrial = messages[pracTrial];
+    feedbackMessage = new Message(
+        context,
+        gameWidth,
+        "14px monospace",
+        0xF6F8F9,
+        0xD0D5DD,
+        messageTextForCurrentTrial,
+        "#000000",
+        85,
+        160,
+        110,
+        -5
+    );
+
+    context.tweens.add({        
+        targets: feedbackMessage,
+        scaleX: { start: 0, to: 1 },
+        scaleY: { start: 0, to: 1 },
+        ease: 'Linear',    
+        duration: pracAnimationTime,
+        repeat: 0,      
+        yoyo: false
+    });
 };
 
 // 2. Once participant has indicated they are ready, let them try out the effort panel 
@@ -270,24 +308,32 @@ var effortOutcome = function() {
     // if ppt chooses high effort and clears trial effort threshold, fly across sky and collect coins!
     if (pressCount >= pracTrialEffort) {
         trialSuccess = 1;
+
+        if (feedbackMessage) {
+            // remove feedback message from the screen if its still there
+            feedbackMessage.destroy();
+            feedbackMessage = null;
+        }
+
         // add overlap colliders so coins  on either route disappear when overlap with player body
         this.physics.add.overlap(this.player.sprite, this.gems.sprite, collectGems, null, this); 
 
-        this.feedbackMessage = new Message(
+        feedbackMessage = new Message(
             this,
             gameWidth,
-            0xF6F8F9,
-            0xD0D5DD,
-            "Great effort!\nLet's try again\npractice makes perfect.",
-            "#000000",
-            85,
-            160,
+            "16px monospace",
+            0xBCF3D4,
+            0x25D070,
+            "Nice work!",
+            "#10562F",
+            60,
+            130,
             110,
-            -5
-          );
+            -10
+        );
           
         this.tweens.add({        
-            targets: this.feedbackMessage,
+            targets: feedbackMessage,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
             ease: 'Linear',    
@@ -298,11 +344,11 @@ var effortOutcome = function() {
         // then player floats across 'high route' and collects coins
         this.time.addEvent({delay: pracFeedbackTime+250, 
                             callback: function(){
-                                this.feedbackMessage.destroy();
+                                feedbackMessage.destroy();
                                 this.player.sprite.anims.play('float', true);    
                                 this.player.sprite.setVelocityX(playerVelocity/3);
                                 this.time.addEvent({ delay: 150, 
-                                                     callback: function(){this.player.sprite.setVelocityY(-420+gemHeight);},
+                                                     callback: function(){this.player.sprite.setVelocityY(-520+gemHeight);},
                                                      callbackScope: this, 
                                                      repeat: 5 });
                             },
@@ -310,14 +356,22 @@ var effortOutcome = function() {
     }
     else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
+
+        if (feedbackMessage) {
+            // remove feedback message from the screen if its still there
+            feedbackMessage.destroy();
+            feedbackMessage = null;
+        }
+
         // display failure message for a couple of seconds
-        this.feedbackMessage = new Message(
+        feedbackMessage = new Message(
             this,
             gameWidth,
-            0xF6F8F9,
-            0xD0D5DD,
+            "16px monospace",
+            0xFFDBDB,
+            0xFF9696,
             "Not enough power this time!",
-            "#000000",
+            "#9B0000",
             60,
             130,
             110,
@@ -325,7 +379,7 @@ var effortOutcome = function() {
         );
 
         this.tweens.add({        
-            targets: this.feedbackMessage,
+            targets: feedbackMessage,
             scaleX: { start: 0, to: 1 },
             scaleY: { start: 0, to: 1 },
             ease: 'Linear',    
@@ -336,7 +390,7 @@ var effortOutcome = function() {
         // then play powerup fail anim and progress via slow route
         this.time.addEvent({delay: pracFeedbackTime+250, 
                             callback: function(){
-                                this.feedbackMessage.destroy();
+                                feedbackMessage.destroy();
                                 // then play short 'powerup fail' anim:
                                 this.player.sprite.anims.play('powerupfail', true);
                                 // and progress via bridge route (with sad face)

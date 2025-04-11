@@ -478,6 +478,7 @@ var effortOutcome = function() {
         this.feedbackMessage = new Message(
             this,
             gameWidth,
+            "16px monospace",
             0xBCF3D4,
             0x25D070,
             "Nice work!",
@@ -520,6 +521,7 @@ var effortOutcome = function() {
         this.feedbackMessage = new Message(
             this,
             gameWidth,
+            "16px monospace",
             0xBCF3D4,
             0x25D070,
             "Nice work!",
@@ -559,6 +561,7 @@ var effortOutcome = function() {
         this.feedbackMessage = new Message(
             this,
             gameWidth,
+            "16px monospace",
             0xFFDBDB,
             0xFF9696,
             "Too slow - you only have 5\nseconds to choose a route",
@@ -599,6 +602,7 @@ var effortOutcome = function() {
         this.feedbackMessage = new Message(
             this,
             gameWidth,
+            "16px monospace",
             0xFFDBDB,
             0xFF9696,
             "Not enough power this time!",
