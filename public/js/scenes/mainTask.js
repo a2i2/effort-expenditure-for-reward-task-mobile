@@ -3,7 +3,6 @@
 // import js game element modules (sprites, ui, outcome animations, etc.)
 import Player from "../elements/player.js";
 import Coins from "../elements/coins.js";
-import TimerPanel from "../elements/timerPanelClicks.js";
 import BreakPanel from "../elements/takeABreak.js";
 import StaticObjects from "../elements/staticObjects.js";
 import ProgressBar from "../elements/progressBar.js";
