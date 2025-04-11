@@ -1,12 +1,15 @@
+import CountdownPanel from "./CountdownPanel.js";
+import eventsCenter from "../eventsCenter.js";
 import PowerMeterBar from "./PowerMeterBar.js";
 
 export default class PowerPanel {
-    constructor(scene, x, y, width, height, timeLimit, rewardCoins, power, trialEffort) {
+    constructor(scene, x, y, width, height, timeLimit, rewardCoins, power, trialEffort, isPractice = false) {
         this.scene = scene;
         this.powerPercent = 0;
         this.powerText = (power * 100).toFixed();
         this.rewardCoins = rewardCoins;
         this.trialEffort = trialEffort; // number of presses needed to succeed
+        this.isPractice = isPractice;
 
         // Stats to keep track of
         this.pressCount = 0;
@@ -27,7 +30,7 @@ export default class PowerPanel {
         });
 
         // Header row: title + countdown
-        const headerRow = scene.rexUI.add.sizer({ orientation: 'horizontal', space: { item: 10 } });
+        const headerRow = scene.rexUI.add.sizer({ orientation: 'horizontal', space: { item: 40 } });
 
         const titleText = scene.add.text(0, 0, 'Tap for power', {
             fontSize: '20px',
@@ -35,13 +38,9 @@ export default class PowerPanel {
             color: '#000000'
         });
 
-        this.timerText = scene.add.text(0, 0, '⏱️ 0:10', {
-            fontSize: '16px',
-            color: '#666'
-        });
-
+        this.countdownPanel = new CountdownPanel(this.scene, 0, 0);
         headerRow.add(titleText, { expand: true });
-        headerRow.add(this.timerText);
+        headerRow.add(this.countdownPanel.container);
 
         // Power meter background
         const meterBg = scene.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0xF6F8F9);
@@ -122,7 +121,13 @@ export default class PowerPanel {
         powerButton.setInteractive()
             .on('pointerdown', () => {
                 powerButtonBg.setFillStyle(0x8A2A03); // Pressed color
-                this.increasePowerMeter();
+                // User has reached the goal
+                if (this.pressCount >= this.trialEffort) {
+                    this.countdownPanel?.removeTimer(); // immediately stop the timer
+                    setTimeout(() => { this.onComplete(); }, 100);
+                } else {
+                    this.incrementPower();
+                }
             })
             .on('pointerup', () => {
                 powerButtonBg.setFillStyle(0xD1440C); // Normal color
@@ -137,15 +142,35 @@ export default class PowerPanel {
         this.container.add(powerButton, { expand: true });
 
         this.container.layout();
+
+        // Ran out of time to reach the trialEffort
+        eventsCenter.once('countdownComplete', () => {
+            this.onComplete();
+        });
     }
 
-    increasePowerMeter() {
+    incrementPower() {
         this.pressCount++;
         this.pressTimes.push(Math.round(this.scene.time.now));
         this.powerMeter.updatePowerBar(this.pressCount, this.trialEffort);
     }
 
-    getContainer() {
-        return this.container;
+    onComplete() {
+        this.scene.registry.set('pressCount', this.pressCount);
+        this.scene.registry.set('pressTimes', this.pressTimes);
+        if (this.isPractice) {
+            eventsCenter.emit('practicetimesup');
+        } else {
+            eventsCenter.emit('timesup');
+        }
+        this.destroy();
+    }
+
+    destroy() {
+        // Stop the countdown timer
+        this.countdownPanel?.destroy();
+        // Remove containers from the screen
+        this.panelBg?.destroy();
+        this.container?.destroy();
     }
 }
