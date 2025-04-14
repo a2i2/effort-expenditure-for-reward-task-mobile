@@ -2,6 +2,8 @@ import CountdownPanel from "./CountdownPanel.js";
 import eventsCenter from "../eventsCenter.js";
 import PowerMeterBar from "./PowerMeterBar.js";
 
+const POWER_UP_TIMEOUT_KEY = 'powerUpTimeout';
+
 export default class PowerPanel {
     constructor(scene, x, y, width, height, timeLimit, rewardCoins, power, trialEffort, isPractice = false) {
         this.scene = scene;
@@ -38,7 +40,7 @@ export default class PowerPanel {
             color: '#000000'
         });
 
-        this.countdownPanel = new CountdownPanel(this.scene, 0, 0, 10000);
+        this.countdownPanel = new CountdownPanel(this.scene, 0, 0, 10000, POWER_UP_TIMEOUT_KEY);
         headerRow.add(titleText, { expand: true });
         headerRow.add(this.countdownPanel.container);
 
@@ -133,8 +135,8 @@ export default class PowerPanel {
                 }
                 // User has reached the goal
                 if (this.pressCount >= this.trialEffort) {
-                    this.countdownPanel?.removeTimer(); // immediately stop the timer
-                    this.onComplete();
+                    this.countdownPanel?.destroy(); // immediately stop and remove the timer
+                    this.onSuccess();
                 }
             })
             .on('pointerout', () => {
@@ -149,8 +151,8 @@ export default class PowerPanel {
         this.container.layout();
 
         // Ran out of time to reach the trialEffort
-        eventsCenter.once('countdownComplete', () => {
-            this.onComplete();
+        eventsCenter.once(POWER_UP_TIMEOUT_KEY, () => {
+            this.onTimeout();
         });
     }
 
@@ -158,6 +160,16 @@ export default class PowerPanel {
         this.pressCount++;
         this.pressTimes.push(Math.round(this.scene.time.now));
         this.powerMeter.updatePowerBar(this.pressCount, this.trialEffort);
+    }
+
+    onTimeout() {
+        this.onComplete();
+        this.destroy();
+    }
+
+    onSuccess() {
+        this.onComplete();
+        setTimeout(() => { this.destroy(); }, 200); // Keep the panel visible for a brief moment
     }
 
     onComplete() {
@@ -168,7 +180,8 @@ export default class PowerPanel {
         } else {
             eventsCenter.emit('timesup');
         }
-        setTimeout(() => { this.destroy(); }, 100); // Keep the panel visible for a brief moment
+        // Stop listening to this registered event
+        eventsCenter.removeListener(POWER_UP_TIMEOUT_KEY);
     }
 
     destroy() {
