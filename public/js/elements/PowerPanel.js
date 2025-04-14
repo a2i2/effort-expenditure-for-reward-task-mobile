@@ -3,6 +3,8 @@ import eventsCenter from "../eventsCenter.js";
 import PowerMeterBar from "./PowerMeterBar.js";
 
 const POWER_UP_TIMEOUT_KEY = 'powerUpTimeout';
+export const POWER_UP_COMPLETE_KEY = 'powerUpComplete';
+export const PRACTICE_POWER_UP_COMPLETE_KEY = 'practicePowerUpComplete';
 
 export default class PowerPanel {
     constructor(scene, x, y, width, height, timeLimit, rewardCoins, power, trialEffort, isPractice = false) {
@@ -176,9 +178,9 @@ export default class PowerPanel {
         this.scene.registry.set('pressCount', this.pressCount);
         this.scene.registry.set('pressTimes', this.pressTimes);
         if (this.isPractice) {
-            eventsCenter.emit('practicetimesup');
+            eventsCenter.emit(PRACTICE_POWER_UP_COMPLETE_KEY); // TODO: Not currently used by the practiceTask
         } else {
-            eventsCenter.emit('timesup');
+            eventsCenter.emit(POWER_UP_COMPLETE_KEY);
         }
         // Stop listening to this registered event
         eventsCenter.removeListener(POWER_UP_TIMEOUT_KEY);
