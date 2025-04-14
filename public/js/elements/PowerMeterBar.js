@@ -20,6 +20,8 @@ export default class PowerMeterBar {
 
         const filledBlocks = Math.round((powerPercent / 100) * this.config.totalBlocks);
 
+        this.powerBlocks = [];
+
         for (let i = 0; i < this.config.totalBlocks; i++) {
             const color = i < filledBlocks ? 0x25D070 : 0xD0D5DD;
 
@@ -30,7 +32,18 @@ export default class PowerMeterBar {
                 color
             );
 
+            this.powerBlocks.push(block);
             this.container.add(block);
         }
+    }
+
+    updatePowerBar(pressCount, pressGoal) {
+        const filled = Math.min(
+            Math.floor((pressCount / pressGoal) * this.config.totalBlocks),
+            this.config.totalBlocks
+        );
+        this.powerBlocks.forEach((block, index) => {
+            block.setFillStyle(index < filled ? 0x4caf50 : 0xdddddd);
+        });
     }
 }

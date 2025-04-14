@@ -3,7 +3,6 @@
 // import js game element modules (sprites, ui, outcome animations, etc.)
 import Player from "../elements/player.js";
 import Coins from "../elements/coins.js";
-import TimerPanel from "../elements/timerPanelClicks.js";
 import BreakPanel from "../elements/takeABreak.js";
 import StaticObjects from "../elements/staticObjects.js";
 import ProgressBar from "../elements/progressBar.js";
@@ -20,6 +19,7 @@ import {sceneOrder, runPractice, effortTime, nBlocks, nCalibrates,
 } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
+import PowerPanel from "../elements/PowerPanel.js";
 
 // make sure that the scene order is evaluated
 //const evaluatedSceneOrder = sceneOrder.map(sceneName => eval(sceneName));
@@ -435,11 +435,13 @@ var doChoice = function () {
     choiceCompleteTime = this.time.now; 
     choiceRT = Math.round(choiceCompleteTime - choicePopupTime); 
     // and get info on chosen option
-    choice = this.registry.get('choice');  
+    choice = this.registry.get('choice');
+    const camera = this.cameras.main;
+    const centerX = camera.scrollX + camera.width / 2;
     
     if (choice == 'route 1') {  // if participant chooses the high effort option
         // timer panel pops up  
-        this.timerPanel = new TimerPanel(this, decisionPointX - 60, gameHeight / 1.5, effortTime, trialEffort1, practiceorReal)
+        this.powerPanel = new PowerPanel(this, centerX, this.cameras.main.height - 170, gameWidth, 340, effortTime, trialReward1, trialEffortPropMax1, trialEffort1);
         // and play player 'power-up' animation
         this.player.sprite.anims.play('powerup', true);
         // until time limit reached:
@@ -447,7 +449,7 @@ var doChoice = function () {
         }
     else if (choice == 'route 2') {  // if participant chooses the low effort option
         // timer panel pops up  
-        this.timerPanel = new TimerPanel(this, decisionPointX - 60, gameHeight / 1.5, effortTime, trialEffort2, practiceorReal)
+        this.powerPanel = new PowerPanel(this, centerX, this.cameras.main.height - 170, gameWidth, 340, effortTime, trialReward2, trialEffortPropMax2, trialEffort2);
         // and play player 'power-up' animation
         this.player.sprite.anims.play('powerup', true);
         // until time limit reached:

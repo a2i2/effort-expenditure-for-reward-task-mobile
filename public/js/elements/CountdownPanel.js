@@ -91,41 +91,22 @@ export default class CountdownPanel {
             callbackScope: this,
             loop: true
         });
-
-        eventsCenter.once('destroyCountdown', () => {
-            this.removeTimer();
-        });
     }
     
     onComplete() {
-        this.destroy();
         eventsCenter.emit('countdownComplete');
-
-        // FIXME: A delay was needed to ensure the countdown panel was removed before choiceComplete event was emitted in some cases,
-        // come back to this in the future and fix it properly
-
-        // Emit event that countdown is complete
-        // this.scene.tweens.add({
-        //     targets: this.container,
-        //     alpha: 0,
-        //     duration: 200,
-        //     ease: 'Power2',
-        //     onComplete: () => {
-        //         // this.destroy();
-        //         eventsCenter.emit('countdownComplete');
-        //     }
-        // });
-    }
-    
-    destroy() {
-        this.removeTimer();
-        this.container.destroy();
+        this.destroy();
     }
 
     removeTimer() {
         if (this.timer) {
             this.timer.remove();
-            this.timer = null;
+            this.timer = undefined;
         }
+    }
+
+    destroy() {
+        this.removeTimer();
+        this.container.destroy();
     }
 } 

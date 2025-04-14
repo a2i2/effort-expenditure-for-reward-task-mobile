@@ -1,4 +1,4 @@
-import eventsCenter from '../eventsCenter.js'
+import eventsCenter from '../eventsCenter.js';
 import CountdownPanel from './CountdownPanel.js';
 import PowerMeterBar from './PowerMeterBar.js';
 
@@ -44,11 +44,9 @@ export default class RouteSelectorPanel {
             // TODO: Font family
         });
 
+        this.countdownPanel = new CountdownPanel(this.scene, 0, 0);
         titleRow.add(title, { expand: true });
-        titleRow.add(
-            new CountdownPanel(this.scene, 0, 0).container,
-            0, 'right', 0, false
-        )
+        titleRow.add(this.countdownPanel.container);
 
         this.container.add(titleRow);
 
@@ -207,7 +205,7 @@ export default class RouteSelectorPanel {
 
     destroy() {
         // Stop the countdown timer
-        eventsCenter.emit('destroyCountdown');
+        this.countdownPanel?.destroy();
         // Remove containers from the screen
         this.panel?.destroy();
         this.container?.destroy();
