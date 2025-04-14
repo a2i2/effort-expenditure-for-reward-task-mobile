@@ -4,14 +4,15 @@
 import Player from "../elements/player.js";
 import Gems from "../elements/gems.js";
 import InstructionsPanel from "../elements/instructionsPanel.js";       
-import TimerPanel from "../elements/timerPanelClicks.js";
+import ProgressBar from "../elements/progressBar.js";
+import PowerPanel from "../elements/PowerPanel.js";
 
 // import our custom events center for passsing info between scenes annd relevant data saving function
 import eventsCenter from '../eventsCenter.js'
 // import { savePracTaskData, saveThresholdMax} from "../saveData.js";
 
 // import effort info from versionInfo file
-import { effortTime, pracTrialEfforts, gemHeights, pracTrialRewards } from "../versionInfo.js";
+import { effortTime, pracTrialEfforts, pracTrialEffortProp, gemHeights, pracTrialRewards } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
 
@@ -70,6 +71,9 @@ export default class PracticeTask extends Phaser.Scene {
         
         this.load.image('chapter-1-1', './assets/imgs/chapter-1-1.svg');
 
+        // close button
+        this.load.image('close', './assets/imgs/close.svg');
+
         // load rock and plant sprites to add some texture to background
         this.load.image('smallShrub', './src/assets/imgs/small-shrub.svg');
         this.load.image('cloud', './src/assets/imgs/cloud2.png');
@@ -122,6 +126,23 @@ export default class PracticeTask extends Phaser.Scene {
         // set the boundaries of the world
         this.physics.world.bounds.width = mapWidth;
         this.physics.world.bounds.height = gameHeight;
+
+        //////////////ADD PROGRESS BAR////////////////////
+        // Create progress bar at the top of the screen with nBlocks segments
+        this.progressBar = new ProgressBar(this, 24, 20, 340, nPracTrials, pracTrial, {
+            height: 10,
+            padding: 4,
+            cornerRadius: 5
+        });
+        // Make it stay fixed on screen (not affected by camera)
+        this.progressBar.setScrollFactor(0);
+
+        this.closeButton = this.add.image(gameWidth - 24, 25, 'close');
+        this.closeButton.setScrollFactor(0);
+        this.closeButton.setInteractive();
+        this.closeButton.on('pointerdown', () => {
+            EmbedContext.sendMessage('close');
+        });
 
         //////////////ADD PLAYER SPRITE////////////////////
         this.player = new Player(this, 0, 300); // (this, spawnPoint.x, spawnPoint.y);
@@ -290,8 +311,8 @@ var showMessageForCurrentPracticeTrial = function (context) {
 
 // 2. Once participant has indicated they are ready, let them try out the effort panel 
 var doChoice = function () {
-    // timer panel pops up  
-    this.timerPanel = new TimerPanel(this, decisionPointX-60, gameHeight/1.4, effortTime, pracTrialEffort, practiceOrReal); 
+    // power panel pops up
+    this.powerPanel = new PowerPanel(this, decisionPointX-60, this.cameras.main.height - 170, gameWidth, 340, effortTime, pracTrialReward, pracTrialEffortProp, pracTrialEffort, true);
     // and play player 'power-up' animation
     this.player.sprite.anims.play('powerup', true);
     

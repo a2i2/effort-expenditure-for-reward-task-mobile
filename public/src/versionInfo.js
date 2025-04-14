@@ -69,6 +69,7 @@ var effortTime = 10000;	// time participant will have to try and exert effort (m
 var timeout = 5000; // time to wait for participant to make a choice (ms)
 var pracTrialEfforts = [75, 63, 70, 75];   // practice effort level (presses)
 var pracTrialRewards = [5, 3, 4, 5]; // reward values of gems
+var pracTrialEffortProp = 1;
 var gemHeights = [255, 180, 220, 255]; // arbitrary heights 
 // set a minimum on initial max press count to avoid gaming the practice trials (10% quantile from pilot1)
 var minPressMax = 58;   
@@ -98,5 +99,5 @@ export {
 	demo_mode, debug_mode, sceneOrder, randomiseOrder, runPractice,
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
 	blockDesktop, trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
-	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, minPressMax, nCalibrates, nBlocks, complete_link, buttonText, powerupDelay
+	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, pracTrialEffortProp, minPressMax, nCalibrates, nBlocks, complete_link, buttonText, powerupDelay
 };

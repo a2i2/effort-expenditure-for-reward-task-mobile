@@ -1,7 +1,7 @@
 import eventsCenter from '../eventsCenter.js'
 
 export default class CountdownPanel {
-    constructor(scene, x, y, duration, timeoutKey) {
+    constructor(scene, x, y, duration, timeoutKey, startImmediately = true) {
         this.scene = scene;
         this.duration = duration;
         this.timeLeft = duration; // start with the full duration to then countdown
@@ -31,8 +31,10 @@ export default class CountdownPanel {
         // Draw initial circle state
         this.drawCircle(1);
         
-        // Start the countdown
-        this.startCountdown();
+        // Start the countdown if required
+        if (startImmediately) {
+            this.startCountdown();
+        }
     }
     
     formatTime(ms) {
