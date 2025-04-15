@@ -12,7 +12,7 @@ export default class Questions extends Phaser.Scene {
 
     preload() {
         // load trial type info from json array
-        this.load.json('questions', './assets/' + questionsFile);
+        this.load.json('questions', '/src/assets/' + questionsFile);
     }
 
     create() {

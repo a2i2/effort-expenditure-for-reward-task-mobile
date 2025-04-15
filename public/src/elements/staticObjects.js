@@ -24,7 +24,7 @@ export default class StaticObjects {
      */
     loadImages() {
         for (let i = 0; i < staticObjects.length-1; i++) { // ignoring 'nothing'
-            this.scene.load.image(staticObjects[i].key, `./assets/imgs/${staticObjects[i].key}.svg`);
+            this.scene.load.image(staticObjects[i].key, `/src/assets/imgs/${staticObjects[i].key}.svg`);
         }
     }
 

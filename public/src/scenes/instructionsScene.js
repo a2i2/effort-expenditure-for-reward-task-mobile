@@ -24,10 +24,10 @@ export default class InstructionsScene extends Phaser.Scene {
 
     preload() {
         // load cloud sprites to add texture to background
-        this.load.image('cloud1', './assets/imgs/cloud1.png');
+        this.load.image('cloud1', '/src/assets/imgs/cloud1.png');
         // load button and coin sprites
-        this.load.image('button', './assets/imgs/button.png');
-        this.load.spritesheet('coin', './assets/spritesheets/coin.png', { 
+        this.load.image('button', '/src/assets/imgs/button.png');
+        this.load.spritesheet('coin', '/src/assets/spritesheets/coin.png', { 
             frameWidth: 15.8, 
             frameHeight: 16 
         });
