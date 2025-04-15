@@ -15,7 +15,8 @@ import { shuffleTrials } from "../saveData.js";
     // fetchThresholdMax } from "../saveData.js";
 // import version info
 import {sceneOrder, runPractice, effortTime, nBlocks, nCalibrates,
-    trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet, debug_mode
+    trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet, debug_mode,
+    timeout
 } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
@@ -422,7 +423,8 @@ var displayChoicePanel = function () {
         (selected) => {
             this.registry.set('choice', selected);
             eventsCenter.emit('choiceComplete');
-        }
+        },
+        timeout
     );
     this.add.existing(panel.container);
     

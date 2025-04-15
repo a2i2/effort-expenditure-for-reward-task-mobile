@@ -3,7 +3,7 @@
 // import js game element modules (sprites, ui, outcome animations, etc.)
 import Player from "../elements/player.js";
 import Gems from "../elements/gems.js";
-import InstructionsPanel from "../elements/instructionsPanel.js";       
+import RouteSelectorPanel from "../elements/RouteSelectorPanel.js";
 import ProgressBar from "../elements/progressBar.js";
 import PowerPanel from "../elements/PowerPanel.js";
 
@@ -12,7 +12,7 @@ import eventsCenter from '../eventsCenter.js'
 // import { savePracTaskData, saveThresholdMax} from "../saveData.js";
 
 // import effort info from versionInfo file
-import { effortTime, pracTrialEfforts, pracTrialEffortProp, gemHeights, pracTrialRewards } from "../versionInfo.js";
+import { effortTime, pracTrialEfforts, pracTrialEffortProp, gemHeights, pracTrialRewards, timeout } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
 
@@ -48,6 +48,13 @@ var maxPressCount;
 var pracFeedbackTime = 1500;
 var pracAnimationTime = 400;
 const practiceOrReal = 0;
+
+let trialReward1 = 7;
+let trialEffortPropMax1 = 1;
+let trialReward2 = 2;
+let trialEffortPropMax2 = 0.4;
+let maxEffortPresses = 75;
+let minEffortPresses = 30; // 40% of 75
 
 // this function extends Phaser.Scene and includes the core logic for the game
 export default class PracticeTask extends Phaser.Scene {
@@ -255,24 +262,47 @@ var displayInfoPanel = function () {
     // display gems for this practice go - at a height proportional to the number of gems available
     gemHeight = gemHeights[pracTrial];
     this.gems = new Gems(this, midbridgeX-(pracTrialReward*30)/2, gemHeight, pracTrialReward); 
-    
-    // popup choice panel with relevant trial info
-    let titleTxt = ("Practice "+(pracTrial+1)+" of "+nPracTrials+"!");
-    let mainTxt = ("Press [color=#ffffff]POWER[/color]\n" +
-                    "as fast\n"+
-                    "as possible!");
-    let buttonTxt = "Ready!";
-    let pageNo = 4;
-    this.instructionsPanel = new InstructionsPanel(this, 
-                                                   decisionPointX-60, gameHeight/1.4, 
-                                                   pageNo, titleTxt, mainTxt, buttonTxt);
-    
+
     // each practice trial has a custom message displayed at the same time as the choice panel,
     // work out which one to display based on the practice trial index
     showMessageForCurrentPracticeTrial(this)
 
     // once choice is entered, get choice info and route to relevant next step
-    eventsCenter.once('page4complete', doChoice, this);       
+    eventsCenter.once('choiceComplete', doChoice, this); 
+
+    // listen for the timeout event if the user fails to make a choice
+    eventsCenter.once('practicetimesup', effortOutcome, this) 
+
+
+    // we only want to show the route selector panel for the first two trials 
+    if (pracTrial != 0 && pracTrial != 1) {
+        const camera = this.cameras.main;
+        const centerX = camera.scrollX + camera.width / 2;
+
+        this.instructionsPanel = new RouteSelectorPanel(
+            this,
+            centerX,
+            this.cameras.main.height - 170,
+            gameWidth,
+            340,
+            trialReward1,
+            trialEffortPropMax1,
+            trialReward2,
+            trialEffortPropMax2,
+            (selected) => {
+                this.registry.set('choice', selected);
+                if (selected == 'timeout') {
+                    eventsCenter.emit('practicetimesup');
+                } else {
+                    eventsCenter.emit('choiceComplete');
+                }
+            },
+            pracTrial == 3 ? timeout : null // allow infinite time for the 3rd practice trial and then re-introduce the timeout for the 4th practice
+        );
+    } else {
+        // skip straight to the power up scene
+        eventsCenter.emit('choiceComplete');
+    }
 };
 
 var showMessageForCurrentPracticeTrial = function (context) {
@@ -311,10 +341,25 @@ var showMessageForCurrentPracticeTrial = function (context) {
 
 // 2. Once participant has indicated they are ready, let them try out the effort panel 
 var doChoice = function () {
+    let selectedEffort;
+    let selectedReward;
+    let selectedEffortProp;
+
+    // the first 2 trials we assume the max effrort, the last 2 are driven by user choice
+    if (pracTrial < 2) {
+        selectedEffort = maxEffortPresses;
+        selectedEffortProp = 1.0;
+        selectedReward = 7;
+    } else {
+        let choice = this.registry.get('choice');
+        selectedEffort = choice == 'route 1' ? maxEffortPresses : minEffortPresses;
+        selectedReward = choice == 'route 1' ? trialReward1 : trialReward2;
+        selectedEffortProp = choice == 'route 1' ? trialEffortPropMax1 : trialEffortPropMax2;  
+    }
+
     // power panel pops up
-    this.powerPanel = new PowerPanel(this, decisionPointX-60, this.cameras.main.height - 170, gameWidth, 340, effortTime, pracTrialReward, pracTrialEffortProp, pracTrialEffort, true);
-    // and play player 'power-up' animation
-    this.player.sprite.anims.play('powerup', true);
+    this.powerPanel = new PowerPanel(this, decisionPointX-60, this.cameras.main.height - 170, gameWidth, 340, effortTime, selectedReward, selectedEffortProp, selectedEffort, true);
+    
     
     // until time limit reached:
     eventsCenter.once('practicetimesup', effortOutcome, this) 
@@ -323,6 +368,7 @@ var doChoice = function () {
 // 3. If participant accepts effort proposal, record button presses and see if they meet threshold
 var effortOutcome = function() {
     // get number of achieved button presses 
+    let choice = this.registry.get('choice');
     pressCount = this.registry.get('pressCount');
     pressTimes = this.registry.get('pressTimes');  // [?we want this - might make code run slow...]
     
@@ -374,8 +420,57 @@ var effortOutcome = function() {
                                                      repeat: 5 });
                             },
                             callbackScope: this});
-    }
-    else {  // else if fail to reach trial effort threshold
+    } else if (choice == 'timeout') {
+        trialSuccess = 0;
+
+        if (feedbackMessage) {
+            // remove feedback message from the screen if its still there
+            feedbackMessage.destroy();
+            feedbackMessage = null;
+        }
+
+        // display failure message for a couple of seconds
+        feedbackMessage = new Message(
+            this,
+            gameWidth,
+            "16px monospace",
+            0xFFDBDB,
+            0xFF9696,
+            "Too slow - you only have 5\nseconds to choose a route",
+            "#9B0000",
+            60,
+            130,
+            110,
+            0
+        );
+
+        this.tweens.add({        
+            targets: feedbackMessage,
+            scaleX: { start: 0, to: 1 },
+            scaleY: { start: 0, to: 1 },
+            ease: 'Linear',    
+            duration: pracAnimationTime,
+            repeat: 0,      
+            yoyo: false
+        });
+        // then play powerup fail anim and progress via slow route
+        this.time.addEvent({delay: pracFeedbackTime+250, 
+                            callback: function(){
+                                feedbackMessage.destroy();
+                                // then play short 'powerup fail' anim:
+                                this.player.sprite.anims.play('powerupfail', true);
+                                // and progress via bridge route (with sad face)
+                                this.player.sprite.once(Phaser.Animations.Events.SPRITE_ANIMATION_COMPLETE, () => {
+                                    // player progresses via bridge and earns no extra reward
+                                    this.player.sprite.setVelocityX(playerVelocity/4);   // 4,5,6
+                                    this.player.sprite.anims.play('run', true);
+                                    this.physics.add.collider(this.player.sprite, this.bridgeEndPoint, 
+                                        function(){eventsCenter.emit('bumpme');}, null, this);
+                                        eventsCenter.once('bumpme', onejump, this);
+                                    });
+                            },                         
+                            callbackScope: this});
+    } else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
 
         if (feedbackMessage) {

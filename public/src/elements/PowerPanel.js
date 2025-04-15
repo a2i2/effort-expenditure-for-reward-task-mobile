@@ -90,11 +90,7 @@ export default class PowerPanel {
         });
 
         meterInfoColumn.add(this.percentageText);
-
-        // we want to hide the coin indicator if we are practice mode
-        if (!this.isPractice) {
-            meterInfoColumn.add(this.coinIcon);
-        }
+        meterInfoColumn.add(this.coinIcon);
 
         const meterColumn = scene.rexUI.add.sizer({
             orientation: 'vertical',
