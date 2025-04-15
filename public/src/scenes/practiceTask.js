@@ -364,10 +364,16 @@ var doChoice = function () {
     // power panel pops up
     this.powerPanel = new PowerPanel(this, decisionPointX-60, this.cameras.main.height - 170, gameWidth, 340, effortTime, selectedReward, selectedEffortProp, selectedEffort, true);
     
+    // we want to start the power up animation when the timer is actually counting down
+    eventsCenter.once('powerStatePassed', startPowerUpAnimation, this);
     
     // until time limit reached:
     eventsCenter.once('practicetimesup', effortOutcome, this) 
 };
+
+var startPowerUpAnimation = function() {
+    this.player.sprite.anims.play('powerup', true);
+}
 
 // 3. If participant accepts effort proposal, record button presses and see if they meet threshold
 var effortOutcome = function() {
