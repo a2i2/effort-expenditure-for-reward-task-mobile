@@ -96,7 +96,11 @@ export default class PracticeTask extends Phaser.Scene {
             frameWidth: 32, 
             frameHeight: 32
         });
-        
+
+        // load coin images
+        for (let i = 1; i <= 7; i++) {
+            this.load.image(`coins-${i}`, `./assets/imgs/coins-${i}.svg`);
+        }
     }
     
     create() {
