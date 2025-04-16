@@ -56,29 +56,29 @@ export default class PracticeTask extends Phaser.Scene {
     preload() {
         ////////////////////PRELOAD GAME ASSETS///////////////////////////////////
         // load tilemap and tileset created using Tiled (see below)
-        this.load.tilemapTiledJSON('pmap', '/src/assets/tilemaps/tilemap-practice.json'); 
-        this.load.image('tiles', '/src/assets/tilesets/tiles_edited_70px_extruded.png');
+        this.load.tilemapTiledJSON('pmap', './src/assets/tilemaps/tilemap-practice.json'); 
+        this.load.image('tiles', './src/assets/tilesets/tiles_edited_70px_extruded.png');
 
         // load player sprite
-        this.load.spritesheet('player', '/src/assets/spritesheets/player1.png', { 
+        this.load.spritesheet('player', './src/assets/spritesheets/player1.png', { 
             frameWidth: 90, 
             frameHeight: 96
         });
         
         // load rock and plant sprites to add some texture to background
-        this.load.image('rock1', '/src/assets/imgs/rockMoss.png');
-        this.load.image('rock2', '/src/assets/imgs/rockMossAlt.png');
-        this.load.image('plant', '/src/assets/imgs/plantPurple.png');
-        this.load.image('cloud', '/src/assets/imgs/cloud2.png');
-        this.load.image('button', '/src/assets/imgs/button.png');
+        this.load.image('rock1', './src/assets/imgs/rockMoss.png');
+        this.load.image('rock2', './src/assets/imgs/rockMossAlt.png');
+        this.load.image('plant', './src/assets/imgs/plantPurple.png');
+        this.load.image('cloud', './src/assets/imgs/cloud2.png');
+        this.load.image('button', './src/assets/imgs/button.png');
         // lightning bolt power:
-        this.load.image('powerOFFprac', '/src/assets/imgs/lightning-bolt-80_empty_practice.png')
-        this.load.image('powerONprac', '/src/assets/imgs/lightning-bolt-80_filled_practice.png')
-        this.load.image('powerOFF', '/src/assets/imgs/lightning-bolt-80_empty.png')
-        this.load.image('powerON', '/src/assets/imgs/lightning-bolt-80_filled.png')
+        this.load.image('powerOFFprac', './src/assets/imgs/lightning-bolt-80_empty_practice.png')
+        this.load.image('powerONprac', './src/assets/imgs/lightning-bolt-80_filled_practice.png')
+        this.load.image('powerOFF', './src/assets/imgs/lightning-bolt-80_empty.png')
+        this.load.image('powerON', './src/assets/imgs/lightning-bolt-80_filled.png')
 
         // load animated coin sprite (these will represent offered reward level)
-        this.load.spritesheet('gem', '/src/assets/spritesheets/crystal-qubodup-ccby3-32-pink.png', { 
+        this.load.spritesheet('gem', './src/assets/spritesheets/crystal-qubodup-ccby3-32-pink.png', { 
             frameWidth: 32, 
             frameHeight: 32
         });

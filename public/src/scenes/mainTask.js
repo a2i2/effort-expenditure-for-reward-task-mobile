@@ -109,63 +109,63 @@ export default class MainTask extends Phaser.Scene {
 
         ////////////////////PRELOAD GAME ASSETS///////////////////////////////////
         // load tilemap and tileset created using Tiled (see below)
-        this.load.tilemapTiledJSON('grass-map', '/src/assets/tilemaps/tilemap-main-grass.json');
-        this.load.tilemapTiledJSON('snow-map', '/src/assets/tilemaps/tilemap-main-snow.json');
-        this.load.image('tiles', '/src/assets/tilesets/tiles_edited_70px_extruded.png');
+        this.load.tilemapTiledJSON('grass-map', './src/assets/tilemaps/tilemap-main-grass.json');
+        this.load.tilemapTiledJSON('snow-map', './src/assets/tilemaps/tilemap-main-snow.json');
+        this.load.image('tiles', './src/assets/tilesets/tiles_edited_70px_extruded.png');
 
         // load player sprite
-        this.load.spritesheet('player', '/src/assets/spritesheets/player1.png', { 
+        this.load.spritesheet('player', './src/assets/spritesheets/player1.png', { 
             frameWidth: 90, 
             frameHeight: 96
         });
         
         // load scene images to add some texture to background
-        this.load.image('button', '/src/assets/imgs/button.png');
-        this.load.image('sign', '/src/assets/imgs/sign.png');       // and sign for decision point
+        this.load.image('button', './src/assets/imgs/button.png');
+        this.load.image('sign', './src/assets/imgs/sign.png');       // and sign for decision point
         // SVGs
         this.staticObjManager.loadImages();
 
         // close button
-        this.load.image('close', '/src/assets/imgs/close.svg');
+        this.load.image('close', './src/assets/imgs/close.svg');
 
         // lightning bolt power:
-        this.load.image('powerOFF', '/src/assets/imgs/lightning-bolt-80_empty.png')
-        this.load.image('powerON', '/src/assets/imgs/lightning-bolt-80_filled.png')
+        this.load.image('powerOFF', './src/assets/imgs/lightning-bolt-80_empty.png')
+        this.load.image('powerON', './src/assets/imgs/lightning-bolt-80_filled.png')
 
         // load animated coin sprite (these will represent offered reward level)
-        this.load.spritesheet('coin', '/src/assets/spritesheets/coin.png', { 
+        this.load.spritesheet('coin', './src/assets/spritesheets/coin.png', { 
             frameWidth: 15.8, 
             frameHeight: 16 
         });
         
         // load trial type info from json array
-        this.load.json('trials', '/src/assets/' + trialsFile);
+        this.load.json('trials', './src/assets/' + trialsFile);
 
         // Chapter 1 has two different backgrounds, rather than five
-        this.load.image('chapter-1-1', '/src/assets/imgs/chapter-1-1.svg');
-        this.load.image('chapter-1-2', '/src/assets/imgs/chapter-1-2.svg');
+        this.load.image('chapter-1-1', './src/assets/imgs/chapter-1-1.svg');
+        this.load.image('chapter-1-2', './src/assets/imgs/chapter-1-2.svg');
         // Chapter 2 to 4 have five backgrounds
-        this.load.image('chapter-2-1', '/src/assets/imgs/chapter-2-1.svg');
-        this.load.image('chapter-2-2', '/src/assets/imgs/chapter-2-2.svg');
-        this.load.image('chapter-2-3', '/src/assets/imgs/chapter-2-3.svg');
-        this.load.image('chapter-2-4', '/src/assets/imgs/chapter-2-4.svg');
-        this.load.image('chapter-2-5', '/src/assets/imgs/chapter-2-5.svg');
+        this.load.image('chapter-2-1', './src/assets/imgs/chapter-2-1.svg');
+        this.load.image('chapter-2-2', './src/assets/imgs/chapter-2-2.svg');
+        this.load.image('chapter-2-3', './src/assets/imgs/chapter-2-3.svg');
+        this.load.image('chapter-2-4', './src/assets/imgs/chapter-2-4.svg');
+        this.load.image('chapter-2-5', './src/assets/imgs/chapter-2-5.svg');
 
-        this.load.image('chapter-3-1', '/src/assets/imgs/chapter-3-1.svg');
-        this.load.image('chapter-3-2', '/src/assets/imgs/chapter-3-2.svg');
-        this.load.image('chapter-3-3', '/src/assets/imgs/chapter-3-3.svg');
-        this.load.image('chapter-3-4', '/src/assets/imgs/chapter-3-4.svg');
-        this.load.image('chapter-3-5', '/src/assets/imgs/chapter-3-5.svg');
+        this.load.image('chapter-3-1', './src/assets/imgs/chapter-3-1.svg');
+        this.load.image('chapter-3-2', './src/assets/imgs/chapter-3-2.svg');
+        this.load.image('chapter-3-3', './src/assets/imgs/chapter-3-3.svg');
+        this.load.image('chapter-3-4', './src/assets/imgs/chapter-3-4.svg');
+        this.load.image('chapter-3-5', './src/assets/imgs/chapter-3-5.svg');
 
-        this.load.image('chapter-4-1', '/src/assets/imgs/chapter-4-1.svg');
-        this.load.image('chapter-4-2', '/src/assets/imgs/chapter-4-2.svg');
-        this.load.image('chapter-4-3', '/src/assets/imgs/chapter-4-3.svg');
-        this.load.image('chapter-4-4', '/src/assets/imgs/chapter-4-4.svg');
-        this.load.image('chapter-4-5', '/src/assets/imgs/chapter-4-5.svg');
+        this.load.image('chapter-4-1', './src/assets/imgs/chapter-4-1.svg');
+        this.load.image('chapter-4-2', './src/assets/imgs/chapter-4-2.svg');
+        this.load.image('chapter-4-3', './src/assets/imgs/chapter-4-3.svg');
+        this.load.image('chapter-4-4', './src/assets/imgs/chapter-4-4.svg');
+        this.load.image('chapter-4-5', './src/assets/imgs/chapter-4-5.svg');
 
         // load coin images
         for (let i = 1; i <= 7; i++) {
-            this.load.image(`coins-${i}`, `/src/assets/imgs/coins-${i}.svg`);
+            this.load.image(`coins-${i}`, `./src/assets/imgs/coins-${i}.svg`);
         }
     }
     

@@ -16,7 +16,7 @@ export default class StartTaskScene extends Phaser.Scene {
 
     preload() {
         // load cloud sprites to add texture to background
-        this.load.image('cloud1', '/src/assets/imgs/cloud1.png');
+        this.load.image('cloud1', './src/assets/imgs/cloud1.png');
     }
     
     create() {
