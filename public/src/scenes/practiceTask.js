@@ -75,7 +75,7 @@ export default class PracticeTask extends Phaser.Scene {
         ////////////////////PRELOAD GAME ASSETS///////////////////////////////////
         // load tilemap and tileset created using Tiled (see below)
         this.load.tilemapTiledJSON('pmap', './src/assets/tilemaps/tilemap-main-grass.json');
-        this.load.image('tiles', '.src/assets/tilesets/tiles_edited_70px_extruded.png');
+        this.load.image('tiles', './src/assets/tilesets/tiles_edited_70px_extruded.png');
 
         // load player sprite
         this.load.spritesheet('player', './src/assets/spritesheets/player1.png', { 
@@ -83,10 +83,10 @@ export default class PracticeTask extends Phaser.Scene {
             frameHeight: 96
         });
         
-        this.load.image('chapter-1-1', './assets/imgs/chapter-1-1.svg');
+        this.load.image('chapter-1-1', './src/assets/imgs/chapter-1-1.svg');
 
         // close button
-        this.load.image('close', './assets/imgs/close.svg');
+        this.load.image('close', './src/assets/imgs/close.svg');
 
         // load rock and plant sprites to add some texture to background
         this.load.image('smallShrub', './src/assets/imgs/small-shrub.svg');
@@ -106,7 +106,7 @@ export default class PracticeTask extends Phaser.Scene {
 
         // load coin images
         for (let i = 1; i <= 7; i++) {
-            this.load.image(`coins-${i}`, `./assets/imgs/coins-${i}.svg`);
+            this.load.image(`coins-${i}`, `./src/assets/imgs/coins-${i}.svg`);
         }
     }
     
