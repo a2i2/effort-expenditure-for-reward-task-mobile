@@ -56,6 +56,8 @@ let trialEffortPropMax2 = 0.4;
 let maxEffortPresses = 75;
 let minEffortPresses = 30; // 40% of 75
 
+const PRACTICE_TIMEOUT_KEY = 'practiceTimeout';
+
 // this function extends Phaser.Scene and includes the core logic for the game
 export default class PracticeTask extends Phaser.Scene {
     constructor() {
@@ -274,8 +276,11 @@ var displayInfoPanel = function () {
     // once choice is entered, get choice info and route to relevant next step
     eventsCenter.once('choiceComplete', doChoice, this); 
 
-    // listen for the timeout event if the user fails to make a choice
-    eventsCenter.once('practicetimesup', effortOutcome, this) 
+    // listen for the power up timeout event so we can show the fail scene
+    eventsCenter.once(PRACTICE_POWER_UP_COMPLETE_KEY, effortOutcome, this) 
+
+    // listen for the timeout event
+    eventsCenter.once(PRACTICE_TIMEOUT_KEY, effortOutcome, this);
 
 
     // we only want to show the route selector panel for the first two trials 
@@ -296,8 +301,10 @@ var displayInfoPanel = function () {
             (selected) => {
                 this.registry.set('choice', selected);
                 if (selected == 'timeout') {
-                    eventsCenter.emit(PRACTICE_POWER_UP_COMPLETE_KEY);
+                    // show the power up fail scene
+                    eventsCenter.emit(PRACTICE_TIMEOUT_KEY, this)
                 } else {
+                    // proceed to the users choice
                     eventsCenter.emit('choiceComplete');
                 }
             },
