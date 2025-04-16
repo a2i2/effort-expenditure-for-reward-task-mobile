@@ -14,7 +14,7 @@ To avoid CORS issues use Vite to serve the files in the `public/src` folder for 
 - [npm](https://www.npmjs.com/) (developed with npm version v10.2.4)
 
 1. Navigate to the `/public` folder
-2. Switch to the required version of node (`nvm user`).
+2. Switch to the required version of node (`nvm use`).
 3. Run `npm install` to install the required dependencies
 4. Start the server using `npm run dev` which enables auto-restarting when making changes to the codebase.
 
