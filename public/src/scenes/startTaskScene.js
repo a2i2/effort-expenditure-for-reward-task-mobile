@@ -1,22 +1,22 @@
 // Scene to inform participants they can now start the main task, routes to Main Task scene
 
 // import task info from versionInfo file
-import { approxTime } from "../versionInfo.js";  // time participant will have to try and exert effort (ms)
+import { approxTime} from "../versionInfo.js";  // time participant will have to try and exert effort (ms)
 
 // // import some js from Pavlovia lib to enable data saving  [for Pavlovia deployment only]
 // import * as data from "../../lib/data-2020.2.js";
 
 // this function extends Phaser.Scene and includes the core logic for the scene
-export default class questInstructionsScene extends Phaser.Scene {
+export default class StartTaskScene extends Phaser.Scene {
     constructor() {
         super({
-            key: 'questInstructionsScene'
+            key: 'StartTaskScene'
         });
     }
 
     preload() {
         // load cloud sprites to add texture to background
-        this.load.image('cloud1', './assets/imgs/cloud1.png');
+        this.load.image('cloud1', './src/assets/imgs/cloud1.png');
     }
     
     create() {
@@ -42,17 +42,19 @@ export default class questInstructionsScene extends Phaser.Scene {
                 }
             }),
             content: this.rexUI.add.BBCodeText(0, 0, 
-                ("On the next screen\n\n" +
-                    "use the slider to\n\n" +
-                    "select how true\n\n" +
-                    "each statement is\n\n" +
-                    "for you [b]right now[/b].\n"),
+                ("[b]Remember[/b]\n" +
+                    "each route is\n" +
+                    "[b]completely[/b]\nyour choice.\n\n" +
+                    "Your journey lasts\n"+
+                    (approxTime) + " minutes.\n\n" +
+                    "You can take a\n" +
+                    "break at halfway.\n\n"),
                    {fontSize: '22px',
                     align: 'center',
                     color: '#000000'
                    }),
             actions: [
-                createLabel(this, 'Continue')
+                createLabel(this, 'Start!')
             ],
             space: {
                 title: 25,
@@ -83,7 +85,7 @@ export default class questInstructionsScene extends Phaser.Scene {
         SoT
         .once('button.click', function (button) {
             SoT.scaleDownDestroy(500);
-            this.nextScene();                           
+            this.nextScene();
         }, this)
         .on('button.over', function (button) {
             button.getElement('background').setStrokeStyle(2, 0xffffff);
@@ -96,9 +98,9 @@ export default class questInstructionsScene extends Phaser.Scene {
     update(time, delta) {
     }
 
-    // always load the questions after this scene 
+    // always load the main game after this scene 
     nextScene() {
-        this.scene.start('Questions');
+        this.scene.start('MainTask');
     } 
 }
 
@@ -115,8 +117,8 @@ var createLabel = function (scene, text) {
         space: {
             left: 10,
             right: 10,
-            top: 25,
-            bottom: 25
+            top: 10,
+            bottom: 10
         }
     });
 };

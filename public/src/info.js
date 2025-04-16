@@ -35,6 +35,4 @@ var runStudy = function () {
 };
 
 // Start study
-runStudy();
-
-
+runTask();

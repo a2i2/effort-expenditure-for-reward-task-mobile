@@ -25,16 +25,16 @@ export default class TaskEndScene extends Phaser.Scene {
 
     preload() {
         // load cloud sprites to add texture to background
-        this.load.image('cloud1', './assets/imgs/cloud1.png');
+        this.load.image('cloud1', './src/assets/imgs/cloud1.png');
         // load medal 
-        this.load.image('medal', './assets/imgs/icons8-medal-40.png');
+        this.load.image('medal', './src/assets/imgs/icons8-medal-40.png');
         // load coin 
-        this.load.spritesheet('coin', './assets/spritesheets/coin.png', {
+        this.load.spritesheet('coin', './src/assets/spritesheets/coin.png', {
             frameWidth: 10,
             frameHeight: 100
         });
         // // load player sprite
-        this.load.spritesheet('player', './assets/spritesheets/player1.png', {
+        this.load.spritesheet('player', './src/assets/spritesheets/player1.png', {
             frameWidth: 90,
             frameHeight: 96
         });
