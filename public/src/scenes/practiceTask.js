@@ -5,7 +5,7 @@ import Player from "../elements/player.js";
 import Gems from "../elements/gems.js";
 import RouteSelectorPanel from "../elements/RouteSelectorPanel.js";
 import ProgressBar from "../elements/progressBar.js";
-import PowerPanel from "../elements/PowerPanel.js";
+import PowerPanel, { PRACTICE_POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
 
 // import our custom events center for passsing info between scenes annd relevant data saving function
 import eventsCenter from '../eventsCenter.js'
@@ -296,7 +296,7 @@ var displayInfoPanel = function () {
             (selected) => {
                 this.registry.set('choice', selected);
                 if (selected == 'timeout') {
-                    eventsCenter.emit('practicetimesup');
+                    eventsCenter.emit(PRACTICE_POWER_UP_COMPLETE_KEY);
                 } else {
                     eventsCenter.emit('choiceComplete');
                 }
@@ -368,7 +368,7 @@ var doChoice = function () {
     eventsCenter.once('powerStatePassed', startPowerUpAnimation, this);
     
     // until time limit reached:
-    eventsCenter.once('practicetimesup', effortOutcome, this) 
+    eventsCenter.once(PRACTICE_POWER_UP_COMPLETE_KEY, effortOutcome, this) 
 };
 
 var startPowerUpAnimation = function() {

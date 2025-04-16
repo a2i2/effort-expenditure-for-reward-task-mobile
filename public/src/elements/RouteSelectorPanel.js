@@ -1,7 +1,6 @@
 import eventsCenter from '../eventsCenter.js';
 import CountdownPanel from './CountdownPanel.js';
 import PowerMeterBar from './PowerMeterBar.js';
-import { timeout } from '../versionInfo.js'
 
 const ROUTE_TIMEOUT_KEY = 'routeTimeout';
 
@@ -49,7 +48,7 @@ export default class RouteSelectorPanel {
 
         titleRow.add(title, { expand: true });
         if (timeoutMillis != null) {
-            this.countdownPanel = new CountdownPanel(this.scene, 0, 0, ROUTE_TIMEOUT_KEY, timeoutMillis);
+            this.countdownPanel = new CountdownPanel(this.scene, 0, 0, timeoutMillis, ROUTE_TIMEOUT_KEY);
             titleRow.add(this.countdownPanel.container);
         }
 
