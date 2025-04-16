@@ -1,6 +1,9 @@
 import eventsCenter from '../eventsCenter.js';
 import CountdownPanel from './CountdownPanel.js';
 import PowerMeterBar from './PowerMeterBar.js';
+import { timeout } from '../versionInfo.js'
+
+const ROUTE_TIMEOUT_KEY = 'routeTimeout';
 
 export default class RouteSelectorPanel {
     constructor(scene, x, y, width, height, route1Coins, route1Power, route2Coins, route2Power, onSelect) {
@@ -44,7 +47,7 @@ export default class RouteSelectorPanel {
             // TODO: Font family
         });
 
-        this.countdownPanel = new CountdownPanel(this.scene, 0, 0);
+        this.countdownPanel = new CountdownPanel(this.scene, 0, 0, timeout, ROUTE_TIMEOUT_KEY);
         titleRow.add(title, { expand: true });
         titleRow.add(this.countdownPanel.container);
 
@@ -64,7 +67,7 @@ export default class RouteSelectorPanel {
         this.container.layout();
 
         // React when the countdown timer has finished
-        eventsCenter.once('countdownComplete', () => {
+        eventsCenter.once(ROUTE_TIMEOUT_KEY, () => {
             setTimeout(() => {
                 this.onSelect?.('timeout');
                 this.destroy();
@@ -204,6 +207,8 @@ export default class RouteSelectorPanel {
     }
 
     destroy() {
+        // Stop listening to this registered event
+        eventsCenter.removeListener(ROUTE_TIMEOUT_KEY);
         // Stop the countdown timer
         this.countdownPanel?.destroy();
         // Remove containers from the screen

@@ -1,11 +1,11 @@
 import eventsCenter from '../eventsCenter.js'
-import { timeout } from '../versionInfo.js'
 
 export default class CountdownPanel {
-    constructor(scene, x, y, duration = timeout) {
+    constructor(scene, x, y, duration, timeoutKey) {
         this.scene = scene;
         this.duration = duration;
-        this.timeLeft = duration;
+        this.timeLeft = duration; // start with the full duration to then countdown
+        this.timeoutKey = timeoutKey;
 
         // Background
         this.panel = scene.rexUI.add.roundRectangle(27.5, 0, 100, 30, 6, 0xF2F4F7);
@@ -94,10 +94,11 @@ export default class CountdownPanel {
     }
     
     onComplete() {
-        eventsCenter.emit('countdownComplete');
+        eventsCenter.emit(this.timeoutKey);
         this.destroy();
     }
 
+    // Stop the timer from running, but allow the countdown objects to remain visible on the screen
     removeTimer() {
         if (this.timer) {
             this.timer.remove();
@@ -105,6 +106,7 @@ export default class CountdownPanel {
         }
     }
 
+    // Stop the timer from running, and remove the countdown objects from the screen
     destroy() {
         this.removeTimer();
         this.container.destroy();

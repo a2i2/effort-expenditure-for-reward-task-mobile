@@ -20,6 +20,7 @@ import {sceneOrder, runPractice, effortTime, nBlocks, nCalibrates,
 
 import Message from "../elements/message.js";
 import PowerPanel from "../elements/PowerPanel.js";
+import { POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
 
 // make sure that the scene order is evaluated
 //const evaluatedSceneOrder = sceneOrder.map(sceneName => eval(sceneName));
@@ -445,7 +446,7 @@ var doChoice = function () {
         // and play player 'power-up' animation
         this.player.sprite.anims.play('powerup', true);
         // until time limit reached:
-        eventsCenter.once('timesup', effortOutcome, this)
+        eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this)
         }
     else if (choice == 'route 2') {  // if participant chooses the low effort option
         // timer panel pops up  
@@ -453,11 +454,11 @@ var doChoice = function () {
         // and play player 'power-up' animation
         this.player.sprite.anims.play('powerup', true);
         // until time limit reached:
-        eventsCenter.once('timesup', effortOutcome, this)
+        eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this)
     } else { // user failed to make a choice before timeout
         // No TimerPanel to emit the timesup event, so we emit it manually so the 'this' context can be passed through
-        eventsCenter.once('timesup', effortOutcome, this);
-        eventsCenter.emit('timesup');
+        eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this);
+        eventsCenter.emit(POWER_UP_COMPLETE_KEY);
     }
 };
 
