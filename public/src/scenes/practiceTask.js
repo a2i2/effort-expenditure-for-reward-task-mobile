@@ -2,7 +2,7 @@
 
 // import js game element modules (sprites, ui, outcome animations, etc.)
 import Player from "../elements/player.js";
-import Gems from "../elements/gems.js";
+import Coins from "../elements/coins.js";
 import RouteSelectorPanel from "../elements/RouteSelectorPanel.js";
 import ProgressBar from "../elements/progressBar.js";
 import PowerPanel, { PRACTICE_POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
@@ -12,7 +12,7 @@ import eventsCenter from '../eventsCenter.js'
 // import { savePracTaskData, saveThresholdMax} from "../saveData.js";
 
 // import effort info from versionInfo file
-import { effortTime, pracTrialEfforts, pracTrialEffortProp, gemHeights, pracTrialRewards, timeout } from "../versionInfo.js";
+import { effortTime, pracTrialEfforts, pracTrialRewards, timeout } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
 
@@ -27,7 +27,6 @@ var mapWidth;
 var mapHeight;
 var platforms;
 var bridge;
-var gemHeight;
 const decisionPointX = 370;    // where the info panel will be triggered (x coord in px)
 const midbridgeX = 735;        // where gems will be displayed (x coord in px)
 const endbridgeX = 765;        // where the player must jump up to cross bridge (x coord in px)
@@ -36,7 +35,6 @@ const playerVelocity = 1000;   // baseline player velocity (rightward)
 var pracTrial = 0;
 var nGems = 0;
 var nPracTrials = pracTrialRewards.length;
-var gemHeight;
 var feedbackMessage;
 var pressCount;
 var pressTimes;
@@ -264,9 +262,11 @@ var displayInfoPanel = function () {
     this.player.sprite.anims.play('wait', true); 
     this.decisionPoint.destroy();
     
-    // display gems for this practice go - at a height proportional to the number of gems available
-    gemHeight = gemHeights[pracTrial];
-    this.gems = new Gems(this, midbridgeX-(selectedReward*30)/2, gemHeight, selectedReward); 
+    // if the user is shown the route selection panel then we will want to show the coins
+    if (pracTrial > 1) {
+        this.coins1 = new Coins(this, midbridgeX-(selectedReward*55)/2, 235, trialReward1); // coins in sky
+        this.coins2 = new Coins(this, midbridgeX-(selectedReward*55)/2, 360, trialReward2); // coins on bridge
+    }
 
     // each practice trial has a custom message displayed at the same time as the choice panel,
     // work out which one to display based on the practice trial index
@@ -446,8 +446,13 @@ var effortOutcome = function() {
             feedbackMessage = null;
         }
 
-        // add overlap colliders so coins  on either route disappear when overlap with player body
-        this.physics.add.overlap(this.player.sprite, this.gems.sprite, collectGems, null, this); 
+        if (selectedReward == trialReward1 && this.coins1) {
+            // add physics colision to the top coins
+            this.physics.add.overlap(this.player.sprite, this.coins1.sprite, collectGems, null, this);
+        } else if (selectedReward == trialReward2 && this.coins2) {
+            // add physics colision to the bottom coins
+            this.physics.add.overlap(this.player.sprite, this.coins2.sprite, collectGems, null, this);
+        }
 
         feedbackMessage = new Message(
             this,
@@ -472,18 +477,35 @@ var effortOutcome = function() {
             repeat: 0,      
             yoyo: false
         });
-        // then player floats across 'high route' and collects coins
-        this.time.addEvent({delay: pracFeedbackTime+250, 
-                            callback: function(){
-                                feedbackMessage.destroy();
-                                this.player.sprite.anims.play('float', true);    
-                                this.player.sprite.setVelocityX(playerVelocity/3);
-                                this.time.addEvent({ delay: 150, 
-                                                     callback: function(){this.player.sprite.setVelocityY(-520+gemHeight);},
-                                                     callbackScope: this, 
-                                                     repeat: 5 });
-                            },
-                            callbackScope: this});
+
+        // determine if the player floats via the higher or lower routes
+        if (selectedEffort == maxEffortPresses) {
+            // then player floats across 'high route' and collects coins
+            this.time.addEvent({delay: pracAnimationTime+250, 
+                callback: function(){
+                    feedbackMessage?.destroy();
+                    this.player.sprite.anims.play('float', true);    
+                    this.player.sprite.setVelocityX(playerVelocity/3);
+                    this.time.addEvent({ delay: 120, 
+                                        callback: function(){this.player.sprite.setVelocityY(-280);},
+                                        callbackScope: this, 
+                                        repeat: 5 });
+                },
+                callbackScope: this});
+        } else {
+            // then player floats across 'low route' and collects coins
+            this.time.addEvent({delay: pracAnimationTime, 
+                callback: function() {
+                    this.feedbackMessage?.destroy();
+                    this.player.sprite.anims.play('float', true);    
+                    this.player.sprite.setVelocityX(playerVelocity/3);
+                    this.time.addEvent({ delay: 100,
+                                        callback: function(){this.player.sprite.setVelocityY(-120);},
+                                        callbackScope: this, 
+                                        repeat: 8 });
+                },
+                callbackScope: this});
+            }
     } else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
 
