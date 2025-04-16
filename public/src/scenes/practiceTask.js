@@ -59,6 +59,8 @@ let maxEffortPresses = 75;
 let minEffortPresses = 30; // 40% of 75
 
 const PRACTICE_TIMEOUT_KEY = 'practiceTimeout';
+const PRACTICE_CHOICE_KEY = 'practiceChoiceComplete';
+
 var routeSelectionTransitionTimer;
 
 // this function extends Phaser.Scene and includes the core logic for the game
@@ -274,7 +276,7 @@ var displayInfoPanel = function () {
     showMessageForCurrentPracticeTrial(this)
 
     // once choice is entered, get choice info and route to relevant next step
-    eventsCenter.once('choiceComplete', doChoice, this); 
+    eventsCenter.once(PRACTICE_CHOICE_KEY, doChoice, this); 
 
     // listen for the power up timeout event so we can show the fail scene
     eventsCenter.once(PRACTICE_POWER_UP_COMPLETE_KEY, effortOutcome, this) 
@@ -305,14 +307,14 @@ var displayInfoPanel = function () {
                     eventsCenter.emit(PRACTICE_TIMEOUT_KEY, this)
                 } else {
                     // proceed to the users choice
-                    eventsCenter.emit('choiceComplete');
+                    eventsCenter.emit(PRACTICE_CHOICE_KEY);
                 }
             },
             pracTrial == 3 ? timeout : null // allow infinite time for the 3rd practice trial and then re-introduce the timeout for the 4th practice
         );
     } else {
         // skip straight to the power up scene
-        eventsCenter.emit('choiceComplete');
+        eventsCenter.emit(PRACTICE_CHOICE_KEY);
     }
 };
 
@@ -477,6 +479,7 @@ var effortOutcome = function() {
             yoyo: false
         });
         // then play powerup fail anim and progress via slow route
+        this.time.addEvent({delay: pracFeedbackTime + 250, 
                             callback: function(){
                                 feedbackMessage.destroy();
                                 // then play short 'powerup fail' anim:
@@ -537,7 +540,7 @@ var effortOutcome = function() {
         // determine if the player floats via the higher or lower routes
         if (selectedEffort == maxEffortPresses) {
             // then player floats across 'high route' and collects coins
-            this.time.addEvent({delay: pracAnimationTime+250, 
+            this.time.addEvent({delay: pracFeedbackTime + 250, 
                 callback: function(){
                     feedbackMessage?.destroy();
                     this.player.sprite.anims.play('float', true);    
@@ -550,7 +553,7 @@ var effortOutcome = function() {
                 callbackScope: this});
         } else {
             // then player floats across 'low route' and collects coins
-            this.time.addEvent({delay: pracAnimationTime, 
+            this.time.addEvent({delay: pracFeedbackTime + 250, 
                 callback: function() {
                     feedbackMessage?.destroy();
                     this.player.sprite.anims.play('float', true);    
@@ -597,7 +600,7 @@ var effortOutcome = function() {
             yoyo: false
         });
         // then play powerup fail anim and progress via slow route
-        this.time.addEvent({delay: pracFeedbackTime+250, 
+        this.time.addEvent({delay: pracFeedbackTime + 250, 
                             callback: function(){
                                 feedbackMessage.destroy();
                                 // then play short 'powerup fail' anim:
