@@ -36,14 +36,18 @@ const playerVelocity = 1000;   // baseline player velocity (rightward)
 var pracTrial = 0;
 var nGems = 0;
 var nPracTrials = pracTrialRewards.length;
-var pracTrialReward;
-var pracTrialEffort;
 var gemHeight;
 var feedbackMessage;
 var pressCount;
 var pressTimes;
 var trialSuccess;
 var maxPressCount;
+
+// set these values to max effort required initially
+var selectedEffort = pracTrialEfforts[0];
+var selectedReward = pracTrialRewards[0];
+var selectedEffortProp = 1.0;
+
 // initiliaze timing and response vars
 var pracFeedbackTime = 1500;
 var pracAnimationTime = 400;
@@ -182,11 +186,6 @@ export default class PracticeTask extends Phaser.Scene {
         // (see https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ui-overview/). 
         // These plugins are globally loaded from the min.js src in index.html
 
-        //////////////////////////GET TRIAL INFO//////////////////////////////////  
-        // set the two trial options info from trial number
-        pracTrialReward = pracTrialRewards[pracTrial];
-        pracTrialEffort = pracTrialEfforts[pracTrial];
-
         //////////////////////////TRIAL CONTROL POINTS///////////////////////////
         // 0. First, let's add some invisible to sprites regions of space that key trial 
         // events depend on, so that our player can collide (interact) with them
@@ -267,7 +266,7 @@ var displayInfoPanel = function () {
     
     // display gems for this practice go - at a height proportional to the number of gems available
     gemHeight = gemHeights[pracTrial];
-    this.gems = new Gems(this, midbridgeX-(pracTrialReward*30)/2, gemHeight, pracTrialReward); 
+    this.gems = new Gems(this, midbridgeX-(selectedReward*30)/2, gemHeight, selectedReward); 
 
     // each practice trial has a custom message displayed at the same time as the choice panel,
     // work out which one to display based on the practice trial index
@@ -352,10 +351,6 @@ var showMessageForCurrentPracticeTrial = function (context) {
 
 // 2. Once participant has indicated they are ready, let them try out the effort panel 
 var doChoice = function () {
-    let selectedEffort;
-    let selectedReward;
-    let selectedEffortProp;
-
     // the first 2 trials we assume the max effrort, the last 2 are driven by user choice
     if (pracTrial < 2) {
         selectedEffort = maxEffortPresses;
@@ -390,55 +385,10 @@ var effortOutcome = function() {
     pressTimes = this.registry.get('pressTimes');  // [?we want this - might make code run slow...]
     
     // if ppt chooses high effort and clears trial effort threshold, fly across sky and collect coins!
-    if (pressCount >= pracTrialEffort) {
-        trialSuccess = 1;
-
-        if (feedbackMessage) {
-            // remove feedback message from the screen if its still there
-            feedbackMessage.destroy();
-            feedbackMessage = null;
-        }
-
-        // add overlap colliders so coins  on either route disappear when overlap with player body
-        this.physics.add.overlap(this.player.sprite, this.gems.sprite, collectGems, null, this); 
-
-        feedbackMessage = new Message(
-            this,
-            gameWidth,
-            "16px monospace",
-            0xBCF3D4,
-            0x25D070,
-            "Nice work!",
-            "#10562F",
-            60,
-            130,
-            110,
-            -10
-        );
-          
-        this.tweens.add({        
-            targets: feedbackMessage,
-            scaleX: { start: 0, to: 1 },
-            scaleY: { start: 0, to: 1 },
-            ease: 'Linear',    
-            duration: pracAnimationTime,
-            repeat: 0,      
-            yoyo: false
-        });
-        // then player floats across 'high route' and collects coins
-        this.time.addEvent({delay: pracFeedbackTime+250, 
-                            callback: function(){
-                                feedbackMessage.destroy();
-                                this.player.sprite.anims.play('float', true);    
-                                this.player.sprite.setVelocityX(playerVelocity/3);
-                                this.time.addEvent({ delay: 150, 
-                                                     callback: function(){this.player.sprite.setVelocityY(-520+gemHeight);},
-                                                     callbackScope: this, 
-                                                     repeat: 5 });
-                            },
-                            callbackScope: this});
-    } else if (choice == 'timeout') {
+    if (choice == 'timeout') {
         trialSuccess = 0;
+        pressCount = 0;
+        pressTimes = [];
 
         if (feedbackMessage) {
             // remove feedback message from the screen if its still there
@@ -486,6 +436,53 @@ var effortOutcome = function() {
                                         eventsCenter.once('bumpme', onejump, this);
                                     });
                             },                         
+                            callbackScope: this});
+    } else if (pressCount >= selectedEffort) {
+        trialSuccess = 1;
+
+        if (feedbackMessage) {
+            // remove feedback message from the screen if its still there
+            feedbackMessage.destroy();
+            feedbackMessage = null;
+        }
+
+        // add overlap colliders so coins  on either route disappear when overlap with player body
+        this.physics.add.overlap(this.player.sprite, this.gems.sprite, collectGems, null, this); 
+
+        feedbackMessage = new Message(
+            this,
+            gameWidth,
+            "16px monospace",
+            0xBCF3D4,
+            0x25D070,
+            "Nice work!",
+            "#10562F",
+            60,
+            130,
+            110,
+            -10
+        );
+          
+        this.tweens.add({        
+            targets: feedbackMessage,
+            scaleX: { start: 0, to: 1 },
+            scaleY: { start: 0, to: 1 },
+            ease: 'Linear',    
+            duration: pracAnimationTime,
+            repeat: 0,      
+            yoyo: false
+        });
+        // then player floats across 'high route' and collects coins
+        this.time.addEvent({delay: pracFeedbackTime+250, 
+                            callback: function(){
+                                feedbackMessage.destroy();
+                                this.player.sprite.anims.play('float', true);    
+                                this.player.sprite.setVelocityX(playerVelocity/3);
+                                this.time.addEvent({ delay: 150, 
+                                                     callback: function(){this.player.sprite.setVelocityY(-520+gemHeight);},
+                                                     callbackScope: this, 
+                                                     repeat: 5 });
+                            },
                             callbackScope: this});
     } else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
@@ -554,8 +551,8 @@ var pracTrialEnd = function () {
     }
     // set data to be saved into registry
     this.registry.set("pracTrial"+pracTrial, {pracTrialNo: pracTrial, 
-                                              trialReward: pracTrialReward,
-                                              trialEffort: pracTrialEffort,
+                                              trialReward: selectedReward,
+                                              trialEffort: selectedReward,
                                               pressCount: pressCount,
                                               pressTimes: pressTimes,
                                               trialSuccess: trialSuccess,
