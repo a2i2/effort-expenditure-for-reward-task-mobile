@@ -5,18 +5,18 @@ This project takes the existing work from Dr Agnes Norbury [[1](#attributions)] 
 ## Overview
 
 The project is a stripped down version of the original fork, removing dependencies on Firebase and any analytics components to focus primarily on the task itself.
-The Android and iOS projects are available in the `EEFRT Demo Android` and `EEFRT Demo iOS` folders respectively, and a simple Express.js server is available in the `public` folder.
+The Android and iOS projects are available in the `EEFRT Demo Android` and `EEFRT Demo iOS` folders respectively, and using Vite for serving the `public/src` directory and building the game into a `public/dist` directory.
 
 ## Getting the local file server up and running
-To avoid CORS issues we are using a small Express.js server to serve the files in the `public` folder to the mobile apps. Please ensure you have the following installed:
+To avoid CORS issues use Vite to serve the files in the `public/src` folder for in-browser support. Please ensure you have the following installed:
 - [Node.js](https://nodejs.org/en/) (developed with node v20.11.1)
     - If you are using [nvm](https://github.com/nvm-sh/nvm) you can run `nvm use` in the `/public` directory to switch to the correct version of node as specified in the `.nvmrc` file.
 - [npm](https://www.npmjs.com/) (developed with npm version v10.2.4)
 
 1. Navigate to the `/public` folder
-2. Switch to the required version of node
+2. Switch to the required version of node (`nvm user`).
 3. Run `npm install` to install the required dependencies
-4. Start the server using `npm run start`. Alternatively you can also run the server using `npm run dev` which enables auto-restarting when making changes to the codebase
+4. Start the server using `npm run dev` which enables auto-restarting when making changes to the codebase.
 
 ## Running the EEFRT task on an iOS
 1. Ensure you have the local file server running before running the app.
@@ -39,6 +39,19 @@ sudo ln -s ../../../public assets
 3. Open the project in Android Studio, let the Gradle Sync finish and then run the app in a emulator or physical device
 4. Once the app loads you can run the task by clicking the button which appears on the initial screen. To exit the task early, press the back button in the top left corner, otherwise you'll return once you complete the task.
 
+## Build distribution directory
+
+Use Vite to build a minified version of the game assets which can be used in a native app.
+
+```bash
+npm run build
+```
+
+To preview the build run;
+
+```bash
+npm run preview
+```
 
 ## Attributions
 
