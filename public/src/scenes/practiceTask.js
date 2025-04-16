@@ -59,6 +59,7 @@ let maxEffortPresses = 75;
 let minEffortPresses = 30; // 40% of 75
 
 const PRACTICE_TIMEOUT_KEY = 'practiceTimeout';
+var routeSelectionTransitionTimer;
 
 // this function extends Phaser.Scene and includes the core logic for the game
 export default class PracticeTask extends Phaser.Scene {
@@ -323,7 +324,61 @@ var showMessageForCurrentPracticeTrial = function (context) {
         "Your turn!\nChoose the route you\'d prefer to take.\nYou have 5 seconds.",
     ]
 
+    // remove feedback message from the screen if its still there
+    if (feedbackMessage) {
+        clearTimeout(routeSelectionTransitionTimer);
+        feedbackMessage.destroy();
+        feedbackMessage = null;
+    }
+
     let messageTextForCurrentTrial = messages[pracTrial];
+    feedbackMessage = new Message(
+        context,
+        gameWidth,
+        "14px monospace",
+        0xF6F8F9,
+        0xD0D5DD,
+        messageTextForCurrentTrial,
+        "#000000",
+        85,
+        160,
+        110,
+        -5
+    );
+
+    context.tweens.add({        
+        targets: feedbackMessage,
+        scaleX: { start: 0, to: 1 },
+        scaleY: { start: 0, to: 1 },
+        ease: 'Linear',    
+        duration: pracAnimationTime,
+        repeat: 0,      
+        yoyo: false,
+        onComplete: () => {
+            // for the 3rd practice trial, an addiitonal dialog appears after 5 seconds
+            if (pracTrial == 2) {
+                routeSelectionTransitionTimer = setTimeout(() => {
+                    pracRound3AdditionalDialog(context)
+                }, 4600); // 4.6 + 0.4(animation duration) seconds = 5 seconds
+            }
+        }
+    });
+};
+
+var pracRound3AdditionalDialog = function(context) {
+    clearTimeout(routeSelectionTransitionTimer);
+
+    if (pracTrial != 2) {
+        return; // ensure we are updating this dialog only on the 3rd practice trial
+    }
+
+    // remove feedback message from the screen if its still there
+    if (feedbackMessage) {
+        feedbackMessage.destroy();
+        feedbackMessage = null;
+    }
+
+    let messageTextForCurrentTrial = "Each round you\'ll have 5 seconds\nto choose a route.\nFor now, let\'s try Route 1.";
     feedbackMessage = new Message(
         context,
         gameWidth,
@@ -347,7 +402,7 @@ var showMessageForCurrentPracticeTrial = function (context) {
         repeat: 0,      
         yoyo: false
     });
-};
+}
 
 // 2. Once participant has indicated they are ready, let them try out the effort panel 
 var doChoice = function () {
@@ -392,6 +447,7 @@ var effortOutcome = function() {
 
         if (feedbackMessage) {
             // remove feedback message from the screen if its still there
+            clearTimeout(routeSelectionTransitionTimer);
             feedbackMessage.destroy();
             feedbackMessage = null;
         }
@@ -442,6 +498,7 @@ var effortOutcome = function() {
 
         if (feedbackMessage) {
             // remove feedback message from the screen if its still there
+            clearTimeout(routeSelectionTransitionTimer);
             feedbackMessage.destroy();
             feedbackMessage = null;
         }
@@ -511,6 +568,7 @@ var effortOutcome = function() {
 
         if (feedbackMessage) {
             // remove feedback message from the screen if its still there
+            clearTimeout(routeSelectionTransitionTimer);
             feedbackMessage.destroy();
             feedbackMessage = null;
         }
