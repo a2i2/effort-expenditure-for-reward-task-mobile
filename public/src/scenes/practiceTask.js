@@ -477,7 +477,6 @@ var effortOutcome = function() {
             yoyo: false
         });
         // then play powerup fail anim and progress via slow route
-        this.time.addEvent({delay: pracFeedbackTime+250, 
                             callback: function(){
                                 feedbackMessage.destroy();
                                 // then play short 'powerup fail' anim:
@@ -553,7 +552,7 @@ var effortOutcome = function() {
             // then player floats across 'low route' and collects coins
             this.time.addEvent({delay: pracAnimationTime, 
                 callback: function() {
-                    this.feedbackMessage?.destroy();
+                    feedbackMessage?.destroy();
                     this.player.sprite.anims.play('float', true);    
                     this.player.sprite.setVelocityX(playerVelocity/3);
                     this.time.addEvent({ delay: 100,
