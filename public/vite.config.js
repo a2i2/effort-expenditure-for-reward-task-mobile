@@ -5,11 +5,17 @@ import fse from 'fs-extra';
 
 export default defineConfig({
   root: './',
+  base: '/effort-expenditure-for-reward-task-mobile/',
   publicDir: false,
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    assetsDir: ''
+    assetsDir: '',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
   },
   resolve: {
     alias: {
