@@ -26,7 +26,7 @@ var powerupDelay = 200; // delay in ms before powerup timer is started
 if (test_game == false) {
 	if (runPractice == true) {
 		var sceneOrder = [
-			'practiceTask',
+			'PracticeTask',
 			'StartTaskScene',
 			'MainTask',
 			'questInstructionsScene',

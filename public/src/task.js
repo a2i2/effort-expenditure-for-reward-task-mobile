@@ -1,6 +1,6 @@
 // import js modules that hold the game/experiment scenes
 import InstructionsScene from "./scenes/instructionsScene.js";
-import practiceTask from "./scenes/practiceTask.js";
+import PracticeTask from "./scenes/practiceTask.js";
 import questInstructionsScene from "./scenes/questInstructionsScene.js";
 import Questions from "./scenes/Questions.js";
 import StartTaskScene from "./scenes/startTaskScene.js";
