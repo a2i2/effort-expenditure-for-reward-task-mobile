@@ -33,6 +33,13 @@ export default class PowerPanel {
             space: { top: 20, bottom: 20, left: 25, right: 25, item: 20 }
         });
 
+        const powerPanelState = Object.freeze({
+            ready: 'READY',
+            power: 'POWER',
+        })
+
+        this.state = isPractice ? powerPanelState.ready : powerPanelState.power;
+
         // Header row: title + countdown
         const headerRow = scene.rexUI.add.sizer({ orientation: 'horizontal', space: { item: 40 } });
 
@@ -42,7 +49,7 @@ export default class PowerPanel {
             color: '#000000'
         });
 
-        this.countdownPanel = new CountdownPanel(this.scene, 0, 0, 10000, POWER_UP_TIMEOUT_KEY);
+        this.countdownPanel = new CountdownPanel(this.scene, 0, 0, 10000, POWER_UP_TIMEOUT_KEY, !isPractice);
         headerRow.add(titleText, { expand: true });
         headerRow.add(this.countdownPanel.container);
 
@@ -107,48 +114,90 @@ export default class PowerPanel {
         meterContainer.add(meterColumn);
 
         // POWER button
-        const powerButtonBg = scene.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0xD64204);
-        const powerButtonText = scene.add.text(0, 0, 'POWER', {
+        let initialBackgroundColor = this.state ==  powerPanelState.power ? 0xD64204 : 0xFFFFFF; 
+        let initialText = this.state == powerPanelState.power ? 'POWER' : 'READY';
+        let initialTextColor = this.state == powerPanelState.power ? '#FFFFFF' : '#D64204'
+
+        this.powerButtonBg = scene.rexUI.add.roundRectangle(0, 0, 0, 0, 10, initialBackgroundColor);
+        this.powerButtonBg.setStrokeStyle(2, 0xD64204);
+        this.powerButtonText = scene.add.text(0, 0, initialText, {
             fontSize: '18px',
             fontStyle: 'bold',
-            color: '#FFFFFF'
+            color: initialTextColor
         });
 
-        const powerButton = scene.rexUI.add.label({
-            background: powerButtonBg,
-            text: powerButtonText,
+        this.powerButton = scene.rexUI.add.label({
+            background: this.powerButtonBg,
+            text: this.powerButtonText,
             align: 'center',
             height: 100,
             space: { top: 20, bottom: 20, left: 20, right: 20 }
         });
 
-        powerButton.setInteractive()
+        this.powerButton.setInteractive()
             .on('pointerdown', () => {
-                // Only show pressed colour if the user has not yet reached the goal
-                if (this.pressCount < this.trialEffort) {
-                    powerButtonBg.setFillStyle(0x8A2A03); // Pressed color
-                }
+                switch(this.state) {
+                    case powerPanelState.ready:
+                        this.powerButtonBg.setFillStyle(0xFEE1D5);
+                        break;
+                    
+                    case powerPanelState.power:
+                        // Only show pressed colour if the user has not yet reached the goal
+                        if (this.pressCount < this.trialEffort) {
+                            this.powerButtonBg.setStrokeStyle(2, 0x8A2A03);
+                            this.powerButtonBg.setFillStyle(0x8A2A03); // Pressed color
+                        }
+                        break;
+                } 
             })
             .on('pointerup', () => {
-                powerButtonBg.setFillStyle(0xD1440C); // Normal color
-                // User has not yet reached the goal so we can safely increment the count
-                if (this.pressCount < this.trialEffort) {
-                    this.incrementPower();
-                }
-                // User has reached the goal
-                if (this.pressCount >= this.trialEffort) {
-                    this.countdownPanel?.destroy(); // immediately stop and remove the timer
-                    this.onSuccess();
-                }
+                switch(this.state) {
+                    case powerPanelState.ready:
+                        // update the button styling to be the power button
+                        this.powerButtonBg.setStrokeStyle(2, 0xD64204);
+                        this.powerButtonBg.setFillStyle(0xD64204);
+                        this.powerButtonText.setText('POWER');
+                        this.powerButtonText.setColor('#FFFFFF');
+                        this.state = powerPanelState.power;
+                        eventsCenter.emit('powerStatePassed');
+                        setTimeout(() => { 
+                            this.countdownPanel.startCountdown();
+                        }, 500)
+                        break;
+                    
+                    case powerPanelState.power:
+                        this.powerButtonBg.setStrokeStyle(2, 0xD64204);
+                        this.powerButtonBg.setFillStyle(0xD64204); // Normal color
+                        // User has not yet reached the goal so we can safely increment the count
+                        if (this.pressCount < this.trialEffort) {
+                            this.incrementPower();
+                        }
+                        // User has reached the goal
+                        if (this.pressCount >= this.trialEffort) {
+                            this.countdownPanel?.destroy(); // immediately stop and remove the timer
+                            this.onSuccess();
+                        }
+                        break;
+                } 
             })
             .on('pointerout', () => {
-                powerButtonBg.setFillStyle(0xD1440C); // Restore if dragged out
+                switch(this.state) {
+                    case powerPanelState.ready:
+                        this.powerButtonBg.setFillStyle(0xFFFFFF); // Restore if dragged out
+                        break;
+
+                    case powerPanelState.power:
+                        this.powerButtonBg.setStrokeStyle(2, 0xD64204);
+                        this.powerButtonBg.setFillStyle(0xD64204); // Restore if dragged out
+                        break;
+                }
+
             });
 
         // Assemble layout
         this.container.add(headerRow);
         this.container.add(meterContainer, { expand: true });
-        this.container.add(powerButton, { expand: true });
+        this.container.add(this.powerButton, { expand: true });
 
         this.container.layout();
 

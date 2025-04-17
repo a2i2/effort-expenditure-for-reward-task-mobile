@@ -1,12 +1,11 @@
 import eventsCenter from '../eventsCenter.js';
 import CountdownPanel from './CountdownPanel.js';
 import PowerMeterBar from './PowerMeterBar.js';
-import { timeout } from '../versionInfo.js'
 
 const ROUTE_TIMEOUT_KEY = 'routeTimeout';
 
 export default class RouteSelectorPanel {
-    constructor(scene, x, y, width, height, route1Coins, route1Power, route2Coins, route2Power, onSelect) {
+    constructor(scene, x, y, width, height, route1Coins, route1Power, route2Coins, route2Power, onSelect, timeoutMillis = 10000) {
         this.scene = scene;
         this.route1Coins = route1Coins;
         this.route2Coins = route2Coins;
@@ -47,9 +46,11 @@ export default class RouteSelectorPanel {
             // TODO: Font family
         });
 
-        this.countdownPanel = new CountdownPanel(this.scene, 0, 0, timeout, ROUTE_TIMEOUT_KEY);
         titleRow.add(title, { expand: true });
-        titleRow.add(this.countdownPanel.container);
+        if (timeoutMillis != null) {
+            this.countdownPanel = new CountdownPanel(this.scene, 0, 0, timeoutMillis, ROUTE_TIMEOUT_KEY);
+            titleRow.add(this.countdownPanel.container);
+        }
 
         this.container.add(titleRow);
 

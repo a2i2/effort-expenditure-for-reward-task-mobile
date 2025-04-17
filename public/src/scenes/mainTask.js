@@ -15,7 +15,8 @@ import { shuffleTrials } from "../saveData.js";
     // fetchThresholdMax } from "../saveData.js";
 // import version info
 import {sceneOrder, runPractice, effortTime, nBlocks, nCalibrates,
-    trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet, debug_mode
+    trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet, debug_mode,
+    timeout
 } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
@@ -422,7 +423,8 @@ var displayChoicePanel = function () {
         (selected) => {
             this.registry.set('choice', selected);
             eventsCenter.emit('choiceComplete');
-        }
+        },
+        timeout
     );
     this.add.existing(panel.container);
     
@@ -478,6 +480,7 @@ var effortOutcome = function() {
         this.feedbackMessage = new Message(
             this,
             gameWidth,
+            "16px monospace",
             0xBCF3D4,
             0x25D070,
             "Nice work!",
@@ -520,6 +523,7 @@ var effortOutcome = function() {
         this.feedbackMessage = new Message(
             this,
             gameWidth,
+            "16px monospace",
             0xBCF3D4,
             0x25D070,
             "Nice work!",
@@ -559,6 +563,7 @@ var effortOutcome = function() {
         this.feedbackMessage = new Message(
             this,
             gameWidth,
+            "16px monospace",
             0xFFDBDB,
             0xFF9696,
             "Too slow - you only have 5\nseconds to choose a route",
@@ -599,6 +604,7 @@ var effortOutcome = function() {
         this.feedbackMessage = new Message(
             this,
             gameWidth,
+            "16px monospace",
             0xFFDBDB,
             0xFF9696,
             "Not enough power this time!",

@@ -10,7 +10,7 @@ const debug_mode = false; // turns on console logging
 const test_game = false; // test the game only (for testing)
 const demo_mode = true; // a demo game without study info
 // UPDATE runPRACTICE to false for FU games ///
-const runPractice = false; // run a practice i.e., a baseline version or without practice (FU)
+const runPractice = true; // run a practice i.e., a baseline version or without practice (FU)
 // trials:
 const trialsFile = "trials24.json" // name of the json file which includes trials
 const questionsFile = "questions.json" // json file storing the ema questions
@@ -26,7 +26,6 @@ var powerupDelay = 200; // delay in ms before powerup timer is started
 if (test_game == false) {
 	if (runPractice == true) {
 		var sceneOrder = [
-			'InstructionsScene',
 			'practiceTask',
 			'StartTaskScene',
 			'MainTask',
@@ -67,9 +66,10 @@ Object.freeze(sceneOrder);
 // 2. set effort-related calibration variables: 
 var effortTime = 10000;	// time participant will have to try and exert effort (ms)
 var timeout = 5000; // time to wait for participant to make a choice (ms)
-var pracTrialEfforts = [75, 63, 70];   // practice effort level (presses)
-var pracTrialRewards = [5, 3, 4]; // reward values of gems
-var gemHeights = [255, 180, 220]; // arbitrary heights 
+var pracTrialEfforts = [75, 75, 75, 75];   // practice effort level (presses)
+var pracTrialRewards = [7, 7, 7, 7]; // reward values of gems
+var pracTrialEffortProp = 1;
+var gemHeights = [255, 180, 220, 255]; // arbitrary heights 
 // set a minimum on initial max press count to avoid gaming the practice trials (10% quantile from pilot1)
 var minPressMax = 58;   
 var thresholdAutoSet = 58;
@@ -98,5 +98,5 @@ export {
 	demo_mode, debug_mode, sceneOrder, randomiseOrder, runPractice,
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
 	blockDesktop, trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
-	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, minPressMax, nCalibrates, nBlocks, complete_link, buttonText, powerupDelay
+	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, pracTrialEffortProp, minPressMax, nCalibrates, nBlocks, complete_link, buttonText, powerupDelay
 };
