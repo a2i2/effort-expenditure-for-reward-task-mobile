@@ -485,10 +485,7 @@ var effortOutcome = function() {
             0x25D070,
             "Nice work!",
             "#10562F",
-            40,
-            100,
-            80,
-            0
+            80
         );
         this.tweens.add({        
             targets: this.feedbackMessage,
@@ -528,10 +525,7 @@ var effortOutcome = function() {
             0x25D070,
             "Nice work!",
             "#10562F",
-            40,
-            100,
-            80,
-            0
+            80
         );
         this.tweens.add({        
             targets: this.feedbackMessage,
@@ -568,10 +562,7 @@ var effortOutcome = function() {
             0xFF9696,
             "Too slow - you only have 5\nseconds to choose a route",
             "#9B0000",
-            60,
-            140,
-            80,
-            0
+            80
         );
         this.tweens.add({        
             targets: this.feedbackMessage,
@@ -609,10 +600,7 @@ var effortOutcome = function() {
             0xFF9696,
             "Not enough power this time!",
             "#9B0000",
-            40,
-            100,
-            80,
-            0
+            80
         );
         this.tweens.add({        
             targets: this.feedbackMessage,
