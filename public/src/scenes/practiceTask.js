@@ -273,8 +273,8 @@ var displayInfoPanel = function () {
     
     // if the user is shown the route selection panel then we will want to show the coins
     if (pracTrial > 1) {
-        this.coins1 = new Coins(this, midbridgeX-(selectedReward*55)/2, 235, trialReward1); // coins in sky
-        this.coins2 = new Coins(this, midbridgeX-(selectedReward*55)/2, 360, trialReward2); // coins on bridge
+        this.coins1 = new Coins(this, midbridgeX-(trialReward1*65)/2, 235, trialReward1); // coins in sky
+        this.coins2 = new Coins(this, midbridgeX-(trialReward2*155)/2, 360, trialReward2); // coins on bridge
     }
 
     // each practice trial has a custom message displayed at the same time as the choice panel,
