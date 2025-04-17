@@ -88,6 +88,12 @@ export default class PracticeTask extends Phaser.Scene {
         // close button
         this.load.image('close', './src/assets/imgs/close.svg');
 
+        // load spinning coin spritesheet
+        this.load.spritesheet('coin', './src/assets/spritesheets/coin.png', {
+            frameWidth: 15.8,
+            frameHeight: 16
+        });
+
         // load rock and plant sprites to add some texture to background
         this.load.image('smallShrub', './src/assets/imgs/small-shrub.svg');
         this.load.image('cloud', './src/assets/imgs/cloud2.png');
