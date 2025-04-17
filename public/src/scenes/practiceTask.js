@@ -326,10 +326,10 @@ var displayInfoPanel = function () {
 
 var showMessageForCurrentPracticeTrial = function (context) {
     let messages = [
-        "First, let\'s learn how to fly!. Tap the button as fast as you can to help Pickle fly. Press \'ready\' to start'.",
-        "Great effort! Let's try again - practice makes perfect.",
-        "Nice! Now, let\'s learn about routes. Routes require different amounts of effort and offer different rewards.",
-        "Your turn! Choose the route you\'d prefer to take. You have 5 seconds.",
+        "[b]First, let\'s learn how to fly![/b]\nTap the button as fast as you can to help Pickle fly. Press \'ready\' to start.",
+        "[b]Great effort![/b]\nLet's try again - practice makes perfect.",
+        "[b]Nice! Now, let\'s learn about routes.[/b]\nRoutes require different amounts of effort and offer different rewards.",
+        "[b]Your turn![/b]\nChoose the route you\'d prefer to take. You have 5 seconds.",
     ]
 
     // remove feedback message from the screen if its still there
@@ -383,7 +383,7 @@ var pracRound3AdditionalDialog = function(context) {
         feedbackMessage = null;
     }
 
-    let messageTextForCurrentTrial = "Each round you\'ll have 5 seconds to choose a route. For now, let\'s try Route 1.";
+    let messageTextForCurrentTrial = "[b]Each round you\'ll have 5 seconds to choose a route.[/b]\nFor now, let\'s try Route 1.";
     feedbackMessage = new Message(
         context,
         gameWidth,

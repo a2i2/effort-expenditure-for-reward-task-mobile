@@ -14,14 +14,16 @@ export default class Message {
         const wordWrapWidth = containerWidth - textXSpacing * 2
         const textXPos = containerXPos + (containerWidth - wordWrapWidth) / 2;
   
-        this.feedback = scene.add.text(textXPos, yPosition, messageText, {
+        this.feedback = scene.rexUI.add.BBCodeText(textXPos, yPosition, messageText, {
+            fontSize: '14px',
             font: fontString,
             fill: messageTextColor,
             align: 'center',
-            wordWrap: {
+            wrap: {
+                mode: 'word',
                 width: wordWrapWidth,
-                useAdvancedWordWrapping: true
             },
+            lineSpacing: 2,
             fixedWidth: wordWrapWidth,
             padding: textPadding
         });
