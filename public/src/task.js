@@ -38,9 +38,13 @@ const config = {
     },
     scale: {
         parent: 'game-container',
-        mode: Phaser.Scale.FIT,
-        // Center vertically and horizontally
-        autoCenter: Phaser.Scale.CENTER_BOTH
+        mode: Phaser.Scale.FIT
+    },
+    callbacks: {
+        postBoot: () => {
+            resizeApp();
+            window.addEventListener('resize', resizeApp);
+        }
     }
 };
 
@@ -66,10 +70,6 @@ function resizeApp() {
 export function runTask() {
     // create new phaser game configured as above
     new Phaser.Game(config);
-    resizeApp()
-    window.addEventListener("resize", resizeApp) //resize if necessary
-    var currentTime = new Date().toLocaleTimeString();
-    // saveStartData(currentTime, randomiseOrder, sceneOrder);           // [for firebase] update !!
 };
 
 export { resizeApp, sceneOrder}
