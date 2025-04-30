@@ -57,8 +57,8 @@ export default class RouteSelectorPanel {
         // Buttons
         const optionsRow = scene.rexUI.add.sizer({ orientation: 'horizontal', space: { item: 20 } });
 
-        const route1 = this.createRouteButton('Route 1', this.route1Power, this.route1Coins);
-        const route2 = this.createRouteButton('Route 2', this.route2Power, this.route2Coins);
+        const route1 = this.createRouteButton('Route 1', this.route1Power, this.route1Coins, false);
+        const route2 = this.createRouteButton('Route 2', this.route2Power, this.route2Coins, timeoutMillis == null); // only show this one as disabled on the 3rd pracice round where we dont have a timeout defined
 
         optionsRow.add(route1, { expand: true });
         optionsRow.add(route2, { expand: true });
@@ -66,6 +66,19 @@ export default class RouteSelectorPanel {
         this.container.add(optionsRow, { expand: true });
 
         this.container.layout();
+
+        if (timeoutMillis == null) {
+            let overlay = this.scene.add.graphics();
+
+            // for whatever reason the layout engine reports the route 2 x and y values as the centre point of the panel, adjust it so it actually covers the whole choice panel
+            let overlayX = route2.x - (route2.width / 2);
+            let overlayY = route2.y - (route2.height / 2);
+
+            overlay.fillStyle(0x000000, 0.25);
+            overlay.fillRoundedRect(overlayX, overlayY, route2.width, route2.height, 10);
+            overlay.lineStyle(5, 0x000000, 0.25);
+            overlay.fillStyle(0x000000, 0.25);
+        }
 
         // React when the countdown timer has finished
         eventsCenter.once(ROUTE_TIMEOUT_KEY, () => {
@@ -76,7 +89,7 @@ export default class RouteSelectorPanel {
         });
     }
 
-    createRouteButton(routeName, power, reward) {
+    createRouteButton(routeName, power, reward, isDisabled) {
         const bg = this.scene.rexUI.add.roundRectangle(0, 0, 0, 0, 10, 0xFFFFFF).setStrokeStyle(2, 0xD64204);
 
         const sizer = this.scene.rexUI.add.overlapSizer({
@@ -166,7 +179,8 @@ export default class RouteSelectorPanel {
         sizer.addBackground(bg);
         sizer.add(buttonSizer, { align: 'center' });
 
-        sizer.setInteractive()
+        if (!isDisabled) {
+            sizer.setInteractive()
             // User has dragged/touched their cursor/finger over/onto the button
             .on('pointerover', () => {
                 this.clearSelections();
@@ -183,6 +197,7 @@ export default class RouteSelectorPanel {
                 this.destroy();
             });
 
+        }
         // Keep track to reset background color
         sizer.__bg__ = bg;
 
