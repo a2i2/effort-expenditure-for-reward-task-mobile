@@ -14,8 +14,8 @@ if (debug_mode) { console.log('scene order: ' + sceneOrder) };
 // create the phaser game, based on the following config
 const config = {
     type: Phaser.Scale.AUTO,           // rendering: webGL if available, otherwise canvas
-    width: 400,
-    height: 780,
+    width: window.innerWidth,
+    height: window.innerHeight,
     physics: {
         default: 'arcade',       // add light-weight physics to our world
         arcade: {
@@ -37,8 +37,8 @@ const config = {
         }]
     },
     scale: {
-        parent: 'game-container',
-        mode: Phaser.Scale.FIT
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH
     },
     callbacks: {
         postBoot: () => {
