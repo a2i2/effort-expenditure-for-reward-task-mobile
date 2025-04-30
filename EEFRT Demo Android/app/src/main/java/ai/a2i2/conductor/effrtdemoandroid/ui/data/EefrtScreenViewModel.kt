@@ -3,7 +3,6 @@ package ai.a2i2.conductor.effrtdemoandroid.ui.data
 import ai.a2i2.conductor.effrtdemoandroid.persistence.AppDatabase
 import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
-import ai.a2i2.conductor.effrtdemoandroid.ui.BottomScreenDialogConfig
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -19,9 +18,6 @@ class EefrtScreenViewModel(
 
     private val _actualTrialData = mutableStateOf<List<TaskAttempt>>(emptyList())
     private val actualTrialData: State<List<TaskAttempt>> = _actualTrialData
-
-    private var bottomScreenDialogConfig: BottomScreenDialogConfig? = null
-    var bottomScreenDialogVisible = mutableStateOf(false)
 
     init {
         refreshData()
@@ -69,14 +65,6 @@ class EefrtScreenViewModel(
             appDatabase.taskAttemptDao().delete(taskAttempt)
             refreshData()
         }
-    }
-
-    fun setBottomScreenConfig(config: BottomScreenDialogConfig?) {
-        bottomScreenDialogConfig = config
-    }
-
-    fun getBottomScreenConfig(): BottomScreenDialogConfig? {
-        return bottomScreenDialogConfig
     }
 
     fun deleteAllEvents() {

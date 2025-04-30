@@ -12,9 +12,6 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -88,18 +85,6 @@ fun EefrtScreen(
                 }
             }
         )
-
-        AnimatedVisibility(
-            visible = eefrtViewModel.bottomScreenDialogVisible.value,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            eefrtViewModel.getBottomScreenConfig()?.let {
-                BottomScreenDialog(
-                    config = eefrtViewModel.getBottomScreenConfig()!!
-                )
-            }
-        }
     }
 }
 
@@ -143,30 +128,6 @@ private fun handleMessage(
                 val taskAttempt = gson.fromJson(body, TaskAttempt::class.java)
                 taskAttempt.createdAt = Date()
                 eefrtViewModel.saveActualTaskAttempt(taskAttempt)
-            }
-
-            "break" -> {
-                val config = BottomScreenDialogConfig(
-                    titleText = "Break time",
-                    subtitleText = "You're doing an amazing job!\nTake a short break if you need one. The task will automatically continue after 2 minutes.",
-                    actionButtonText = "Continue",
-                    durationSeconds = 120,
-                    actionButtonHandler = {
-                        eefrtViewModel.bottomScreenDialogVisible.value = false
-                        eefrtViewModel.setBottomScreenConfig(null)
-                        maybeWebview?.evaluateJavascript("breakOver();", null)
-                        Log.i(TAG, "hide bottom screen dialog")
-                    },
-                    timeoutHandler = {
-                        eefrtViewModel.bottomScreenDialogVisible.value = false
-                        eefrtViewModel.setBottomScreenConfig(null)
-                        maybeWebview?.evaluateJavascript("breakOver();", null)
-                        Log.i(TAG, "hide bottom screen dialog")
-                    }
-                )
-                eefrtViewModel.setBottomScreenConfig(config)
-                eefrtViewModel.bottomScreenDialogVisible.value = true
-                Log.i(TAG, "Show bottom screen dialog")
             }
 
             else -> Log.i(

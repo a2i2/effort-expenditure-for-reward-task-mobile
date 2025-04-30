@@ -40,7 +40,9 @@ export default class CountdownPanel {
     
     formatTime(ms) {
         const seconds = Math.ceil(ms / 1000);
-        return `0:${seconds.toString().padStart(2, '0')}`;
+        const mins = Math.floor(seconds / 60);
+        const secondsRemainder = Math.floor(seconds % 60);
+        return `${mins}:${secondsRemainder.toString().padStart(2, '0')}`;
     }
     
     drawCircle(progress) {
