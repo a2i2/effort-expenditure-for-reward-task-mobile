@@ -39,32 +39,8 @@ const config = {
     scale: {
         mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH
-    },
-    callbacks: {
-        postBoot: () => {
-            resizeApp();
-            window.addEventListener('resize', resizeApp);
-        }
     }
 };
-
-// if desired, allow game window to resize to fit available space 
-function resizeApp() {
-    var canvas = document.querySelector("canvas");
-    var windowWidth = window.innerWidth;
-    var windowHeight = window.innerHeight;
-    var windowRatio = windowWidth / windowHeight;
-    var gameRatio = config.width / config.height;
-
-    if (windowRatio < gameRatio) {
-        canvas.style.width = windowWidth + "px";
-        canvas.style.height = (windowWidth / gameRatio) + "px";
-    }
-    else {
-        canvas.style.width = (windowHeight * gameRatio) + "px";
-        canvas.style.height = windowHeight + "px";
-    };
-}
 
 // Start the game using the configuration defined above
 export function runTask() {
@@ -72,4 +48,4 @@ export function runTask() {
     new Phaser.Game(config);
 };
 
-export { resizeApp, sceneOrder}
+export { sceneOrder}
