@@ -3,7 +3,7 @@
 // import js game element modules (sprites, ui, outcome animations, etc.)
 import Player from "../elements/player.js";
 import Coins from "../elements/coins.js";
-import BreakPanel from "../elements/takeABreak.js";
+import BreakPanel from "../elements/BreakPanel.js";
 import StaticObjects from "../elements/staticObjects.js";
 import ProgressBar from "../elements/progressBar.js";
 import RouteSelectorPanel from "../elements/RouteSelectorPanel.js";
@@ -731,7 +731,27 @@ var trialEnd = function () {
     if ((trialNo + 1) % trialsPerBlock == 0 && trialNo != nTrials - 1) {
         this.player.sprite.setVelocityX(0);
         this.player.sprite.anims.play('wait', true);
-        EmbedContext.sendMessage("break");
+        
+        let camera = this.cameras.main;
+        let panelHeight = camera.height * 0.35;
+        this.breakPanel = new BreakPanel(
+            this,
+            camera.scrollX + camera.width / 2,
+            camera.height - panelHeight / 2,
+            camera.width,
+            panelHeight
+        );
+
+        this.tweens.add({        
+            targets: this.breakPanel,
+            scaleX: { start: 0, to: 1 },
+            scaleY: { start: 0, to: 1 },
+            ease: 'Linear',    
+            duration: animationTime,
+            repeat: 0,      
+            yoyo: false
+        });
+
         // this.breakPanel = new BreakPanel(this, mapWidth-gameWidth/2, 600, nCoins);
         eventsCenter.once('breakover', function () {
             //  restart coin total from 0 after each block
