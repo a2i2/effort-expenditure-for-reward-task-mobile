@@ -153,7 +153,7 @@ export default class PracticeTask extends Phaser.Scene {
 
         //////////////ADD PROGRESS BAR////////////////////
         // Create progress bar at the top of the screen with nBlocks segments
-        this.progressBar = new ProgressBar(this, 24, 20, 340, nPracTrials, pracTrial, {
+        this.progressBar = new ProgressBar(this, 24, 20, nPracTrials, pracTrial, {
             height: 10,
             padding: 4,
             cornerRadius: 5

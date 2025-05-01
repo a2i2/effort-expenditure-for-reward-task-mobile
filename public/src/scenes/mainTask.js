@@ -225,7 +225,7 @@ export default class MainTask extends Phaser.Scene {
 
         //////////////ADD PROGRESS BAR////////////////////
         // Create progress bar at the top of the screen with nBlocks segments
-        this.progressBar = new ProgressBar(this, 24, 20, 340, nBlocks, blockNo, {
+        this.progressBar = new ProgressBar(this, 24, 20, nBlocks, blockNo, {
             height: 10,
             padding: 4,
             cornerRadius: 5
