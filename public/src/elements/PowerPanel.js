@@ -59,7 +59,9 @@ export default class PowerPanel {
         // Power meter + coin section
         const maxTotalBlocks = 10;
         const totalBlocks = (maxTotalBlocks * power).toFixed(); // 10 * 0.4 = 4 blocks
-        const powerMeterBarMaxWidth = (window.innerWidth - 180).toFixed(); // Determine maximum width based on screen width - approximate size of paddings and meter info column
+        const meterInfoColPadding = 180;
+         // Determine maximum width based on screen width - approximate size of paddings and meter info column
+        const powerMeterBarMaxWidth = (window.innerWidth - meterInfoColPadding).toFixed();
         const blockWidth = (powerMeterBarMaxWidth / totalBlocks).toFixed();
         this.powerMeter = new PowerMeterBar(this.scene, 0, {
             totalBlocks: totalBlocks,

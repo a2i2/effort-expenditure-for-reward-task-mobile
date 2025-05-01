@@ -104,8 +104,9 @@ export default class RouteSelectorPanel {
 
         const buttonSizer = this.scene.rexUI.add.sizer({ orientation: 'vertical', space: { item: 6 } });
 
+        const padding = 40;
         const titleLabel = this.scene.rexUI.add.label({
-            width: this.width / 2 - 40, // window width / 2 panels - some padding
+            width: this.width / 2 - padding, // total width / 2 panels - some padding
             height: 32,
             background: this.scene.rexUI.add.roundRectangle(0, 0, 0, 0, { tl: 10, tr: 10, bl: 0, br: 0 }, 0xD64204),
             text: this.scene.add.text(0, 0, routeName, {

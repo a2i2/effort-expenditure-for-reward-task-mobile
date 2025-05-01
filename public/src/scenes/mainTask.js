@@ -208,7 +208,7 @@ export default class MainTask extends Phaser.Scene {
 
         // add scene sprites/images for texture (randomly positioned on each trial)
         let objManager = new StaticObjects(this);
-        // determine descision x coordinate for left of bridge
+        // determine decision x coordinate for left of bridge
         var x = Phaser.Math.RND.between(50, decisionPointX-60);
         objManager.addRandomObject(x, blockNo === 1);
         // determine x coordinate for right of bridge
