@@ -13,6 +13,8 @@ export default class RouteSelectorPanel {
         this.route2Power = (route2Power * 100).toFixed();
         this.onSelect = onSelect;
 
+        this.width = width;
+
         // background panel
         this.panel = scene.rexUI.add.roundRectangle(x, y, width, height, 
             { // rounded corners top
@@ -55,15 +57,18 @@ export default class RouteSelectorPanel {
         this.container.add(titleRow);
 
         // Buttons
-        const optionsRow = scene.rexUI.add.sizer({ orientation: 'horizontal', space: { item: 20 } });
+        const optionsRow = scene.rexUI.add.sizer({
+            orientation: 'horizontal',
+            space: { item: 20 }
+        });
 
         const route1 = this.createRouteButton('Route 1', this.route1Power, this.route1Coins, false);
         const route2 = this.createRouteButton('Route 2', this.route2Power, this.route2Coins, timeoutMillis == null); // only show this one as disabled on the 3rd pracice round where we dont have a timeout defined
 
-        optionsRow.add(route1, { expand: true });
-        optionsRow.add(route2, { expand: true });
+        optionsRow.add(route1);
+        optionsRow.add(route2);
 
-        this.container.add(optionsRow, { expand: true });
+        this.container.add(optionsRow, { align: 'center' });
 
         this.container.layout();
 
@@ -100,7 +105,7 @@ export default class RouteSelectorPanel {
         const buttonSizer = this.scene.rexUI.add.sizer({ orientation: 'vertical', space: { item: 6 } });
 
         const titleLabel = this.scene.rexUI.add.label({
-            width: 170, // or use a dynamic width based on layout
+            width: this.width / 2 - 40, // window width / 2 panels - some padding
             height: 32,
             background: this.scene.rexUI.add.roundRectangle(0, 0, 0, 0, { tl: 10, tr: 10, bl: 0, br: 0 }, 0xD64204),
             text: this.scene.add.text(0, 0, routeName, {
