@@ -68,16 +68,16 @@ export default class RouteSelectorPanel {
         this.container.layout();
 
         if (timeoutMillis == null) {
-            let overlay = this.scene.add.graphics();
+            this.overlay = this.scene.add.graphics();
 
             // for whatever reason the layout engine reports the route 2 x and y values as the centre point of the panel, adjust it so it actually covers the whole choice panel
             let overlayX = route2.x - (route2.width / 2);
             let overlayY = route2.y - (route2.height / 2);
 
-            overlay.fillStyle(0x000000, 0.25);
-            overlay.fillRoundedRect(overlayX, overlayY, route2.width, route2.height, 10);
-            overlay.lineStyle(5, 0x000000, 0.25);
-            overlay.fillStyle(0x000000, 0.25);
+            this.overlay.fillStyle(0x000000, 0.25);
+            this.overlay.fillRoundedRect(overlayX, overlayY, route2.width, route2.height, 10);
+            this.overlay.lineStyle(5, 0x000000, 0.25);
+            this.overlay.fillStyle(0x000000, 0.25);
         }
 
         // React when the countdown timer has finished
@@ -230,5 +230,6 @@ export default class RouteSelectorPanel {
         // Remove containers from the screen
         this.panel?.destroy();
         this.container?.destroy();
+        this.overlay?.destroy();
     }
 }
