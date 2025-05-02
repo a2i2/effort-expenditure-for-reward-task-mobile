@@ -220,8 +220,9 @@ export default class MainTask extends Phaser.Scene {
         this.physics.world.bounds.height = gameHeight;
 
         //////////////ADD PROGRESS BAR////////////////////
+        const insetTop = EmbedContext.getInsetTop();
         // Create progress bar at the top of the screen with nBlocks segments
-        this.progressBar = new ProgressBar(this, 24, 20, nBlocks, blockNo, {
+        this.progressBar = new ProgressBar(this, 24, insetTop, nBlocks, blockNo, {
             height: 10,
             padding: 4,
             cornerRadius: 5
@@ -229,7 +230,7 @@ export default class MainTask extends Phaser.Scene {
         // Make it stay fixed on screen (not affected by camera)
         this.progressBar.setScrollFactor(0);
 
-        this.closeButton = this.add.image(gameWidth - 24, 25, 'close');
+        this.closeButton = this.add.image(gameWidth - 24, insetTop + 5, 'close');
         this.closeButton.setScrollFactor(0);
         this.closeButton.setInteractive();
         this.closeButton.on('pointerdown', () => {

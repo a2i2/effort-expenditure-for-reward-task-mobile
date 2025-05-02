@@ -42,11 +42,22 @@ document.addEventListener('DOMContentLoaded', function () {
       }
   
       function getMessage(key, callback) {
-        // when we have the data for the message, call the callback
-        // todo: return data from message queue or wait for it to arrive
-        callback('get message callback');
-  
-        // todo: call error function if error
+        if (platform === 'android') {
+          let message = window.AndroidBridge.getMessage();
+          return message;
+        } else if (platform === 'ios') {
+          // TODO
+        }
+      }
+
+      function getInsetTop() {
+        if (platform === 'android') {
+          return window.AndroidBridge.getInsetTop();
+        } else if (platform === 'ios') {
+          // TODO
+        } else {
+          return 20; // Default
+        }
       }
   
       // Return an Embed Context for particular platform
@@ -57,22 +68,18 @@ document.addEventListener('DOMContentLoaded', function () {
           getMessage: getMessage,
         };
       }
-      if (platform === 'android') {
-        // Load survey json from Android if loadSurvey function exists
-  
-        window.addEventListener('load', function () {
-          if (typeof loadSurvey === 'function') {
-            loadSurvey(window.AndroidBridge.getSurveyJson());
-          }
-        });
+      else if (platform === 'android') {
         return {
           sendMessage: androidSendMessage,
           getMessage: getMessage,
+          getInsetTop: getInsetTop,
+        };
+      } else {
+        return {
+          sendMessage: sendMessage,
+          getMessage: getMessage,
+          getInsetTop: getInsetTop,
         };
       }
-      return {
-        sendMessage: sendMessage,
-        getMessage: getMessage,
-      };
     })();
   });
