@@ -45,6 +45,7 @@ export default class PowerPanel {
 
         const titleText = scene.add.text(0, 0, 'Tap for power', {
             fontSize: '20px',
+            fontFamily: 'DMSans',
             fontStyle: 'bold',
             color: '#000000'
         });
@@ -72,6 +73,7 @@ export default class PowerPanel {
 
         this.percentageText = scene.add.text(0, 0, `${this.powerText}%`, {
             fontSize: '20px',
+            fontFamily: 'DMSans',
             color: '#999',
         });
 
@@ -126,6 +128,7 @@ export default class PowerPanel {
         this.powerButtonBg.setStrokeStyle(2, 0xD64204);
         this.powerButtonText = scene.add.text(0, 0, initialText, {
             fontSize: '18px',
+            fontFamily: 'DMSans',
             fontStyle: 'bold',
             color: initialTextColor
         });

@@ -114,6 +114,9 @@ export default class PracticeTask extends Phaser.Scene {
         for (let i = 1; i <= 7; i++) {
             this.load.image(`coins-${i}`, `./src/assets/imgs/coins-${i}.svg`);
         }
+
+        // hack to preload the DMSans font beforehand since Phaser cant natively preload it
+        this.add.text(0, 0, "test", { font:"1px DMSans", fill:"#FFFFFF" });
     }
     
     create() {
@@ -344,7 +347,6 @@ var showMessageForCurrentPracticeTrial = function (context) {
     feedbackMessage = new Message(
         context,
         gameWidth,
-        "14px monospace",
         0xF6F8F9,
         0xD0D5DD,
         messageTextForCurrentTrial,
@@ -388,7 +390,6 @@ var pracRound3AdditionalDialog = function(context) {
     feedbackMessage = new Message(
         context,
         gameWidth,
-        "14px monospace",
         0xF6F8F9,
         0xD0D5DD,
         messageTextForCurrentTrial,
@@ -462,7 +463,6 @@ var effortOutcome = function() {
         feedbackMessage = new Message(
             this,
             gameWidth,
-            "16px monospace",
             0xFFDBDB,
             0xFF9696,
             "Too slow - you only have 5\nseconds to choose a route",
@@ -517,7 +517,6 @@ var effortOutcome = function() {
         feedbackMessage = new Message(
             this,
             gameWidth,
-            "16px monospace",
             0xBCF3D4,
             0x25D070,
             "Nice work!",
@@ -577,7 +576,6 @@ var effortOutcome = function() {
         feedbackMessage = new Message(
             this,
             gameWidth,
-            "16px monospace",
             0xFFDBDB,
             0xFF9696,
             "Not enough power this time!",

@@ -21,7 +21,7 @@ export default class CountdownPanel {
         
         // Create the countdown text with formatted time
         this.countdownText = scene.add.text(this.circleRadius + 8, 0, this.formatTime(this.timeLeft), {
-            fontFamily: 'monospace',
+            fontFamily: 'DMSans',
             fontSize: '16px',  // Match title text size
             color: '#000000'
         }).setOrigin(0, 0.5);
