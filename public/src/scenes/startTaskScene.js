@@ -2,12 +2,9 @@
 
 // import task info from versionInfo file
 import { approxTime} from "../versionInfo.js";  // time participant will have to try and exert effort (ms)
+import { BaseScene } from "./baseScene.js";
 
-// // import some js from Pavlovia lib to enable data saving  [for Pavlovia deployment only]
-// import * as data from "../../lib/data-2020.2.js";
-
-// this function extends Phaser.Scene and includes the core logic for the scene
-export default class StartTaskScene extends Phaser.Scene {
+export default class StartTaskScene extends BaseScene {
     constructor() {
         super({
             key: 'StartTaskScene'
@@ -85,7 +82,7 @@ export default class StartTaskScene extends Phaser.Scene {
         SoT
         .once('button.click', function (button) {
             SoT.scaleDownDestroy(500);
-            this.nextScene();
+            this.launchNextScene();
         }, this)
         .on('button.over', function (button) {
             button.getElement('background').setStrokeStyle(2, 0xffffff);
@@ -97,11 +94,6 @@ export default class StartTaskScene extends Phaser.Scene {
     
     update(time, delta) {
     }
-
-    // always load the main game after this scene 
-    nextScene() {
-        this.scene.start('MainTask');
-    } 
 }
 
 // generic function to create button labels

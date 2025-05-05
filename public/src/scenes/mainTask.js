@@ -1,4 +1,5 @@
 // Scene to hold the task. Routes to Task End Scene
+import { BaseScene } from "./baseScene.js";
 
 // import js game element modules (sprites, ui, outcome animations, etc.)
 import Player from "../elements/player.js";
@@ -13,7 +14,7 @@ import eventsCenter from '../eventsCenter.js'
 import { shuffleTrials } from "../utils.js";
 // import version info
 import {
-    sceneOrder, runPractice, effortTime, nBlocks, nCalibrates, debug_mode,
+    runPractice, effortTime, nBlocks, nCalibrates, debug_mode,
     trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet,
     timeout
 } from "../versionInfo.js";
@@ -21,9 +22,6 @@ import {
 import Message from "../elements/message.js";
 import PowerPanel from "../elements/PowerPanel.js";
 import { POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
-
-// make sure that the scene order is evaluated
-//const evaluatedSceneOrder = sceneOrder.map(sceneName => eval(sceneName));
 
 // initialize all the global vars (must be a better way of doing this...)
 var gameHeight; 
@@ -83,7 +81,7 @@ if (debug_mode) {
     };
 };
 // this function extends Phaser.Scene and includes the core logic for the game
-export default class MainTask extends Phaser.Scene {
+export default class MainTask extends BaseScene {
     constructor() {
         super({
             key: 'MainTask'
@@ -366,15 +364,9 @@ export default class MainTask extends Phaser.Scene {
         }
     }
 
-    // load the next scene based on the scene order
     nextScene() {
-        const currentIndex = sceneOrder.indexOf(this.scene.key);
-        if (currentIndex < sceneOrder.length - 1) {
-            const nextSceneKey = sceneOrder[currentIndex + 1];
-            this.scene.start(nextSceneKey);
-            // pass the final coins to the next scene 
-            this.registry.set('CoinsRunningTotal', nCoins);
-        }
+        this.registry.set('CoinsRunningTotal', nCoins);
+        this.launchNextScene();
     }
 }
 

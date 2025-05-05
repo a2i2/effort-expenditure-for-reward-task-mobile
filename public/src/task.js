@@ -1,18 +1,17 @@
-/**
- * The following imports are needed for the scenes to be created as `new Scene()` using the `eval()`.
- * Therefor the imports may appear unused but are in fact necessary and used.
- */
-import InstructionsScene from "./scenes/instructionsScene.js";
 import PracticeTask from "./scenes/practiceTask.js";
-import questInstructionsScene from "./scenes/questInstructionsScene.js";
-import Questions from "./scenes/Questions.js";
 import StartTaskScene from "./scenes/startTaskScene.js";
 import MainTask from "./scenes/mainTask.js";
 import TaskEndScene from "./scenes/taskEndScene.js";
-import { debug_mode, randomiseOrder, sceneOrder } from "./versionInfo.js";
-// import { saveStartData } from "./saveData.js";
-// log the scene order for checking
-if (debug_mode) { console.log('scene order: ' + sceneOrder) };
+import { runPractice } from "./versionInfo.js";
+
+const scenes = [
+    new StartTaskScene(),
+    new MainTask(),
+    new TaskEndScene()
+];
+
+// Prepend PracticeTask if runPractice is true
+if (runPractice) { scenes.unshift(new PracticeTask()) };
 
 // create the phaser game, based on the following config
 const config = {
@@ -31,7 +30,7 @@ const config = {
         createContainer: true    // to allow text input DOM element
     },
     backgroundColor: "#CFEFFC",  // pale blue sky color [black="#222222"],
-    scene: sceneOrder.map(sceneName => eval(sceneName)),         // construct the experiment from componenent scenes
+    scene: scenes,         // construct the experiment from componenent scenes
     plugins: {
         scene: [{
             key: 'rexUI',
@@ -67,5 +66,3 @@ export function runTask() {
         loadFont('DMSans', './src/assets/fonts/DMSans-Regular.ttf', 400)
     ]);
 };
-
-export { sceneOrder }

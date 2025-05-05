@@ -1,4 +1,5 @@
 // Scene to hold the the pre-task practice / effort callibration scene. Routes to the Main Task scene.
+import { BaseScene } from "./baseScene.js";
 
 // import js game element modules (sprites, ui, outcome animations, etc.)
 import Player from "../elements/player.js";
@@ -59,7 +60,7 @@ const PRACTICE_CHOICE_KEY = 'practiceChoiceComplete';
 var routeSelectionTransitionTimer;
 
 // this function extends Phaser.Scene and includes the core logic for the game
-export default class PracticeTask extends Phaser.Scene {
+export default class PracticeTask extends BaseScene {
     constructor() {
         super({
             key: 'PracticeTask'
@@ -250,13 +251,8 @@ export default class PracticeTask extends Phaser.Scene {
         ////////////MOVE ON TO NEXT SCENE WHEN ALL TRIALS HAVE RUN////////////////
         if (pracTrial == nPracTrials) {
             this.registry.set('maxPressCount', maxPressCount);
-            // saveThresholdMax(this.registry.get("maxPressCount"));        // [for firebase]
-            this.nextScene();
+            this.launchNextScene();
         }
-    }
-    
-    nextScene() {
-        this.scene.start('StartTaskScene');
     }
 }
 
@@ -286,7 +282,6 @@ var displayInfoPanel = function () {
 
     // listen for the timeout event
     eventsCenter.once(PRACTICE_TIMEOUT_KEY, effortOutcome, this);
-
 
     // we only want to show the route selector panel for the first two trials 
     if (pracTrial != 0 && pracTrial != 1) {
