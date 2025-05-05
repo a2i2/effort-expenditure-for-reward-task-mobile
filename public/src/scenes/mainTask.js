@@ -122,7 +122,6 @@ export default class MainTask extends Phaser.Scene {
         
         // load scene images to add some texture to background
         this.load.image('button', './src/assets/imgs/button.png');
-        this.load.image('sign', './src/assets/imgs/sign.png');       // and sign for decision point
         // SVGs
         this.staticObjManager.loadImages();
 
@@ -209,15 +208,12 @@ export default class MainTask extends Phaser.Scene {
 
         // add scene sprites/images for texture (randomly positioned on each trial)
         let objManager = new StaticObjects(this);
-        // determine x coordinate for left of bridge before the sign
+        // determine decision x coordinate for left of bridge
         var x = Phaser.Math.RND.between(50, decisionPointX-60);
         objManager.addRandomObject(x, blockNo === 1);
         // determine x coordinate for right of bridge
         x = Phaser.Math.RND.between(860, mapWidth-100);
         objManager.addRandomObject(x, blockNo === 1);
-
-        // sign at decision point
-        this.sign = this.add.image(decisionPointX, (gameHeight / 1.7) - 2, 'sign');
 
         // set the boundaries of the world
         this.physics.world.bounds.width = mapWidth;
@@ -225,7 +221,7 @@ export default class MainTask extends Phaser.Scene {
 
         //////////////ADD PROGRESS BAR////////////////////
         // Create progress bar at the top of the screen with nBlocks segments
-        this.progressBar = new ProgressBar(this, 24, 20, 340, nBlocks, blockNo, {
+        this.progressBar = new ProgressBar(this, 24, 20, nBlocks, blockNo, {
             height: 10,
             padding: 4,
             cornerRadius: 5

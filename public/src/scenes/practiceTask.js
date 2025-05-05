@@ -153,7 +153,7 @@ export default class PracticeTask extends Phaser.Scene {
 
         //////////////ADD PROGRESS BAR////////////////////
         // Create progress bar at the top of the screen with nBlocks segments
-        this.progressBar = new ProgressBar(this, 24, 20, 340, nPracTrials, pracTrial, {
+        this.progressBar = new ProgressBar(this, 24, 20, nPracTrials, pracTrial, {
             height: 10,
             padding: 4,
             cornerRadius: 5
@@ -420,8 +420,11 @@ var doChoice = function () {
         selectedEffortProp = choice == 'route 1' ? trialEffortPropMax1 : trialEffortPropMax2;  
     }
 
+    const camera = this.cameras.main;
+    const centerX = camera.scrollX + camera.width / 2;
+
     // power panel pops up
-    this.powerPanel = new PowerPanel(this, decisionPointX-60, this.cameras.main.height - 170, gameWidth, 340, effortTime, selectedReward, selectedEffortProp, selectedEffort, true);
+    this.powerPanel = new PowerPanel(this, centerX, this.cameras.main.height - 170, window.innerWidth, 340, effortTime, selectedReward, selectedEffortProp, selectedEffort, true);
     
     // we want to start the power up animation when the timer is actually counting down
     eventsCenter.once('powerStatePassed', startPowerUpAnimation, this);

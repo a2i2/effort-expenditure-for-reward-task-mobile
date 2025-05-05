@@ -1,5 +1,5 @@
 export default class ProgressBar extends Phaser.GameObjects.Container {
-    constructor(scene, x, y, width, segments, progress, config = {}) {
+    constructor(scene, x, y, segments, progress, config = {}) {
         super(scene, x, y);
 
         // Default configuration
@@ -12,9 +12,11 @@ export default class ProgressBar extends Phaser.GameObjects.Container {
             ...config
         };
         
-        this.width = width;
+        // Dynamically determine width based on screen width and close button
+        const closeBtnWidth = 55;
+        this.width = window.innerWidth - closeBtnWidth;
         this.segments = segments;
-        this.segmentWidth = (width / segments) - config.padding;
+        this.segmentWidth = (this.width / segments) - config.padding;
         
         this.progressSegments = [];
         this.createProgressBar(progress);

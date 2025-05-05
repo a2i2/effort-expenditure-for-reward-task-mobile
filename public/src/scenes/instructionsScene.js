@@ -34,9 +34,6 @@ export default class InstructionsScene extends Phaser.Scene {
     }
     
     create() {
-        // add listener to resize 
-        // resizeApp();
-        //window.addEventListener('resize', resizeApp);
         // load a few cloud sprites dotted around
         const cloud1 = this.add.sprite(180, 100, 'cloud1');
         const cloud2 = this.add.sprite(320, 540, 'cloud1');

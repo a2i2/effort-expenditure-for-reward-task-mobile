@@ -14,8 +14,8 @@ if (debug_mode) { console.log('scene order: ' + sceneOrder) };
 // create the phaser game, based on the following config
 const config = {
     type: Phaser.Scale.AUTO,           // rendering: webGL if available, otherwise canvas
-    width: 400,
-    height: 780,
+    width: window.innerWidth,
+    height: window.innerHeight,
     physics: {
         default: 'arcade',       // add light-weight physics to our world
         arcade: {
@@ -37,39 +37,15 @@ const config = {
         }]
     },
     scale: {
-        parent: 'game-container',
-        mode: Phaser.Scale.FIT,
-        // Center vertically and horizontally
+        mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH
     }
 };
-
-// if desired, allow game window to resize to fit available space 
-function resizeApp() {
-    var canvas = document.querySelector("canvas");
-    var windowWidth = window.innerWidth;
-    var windowHeight = window.innerHeight;
-    var windowRatio = windowWidth / windowHeight;
-    var gameRatio = config.width / config.height;
-
-    if (windowRatio < gameRatio) {
-        canvas.style.width = windowWidth + "px";
-        canvas.style.height = (windowWidth / gameRatio) + "px";
-    }
-    else {
-        canvas.style.width = (windowHeight * gameRatio) + "px";
-        canvas.style.height = windowHeight + "px";
-    };
-}
 
 // Start the game using the configuration defined above
 export function runTask() {
     // create new phaser game configured as above
     new Phaser.Game(config);
-    resizeApp()
-    window.addEventListener("resize", resizeApp) //resize if necessary
-    var currentTime = new Date().toLocaleTimeString();
-    // saveStartData(currentTime, randomiseOrder, sceneOrder);           // [for firebase] update !!
 };
 
-export { resizeApp, sceneOrder}
+export { sceneOrder}
