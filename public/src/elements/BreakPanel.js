@@ -41,6 +41,7 @@ export default class BreakPanel {
         const titleText = scene.add.text(0, 0, 'Break time', {
             fontSize: '20px',
             fontStyle: 'bold',
+            fontFamily: 'DMSans',
             color: '#000000'
         });
 
@@ -55,6 +56,7 @@ export default class BreakPanel {
 
         this.breakText = scene.add.text(scene.cameras.main.scrollX, 0, breakTextContent, {
             fontSize: '14px',
+            fontFamily: 'DMSans',
             color: '#000000',
             align: 'center',
             wordWrap: {
@@ -68,6 +70,7 @@ export default class BreakPanel {
         this.continueButtonBg.setStrokeStyle(2, 0xD64204);
         this.continueButtonText = scene.add.text(0, 0, "CONTINUE", {
             fontSize: '14px',
+            fontFamily: 'DMSans',
             fontStyle: 'bold',
             color: '#D64204'
         });

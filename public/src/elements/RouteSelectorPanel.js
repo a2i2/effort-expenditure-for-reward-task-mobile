@@ -44,8 +44,8 @@ export default class RouteSelectorPanel {
         const title = scene.add.text(0, 0, 'Choose a route', {
             fontSize: '20px',
             color: '#000',
+            fontFamily: 'DMSans',
             fontStyle: 'bold'
-            // TODO: Font family
         });
 
         titleRow.add(title, { expand: true });
@@ -111,8 +111,8 @@ export default class RouteSelectorPanel {
             background: this.scene.rexUI.add.roundRectangle(0, 0, 0, 0, { tl: 10, tr: 10, bl: 0, br: 0 }, 0xD64204),
             text: this.scene.add.text(0, 0, routeName, {
                 fontSize: '16px',
-                color: '#FFFFFF',
-                fontStyle: 'bold'
+                fontFamily: 'DMSans',
+                color: '#FFFFFF'
             }),
             align: 'center',
             space: {
@@ -127,17 +127,23 @@ export default class RouteSelectorPanel {
         const powerLabel = this.scene.rexUI.add.label({
             text: this.scene.add.text(0, 0, 'POWER', {
                 fontSize: '16px',
+                fontFamily: 'DMSans',
                 color: '#CA3E04'
             }),
             align: 'center',
             space: { left: 6, right: 6, top: 20, bottom: 0 }
         });
-        const powerValue = this.scene.add.text(0, 0, `${power}%`, { fontSize: '18px', color: '#000000' });
+        const powerValue = this.scene.add.text(0, 0, `${power}%`, {
+            fontSize: '18px',
+            color: '#000000',
+            fontFamily: 'DMSans'
+        });
 
         // Reward label and value
         const rewardLabel = this.scene.rexUI.add.label({
             text: this.scene.add.text(0, 0, 'REWARD', {
                 fontSize: '16px',
+                fontFamily: 'DMSans',
                 color: '#CA3E04'
             }),
             align: 'center',
@@ -146,6 +152,7 @@ export default class RouteSelectorPanel {
 
         const rewardValue = this.scene.add.text(0, 0, `${reward} coins`, {
             fontSize: '18px',
+            fontFamily: 'DMSans',
             color: '#000000'
         });
 

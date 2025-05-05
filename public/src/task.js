@@ -42,10 +42,27 @@ const config = {
     }
 };
 
+const loadFont = async function(name, url, weight) {
+    // Fetch the local file and get the object URL that is tied to the document (DOM), i.e. http://localhost:3000/<uuid>.
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    // Create a new FontFace with the desired weight to be loaded and added to the document
+    const font = new FontFace(name, `url(${blobUrl})`, { weight: weight.toString() });
+    await font.load();
+    document.fonts.add(font);
+}
+
 // Start the game using the configuration defined above
 export function runTask() {
     // create new phaser game configured as above
     new Phaser.Game(config);
+
+    Promise.all([
+        loadFont('DMSans', './src/assets/fonts/DMSans-Bold.ttf', 700),
+        loadFont('DMSans', './src/assets/fonts/DMSans-Regular.ttf', 400)
+    ]);
 };
 
 export { sceneOrder}

@@ -1,5 +1,5 @@
 export default class Message {
-    constructor(scene, gameWidth, fontString, backgroundColor, borderColor, messageText, messageTextColor, yPosition) {
+    constructor(scene, gameWidth, backgroundColor, borderColor, messageText, messageTextColor, yPosition) {
         this.scene = scene;
         this.feedbackBg = scene.add.graphics();
         this.feedbackBg.fillStyle(backgroundColor, 1);
@@ -16,7 +16,8 @@ export default class Message {
   
         this.feedback = scene.rexUI.add.BBCodeText(textXPos, yPosition, messageText, {
             fontSize: '14px',
-            font: fontString,
+            fontFamily: 'DMSans',
+            fontWeight: 'normal',
             fill: messageTextColor,
             align: 'center',
             wrap: {
