@@ -13,6 +13,9 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +39,12 @@ fun EefrtScreen(
 ) {
     val exitRequested = remember { mutableStateOf(false) }
     val webView = remember { mutableStateOf<WebView?>(null) }
+
+    val insets = WindowInsets.statusBars.asPaddingValues()
+    val topPaddingDp = insets.calculateTopPadding().value.toInt()
+    // On first composition the value is 0, so we need to wait for the second composition to get
+    // the actual value before we continue to render the WebView.
+    if (topPaddingDp <= 0) return
 
     Box(contentAlignment = Alignment.Center) {
         AndroidView(
@@ -69,13 +78,12 @@ fun EefrtScreen(
                     }
                     settings.javaScriptEnabled = true
                     addJavascriptInterface(
-                        EefrtWebInterface { message ->
+                        EefrtWebInterface(topPaddingDp) { message ->
                             handleMessage(
                                 message,
                                 onBack,
                                 exitRequested,
-                                eefrtViewModel,
-                                webView.value
+                                eefrtViewModel
                             )
                         },
                         "AndroidBridge"
@@ -95,7 +103,6 @@ private fun handleMessage(
     onBack: () -> Unit,
     exitRequested: MutableState<Boolean>,
     eefrtViewModel: EefrtScreenViewModel,
-    maybeWebview: WebView?,
 ) {
     try {
         val obj = JSONObject(message)

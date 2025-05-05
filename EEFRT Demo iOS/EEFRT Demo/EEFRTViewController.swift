@@ -52,7 +52,7 @@ struct EEFRTView: UIViewControllerRepresentable {
 
 class EEFRTViewController: UIViewController {
     private static let closedMessageKey = "close"
-    private static let practiceTriaResultMessageKey = "practiceTrialResult"
+    private static let practiceTrialResultMessageKey = "practiceTrialResult"
     private static let trialResultMessageKey = "trialResult"
 
     weak var delegate: EEFRTViewControllerDelegate?
@@ -89,10 +89,27 @@ class EEFRTViewController: UIViewController {
         view = UIView()
         view.backgroundColor = .systemBackground
 
+        let topInset: CGFloat = {
+            guard
+                let windowScene = UIApplication.shared.connectedScenes
+                    .compactMap({ $0 as? UIWindowScene })
+                    .first(where: { $0.activationState == .foregroundActive }),
+                let window = windowScene.windows.first(where: { $0.isKeyWindow })
+            else {
+                return 0.0
+            }
+            return window.safeAreaInsets.top
+        }()
+
+        // Execute the following JS after the DOM is loaded
+        let injectedJS = "window.EmbedContext.setInsetTop(`\(Int(topInset))`);"
+        let userScript = WKUserScript(source: injectedJS, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+
         let config = WKWebViewConfiguration()
         config.userContentController = WKUserContentController()
+        config.userContentController.addUserScript(userScript)
         config.userContentController.add(self, name: Self.closedMessageKey)
-        config.userContentController.add(self, name: Self.practiceTriaResultMessageKey)
+        config.userContentController.add(self, name: Self.practiceTrialResultMessageKey)
         config.userContentController.add(self, name: Self.trialResultMessageKey)
 
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
@@ -128,7 +145,7 @@ extension EEFRTViewController: WKScriptMessageHandler {
         case Self.closedMessageKey:
             delegate?.eefrtViewControllerDidRequestClose(self)
 
-        case Self.practiceTriaResultMessageKey:
+        case Self.practiceTrialResultMessageKey:
             guard let stringifiedData = (message.body as? String)?.data(using: .utf8) else { return }
             do {
                 os_log(.debug, "%s", message.body as! String)
