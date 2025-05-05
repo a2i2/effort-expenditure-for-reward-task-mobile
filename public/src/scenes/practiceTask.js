@@ -114,9 +114,6 @@ export default class PracticeTask extends Phaser.Scene {
         for (let i = 1; i <= 7; i++) {
             this.load.image(`coins-${i}`, `./src/assets/imgs/coins-${i}.svg`);
         }
-
-        // hack to preload the DMSans font beforehand since Phaser cant natively preload it
-        this.add.text(0, 0, "test", { font:"1px DMSans", fill:"#FFFFFF" });
     }
     
     create() {

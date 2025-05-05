@@ -44,8 +44,8 @@ export default class RouteSelectorPanel {
         const title = scene.add.text(0, 0, 'Choose a route', {
             fontSize: '20px',
             color: '#000',
+            fontFamily: 'DMSans',
             fontStyle: 'bold'
-            // TODO: Font family
         });
 
         titleRow.add(title, { expand: true });
@@ -112,8 +112,7 @@ export default class RouteSelectorPanel {
             text: this.scene.add.text(0, 0, routeName, {
                 fontSize: '16px',
                 fontFamily: 'DMSans',
-                color: '#FFFFFF',
-                fontStyle: 'bold'
+                color: '#FFFFFF'
             }),
             align: 'center',
             space: {
