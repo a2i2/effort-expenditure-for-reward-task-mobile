@@ -9,16 +9,11 @@ import PowerPanel, { PRACTICE_POWER_UP_COMPLETE_KEY } from "../elements/PowerPan
 
 // import our custom events center for passsing info between scenes annd relevant data saving function
 import eventsCenter from '../eventsCenter.js'
-// import { savePracTaskData, saveThresholdMax} from "../saveData.js";
 
 // import effort info from versionInfo file
 import { effortTime, pracTrialEfforts, pracTrialRewards, timeout } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
-
-// // import some js from Pavlovia lib to enable data saving [for Pavlovia deployment only]
-// import * as data from "../../lib/data-2020.2.js";
-// import { saveTrialDataPav } from '../saveData.js';
 
 // initialize some global vars
 var gameHeight;

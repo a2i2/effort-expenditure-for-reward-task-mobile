@@ -5,7 +5,6 @@ const version = "demo"; // version: used to create data collection in firestore/
 // var infoSheet = "./assets/Combined_information_and_consent_ema_motivation_15311_001.pdf";
 const gameType = "demo" //"baseline"/"FU"/"demo" (note which type)
 const randomiseOrder = true; // true: randomise the questions/game order upon each load (false=game first)
-const blockDesktop = true; // true: allow access on mobile online 
 const debug_mode = false; // turns on console logging 
 const test_game = false; // test the game only (for testing)
 const demo_mode = true; // a demo game without study info
@@ -97,6 +96,6 @@ var completionMin = 80;
 export {
 	demo_mode, debug_mode, sceneOrder, randomiseOrder, runPractice,
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
-	blockDesktop, trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
+	trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
 	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, pracTrialEffortProp, minPressMax, nCalibrates, nBlocks, complete_link, buttonText, powerupDelay
 };

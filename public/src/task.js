@@ -1,4 +1,7 @@
-// import js modules that hold the game/experiment scenes
+/**
+ * The following imports are needed for the scenes to be created as `new Scene()` using the `eval()`.
+ * Therefor the imports may appear unused but are in fact necessary and used.
+ */
 import InstructionsScene from "./scenes/instructionsScene.js";
 import PracticeTask from "./scenes/practiceTask.js";
 import questInstructionsScene from "./scenes/questInstructionsScene.js";
@@ -65,4 +68,4 @@ export function runTask() {
     ]);
 };
 
-export { sceneOrder}
+export { sceneOrder }

@@ -10,12 +10,11 @@ import RouteSelectorPanel from "../elements/RouteSelectorPanel.js";
 
 // import our custom events center for passsing info between scenes and relevant data saving function
 import eventsCenter from '../eventsCenter.js'
-import { shuffleTrials } from "../saveData.js";
-// import { shuffleTrials, saveThresholdMax, saveTaskData, 
-    // fetchThresholdMax } from "../saveData.js";
+import { shuffleTrials } from "../utils.js";
 // import version info
-import {sceneOrder, runPractice, effortTime, nBlocks, nCalibrates,
-    trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet, debug_mode,
+import {
+    sceneOrder, runPractice, effortTime, nBlocks, nCalibrates, debug_mode,
+    trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet,
     timeout
 } from "../versionInfo.js";
 
@@ -67,18 +66,6 @@ var trialEndTime;
 var maxPressCount;
 var thresholdMax;
 var practiceorReal = 1; // use the main task instruction panels 
-// get threshold 
-// (async () => {
-//     try {
-//         // get threshold 
-//         thresholdMax = await fetchThresholdMax();
-//         if (debug_mode) {
-//             console.log('thresholdMax = ' + thresholdMax);
-//         };
-//     } catch (error) {
-//         console.error('Error in main code:', error);
-//     }
-// })();
 
 // pre-shuffle the trials here with nTrials specified in ./versionInfo.js
 const randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
