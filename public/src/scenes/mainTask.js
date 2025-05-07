@@ -1,4 +1,5 @@
 // Scene to hold the task. Routes to Task End Scene
+import { BaseScene } from "./baseScene.js";
 
 // import js game element modules (sprites, ui, outcome animations, etc.)
 import Player from "../elements/player.js";
@@ -10,21 +11,17 @@ import RouteSelectorPanel from "../elements/RouteSelectorPanel.js";
 
 // import our custom events center for passsing info between scenes and relevant data saving function
 import eventsCenter from '../eventsCenter.js'
-import { shuffleTrials } from "../saveData.js";
-// import { shuffleTrials, saveThresholdMax, saveTaskData, 
-    // fetchThresholdMax } from "../saveData.js";
+import { shuffleTrials } from "../utils.js";
 // import version info
-import {sceneOrder, runPractice, effortTime, nBlocks, nCalibrates,
-    trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet, debug_mode,
+import {
+    runPractice, effortTime, nBlocks, nCalibrates, debug_mode,
+    trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet,
     timeout
 } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
 import PowerPanel from "../elements/PowerPanel.js";
 import { POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
-
-// make sure that the scene order is evaluated
-//const evaluatedSceneOrder = sceneOrder.map(sceneName => eval(sceneName));
 
 // initialize all the global vars (must be a better way of doing this...)
 var gameHeight; 
@@ -67,18 +64,6 @@ var trialEndTime;
 var maxPressCount;
 var thresholdMax;
 var practiceorReal = 1; // use the main task instruction panels 
-// get threshold 
-// (async () => {
-//     try {
-//         // get threshold 
-//         thresholdMax = await fetchThresholdMax();
-//         if (debug_mode) {
-//             console.log('thresholdMax = ' + thresholdMax);
-//         };
-//     } catch (error) {
-//         console.error('Error in main code:', error);
-//     }
-// })();
 
 // pre-shuffle the trials here with nTrials specified in ./versionInfo.js
 const randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
@@ -96,7 +81,7 @@ if (debug_mode) {
     };
 };
 // this function extends Phaser.Scene and includes the core logic for the game
-export default class MainTask extends Phaser.Scene {
+export default class MainTask extends BaseScene {
     constructor() {
         super({
             key: 'MainTask'
@@ -379,15 +364,9 @@ export default class MainTask extends Phaser.Scene {
         }
     }
 
-    // load the next scene based on the scene order
     nextScene() {
-        const currentIndex = sceneOrder.indexOf(this.scene.key);
-        if (currentIndex < sceneOrder.length - 1) {
-            const nextSceneKey = sceneOrder[currentIndex + 1];
-            this.scene.start(nextSceneKey);
-            // pass the final coins to the next scene 
-            this.registry.set('CoinsRunningTotal', nCoins);
-        }
+        this.registry.set('CoinsRunningTotal', nCoins);
+        this.launchNextScene();
     }
 }
 

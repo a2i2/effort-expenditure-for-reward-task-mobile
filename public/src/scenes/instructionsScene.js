@@ -5,8 +5,6 @@ import InstructionsPanel from "../elements/instructionsPanel.js";
 
 // import our custom events centre for passsing info between scenes and data saving function
 import eventsCenter from "../eventsCenter.js";
-// import { saveStartTask } from "../saveData.js";
-import { sceneOrder } from "../task.js";
 
 
 // initialize global start time var
@@ -187,14 +185,13 @@ export default class InstructionsScene extends Phaser.Scene {
         // end scene
         eventsCenter.once('page10complete', function () {
             this.nextScene();
-            }, this);
+        }, this);
     }
         
     update(time, delta) {
     }
     
     nextScene() {
-        // saveStartTask(taskStartTime);           // [for firebase]
         this.scene.start('PracticeTask');
     } 
 }

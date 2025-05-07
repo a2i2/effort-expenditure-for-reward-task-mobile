@@ -5,9 +5,7 @@ const version = "demo"; // version: used to create data collection in firestore/
 // var infoSheet = "./assets/Combined_information_and_consent_ema_motivation_15311_001.pdf";
 const gameType = "demo" //"baseline"/"FU"/"demo" (note which type)
 const randomiseOrder = true; // true: randomise the questions/game order upon each load (false=game first)
-const blockDesktop = true; // true: allow access on mobile online 
 const debug_mode = false; // turns on console logging 
-const test_game = false; // test the game only (for testing)
 const demo_mode = true; // a demo game without study info
 // UPDATE runPRACTICE to false for FU games ///
 const runPractice = true; // run a practice i.e., a baseline version or without practice (FU)
@@ -21,37 +19,7 @@ var complete_link = "https://app.prolific.co/submissions/complete?cc=8B6EC8FC"; 
 var buttonText = "Go back"; // text to display on the final button
 var powerupDelay = 200; // delay in ms before powerup timer is started
 
-// remainder of settings are automatic (except Practice parameters below)
-// define the possible scene orders as constants
-if (test_game == false) {
-	if (runPractice == true) {
-		var sceneOrder = [
-			'PracticeTask',
-			'StartTaskScene',
-			'MainTask',
-			'questInstructionsScene',
-			'Questions',
-			'TaskEndScene'
-		];
-	}
-	else {
-		// no practice (follow-up version)
-		var sceneOrder = [
-			'StartTaskScene',
-			'MainTask',
-			'TaskEndScene'
-        ];
-    }
-}
-else {
-	// if we are just testing the game run a simpler order
-	var sceneOrder = [
-		'StartTaskScene',
-		'MainTask',
-		'TaskEndScene'
-	];
-}
-Object.freeze(sceneOrder);
+// remainder of settings are automatic
 
 // effort calibration description:
 // effort is calibrated in this version with a two-stage process
@@ -74,12 +42,9 @@ var gemHeights = [255, 180, 220, 255]; // arbitrary heights
 var minPressMax = 58;   
 var thresholdAutoSet = 58;
 // set the number of recalibration trials (2= <2 i.e., 0, 1 will recalibrate)
-var nCalibrates
+var nCalibrates = 0;
 if (runPractice == true) {
-	var nCalibrates = 2;    // set the number of recalibration trials (2= <2 i.e., 0, 1 will recalibrate)
-}
-else {
-	var nCalibrates = 0;
+	nCalibrates = 2;    // set the number of recalibration trials (2= <2 i.e., 0, 1 will recalibrate)
 }
 const nBlocks = 4;					
 
@@ -95,8 +60,8 @@ var MaxTotalBonus = completionBonus100 + (nGames * maxBonus);
 var completionMin = 80;
 
 export {
-	demo_mode, debug_mode, sceneOrder, randomiseOrder, runPractice,
+	demo_mode, debug_mode, randomiseOrder, runPractice,
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
-	blockDesktop, trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
+	trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
 	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, pracTrialEffortProp, minPressMax, nCalibrates, nBlocks, complete_link, buttonText, powerupDelay
 };
