@@ -157,7 +157,8 @@ export default class PracticeTask extends Phaser.Scene {
         this.progressBar = new ProgressBar(this, 24, insetTop, nPracTrials, pracTrial, {
             height: 10,
             padding: 4,
-            cornerRadius: 5
+            cornerRadius: 5,
+            trialsPerBlock: 1
         });
         // Make it stay fixed on screen (not affected by camera)
         this.progressBar.setScrollFactor(0);

@@ -222,10 +222,11 @@ export default class MainTask extends Phaser.Scene {
         //////////////ADD PROGRESS BAR////////////////////
         const insetTop = EmbedContext.getInsetTop();
         // Create progress bar at the top of the screen with nBlocks segments
-        this.progressBar = new ProgressBar(this, 24, insetTop, nBlocks, blockNo, {
+        this.progressBar = new ProgressBar(this, 24, insetTop, nBlocks, trialNo, {
             height: 10,
             padding: 4,
-            cornerRadius: 5
+            cornerRadius: 5,
+            trialsPerBlock
         });
         // Make it stay fixed on screen (not affected by camera)
         this.progressBar.setScrollFactor(0);
