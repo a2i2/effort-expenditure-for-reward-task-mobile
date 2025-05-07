@@ -13,7 +13,7 @@ export default class ProgressBar extends Phaser.GameObjects.Container {
         };
         
         // Dynamically determine width based on screen width and close button
-        const closeBtnWidth = 55;
+        const closeBtnWidth = 65;
         this.width = window.innerWidth - closeBtnWidth;
         this.segments = segments;
         this.segmentWidth = (this.width / segments);
