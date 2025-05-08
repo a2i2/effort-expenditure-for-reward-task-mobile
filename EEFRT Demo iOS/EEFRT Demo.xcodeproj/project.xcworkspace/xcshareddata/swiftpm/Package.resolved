@@ -1,0 +1,15 @@
+{
+  "originHash" : "771995780d580db7f57917fd8c1b8eea5cbe9f0ca5799ec81137121a06b2ef59",
+  "pins" : [
+    {
+      "identity" : "swiftyuserdefaults",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sunshinejr/SwiftyUserDefaults.git",
+      "state" : {
+        "revision" : "f66bcd04088582c8fbb5cb8554d577e303bae396",
+        "version" : "5.3.0"
+      }
+    }
+  ],
+  "version" : 3
+}

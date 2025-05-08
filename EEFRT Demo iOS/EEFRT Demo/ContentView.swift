@@ -1,23 +1,37 @@
 import OSLog
 import SwiftData
 import SwiftUI
+import SwiftyUserDefaults
 
 struct ContentView: View {
+    @ObservedObject private var viewModel = ContentViewModel()
     @Environment(\.modelContext) private var modelContext
     @State private var shouldShowAlert = false
-    
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
                 NavigationLink(
                     destination: EEFRTView()
                         .ignoresSafeArea()
-                        .navigationBarBackButtonHidden()
-                    ,
+                        .navigationBarBackButtonHidden(),
+
                     label: {
-                        Text("Begin EEFRT Task")
+                        Text("Start new EEFRT Task")
                     }
                 )
+
+                if let cache = viewModel.gameCache {
+                    NavigationLink(
+                        destination: EEFRTView() // pass along config file
+                            .ignoresSafeArea()
+                            .navigationBarBackButtonHidden(),
+
+                        label: {
+                            Text("Resume current EEFRT Task")
+                        }
+                    )
+                }
 
                 NavigationLink(
                     destination:
@@ -49,25 +63,25 @@ struct ContentView: View {
             }
         }
     }
-    
+
     private func showAlert() {
         shouldShowAlert = true
     }
-    
+
     private func removeAllEventLogs() {
         let practiceEvents = try? modelContext.fetch(FetchDescriptor<PracticeTaskResult>())
         let actualEvents = try? modelContext.fetch(FetchDescriptor<TaskResult>())
-        
+
         guard let practiceEvents, let actualEvents else { return }
-        
+
         practiceEvents.forEach { practiceEvent in
             modelContext.delete(practiceEvent)
         }
-        
+
         actualEvents.forEach { trialData in
             modelContext.delete(trialData)
         }
-        
+
         do {
             try modelContext.save()
         } catch {

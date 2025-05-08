@@ -1,5 +1,6 @@
 import os.log
 import SwiftUI
+import SwiftyUserDefaults
 import UIKit
 import WebKit
 
@@ -54,6 +55,7 @@ class EEFRTViewController: UIViewController {
     private static let closedMessageKey = "close"
     private static let practiceTrialResultMessageKey = "practiceTrialResult"
     private static let trialResultMessageKey = "trialResult"
+    private static let currentGameCacheKey = "currentGameCache"
 
     weak var delegate: EEFRTViewControllerDelegate?
 
@@ -92,8 +94,8 @@ class EEFRTViewController: UIViewController {
         let topInset: CGFloat = {
             guard
                 let windowScene = UIApplication.shared.connectedScenes
-                    .compactMap({ $0 as? UIWindowScene })
-                    .first(where: { $0.activationState == .foregroundActive }),
+                .compactMap({ $0 as? UIWindowScene })
+                .first(where: { $0.activationState == .foregroundActive }),
                 let window = windowScene.windows.first(where: { $0.isKeyWindow })
             else {
                 return 0.0
@@ -111,6 +113,7 @@ class EEFRTViewController: UIViewController {
         config.userContentController.add(self, name: Self.closedMessageKey)
         config.userContentController.add(self, name: Self.practiceTrialResultMessageKey)
         config.userContentController.add(self, name: Self.trialResultMessageKey)
+        config.userContentController.add(self, name: Self.currentGameCacheKey)
 
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
 
@@ -153,7 +156,7 @@ extension EEFRTViewController: WKScriptMessageHandler {
                 decodedPracticeTaskResult.createdAt = .now
                 delegate?.eefrtViewControllerDidSubmitPracticeResult(practiceResult: decodedPracticeTaskResult)
             } catch {
-                os_log(.error, "Couldn't decode response from EEFRT task into a native object")
+                os_log(.error, "Couldn't decode practice trial result from EEFRT task into a native object")
             }
 
         case Self.trialResultMessageKey:
@@ -164,13 +167,29 @@ extension EEFRTViewController: WKScriptMessageHandler {
                 decodedTaskResult.createdAt = .now
                 delegate?.eefrtViewControllerDidSubmitTaskResult(taskResult: decodedTaskResult)
             } catch {
-                os_log(.error, "Couldn't decode response from EEFRT task into a native object")
+                os_log(.error, "Couldn't decode main trial result from EEFRT task into a native object")
+            }
+
+        case Self.currentGameCacheKey:
+            guard let stringifiedData = (message.body as? String)?.data(using: .utf8) else { return }
+            do {
+                os_log(.debug, "%s", message.body as! String)
+                let decoder = JSONDecoder()
+                let decodedGameCacheString = try decoder.decode(String.self, from: stringifiedData)
+                let decodedGameCache = try decoder.decode(GameCache.self, from: Data(decodedGameCacheString.utf8))
+                Defaults.gameCache = decodedGameCache
+            } catch {
+                os_log(.error, "Couldn't decode game cache from EEFRT task into a native object")
             }
 
         default:
             os_log(.error, "Message type %s not implemented yet!", message.name)
         }
     }
+}
+
+extension DefaultsKeys {
+    var gameCache: DefaultsKey<GameCache?> { .init("gameCache", defaultValue: nil) }
 }
 
 private extension OSLog {
