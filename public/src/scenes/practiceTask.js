@@ -230,17 +230,17 @@ export default class PracticeTask extends BaseScene {
 
         // // 3. if desired, add listener functions to pause game when focus taken away
         // // from game browser tab/window [necessary for mobile devices]
-        window.addEventListener('blur', () => { 
-        console.log('pausing game content...');      // useful for debugging pause/resume
-            this.scene.pause();
-        }, false);
-        // // and resume when focus returns
-        window.addEventListener('focus', () => { 
-            setTimeout(() => {
-                console.log('resuming game content...');
-                this.scene.resume();
-            }, 250);
-        }, false);
+        // window.addEventListener('blur', () => { 
+        // console.log('pausing game content...');      // useful for debugging pause/resume
+        //     this.scene.pause();
+        // }, false);
+        // // // and resume when focus returns
+        // window.addEventListener('focus', () => { 
+        //     setTimeout(() => {
+        //         console.log('resuming game content...');
+        //         this.scene.resume();
+        //     }, 250);
+        // }, false);
     }
     
     update(time, delta) {

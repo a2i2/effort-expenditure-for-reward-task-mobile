@@ -22,6 +22,7 @@ import {
 import Message from "../elements/message.js";
 import PowerPanel from "../elements/PowerPanel.js";
 import { POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
+import GameCache from "../embedContext/GameCache.js";
 
 // initialize all the global vars (must be a better way of doing this...)
 var gameHeight; 
@@ -64,6 +65,7 @@ var trialEndTime;
 var maxPressCount;
 var thresholdMax;
 var practiceorReal = 1; // use the main task instruction panels 
+var coinsWonThisTrial = 0;
 
 // pre-shuffle the trials here with nTrials specified in ./versionInfo.js
 const randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
@@ -669,6 +671,7 @@ var trialEnd = function () {
         trialSuccess = 0;
         pressStartTime = 0;
         pressEndTime = 0;
+        coinsWonThisTrial = 0;
     }
 
     // set data to be saved into registry
@@ -698,7 +701,16 @@ var trialEnd = function () {
     console.log(this.registry.get("trial" + trialNo));
     // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
     //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
+    
+    // save the current coin choice to the registry
+    let coinChoices = this.registry.get("coinChoices") ?? {};
+    coinChoices['trial' + trialNo] = trialSuccess ? coinsWonThisTrial : 0;
+    this.registry.set("coinChoices", coinChoices);
+    let currentGameState = new GameCache(true, trialNo, maxPressCount, nCoins, coinChoices, randTrialsIdx);
 
+    // notify the native apps of what the current game state is so they can cache it
+    EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
+    
     // if end of task, display taskend screen 
     // if end of block, display end of block screen
     if ((trialNo + 1) % trialsPerBlock == 0 && trialNo != nTrials - 1) {
@@ -760,4 +772,5 @@ var onejump = function () {
 var collectCoins = function(player, coin, trial){
     coin.disableBody(true, true);   // individual coins from group become invisible upon overlap
     nCoins++;
+    coinsWonThisTrial++;
 };
