@@ -1,9 +1,12 @@
 package ai.a2i2.conductor.effrtdemoandroid.ui
 
+import ai.a2i2.conductor.effrtdemoandroid.persistence.GameCache
+import ai.a2i2.conductor.effrtdemoandroid.persistence.GameStorage
 import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.ui.data.EefrtScreenViewModel
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -21,6 +24,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewAssetLoader.AssetsPathHandler
@@ -39,6 +43,7 @@ fun EefrtScreen(
 ) {
     val exitRequested = remember { mutableStateOf(false) }
     val webView = remember { mutableStateOf<WebView?>(null) }
+    val context = LocalContext.current
 
     val insets = WindowInsets.statusBars.asPaddingValues()
     val topPaddingDp = insets.calculateTopPadding().value.toInt()
@@ -83,7 +88,8 @@ fun EefrtScreen(
                                 message,
                                 onBack,
                                 exitRequested,
-                                eefrtViewModel
+                                eefrtViewModel,
+                                context
                             )
                         },
                         "AndroidBridge"
@@ -103,6 +109,7 @@ private fun handleMessage(
     onBack: () -> Unit,
     exitRequested: MutableState<Boolean>,
     eefrtViewModel: EefrtScreenViewModel,
+    context: Context
 ) {
     try {
         val obj = JSONObject(message)
@@ -135,6 +142,13 @@ private fun handleMessage(
                 val taskAttempt = gson.fromJson(body, TaskAttempt::class.java)
                 taskAttempt.createdAt = Date()
                 eefrtViewModel.saveActualTaskAttempt(taskAttempt)
+            }
+
+            "currentGameCache" -> {
+                val body = obj.getString("message")
+                val gson = Gson()
+                val gameCache = gson.fromJson(body, GameCache::class.java)
+                eefrtViewModel.setCurrentGameState(context, gameCache)
             }
 
             else -> Log.i(

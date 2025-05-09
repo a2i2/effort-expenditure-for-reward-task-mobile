@@ -42,7 +42,8 @@ class MainActivity : ComponentActivity() {
 
     private val eefrtScreenViewModel: EefrtScreenViewModel by lazy {
         EefrtScreenViewModel(
-            appDatabase
+            appDatabase,
+            this
         )
     }
 
@@ -64,6 +65,7 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
     NavHost(navController = navController, startDestination = NavigationScreens.HOME.route) {
         composable(NavigationScreens.HOME.route) {
             HomeScreen(
+                eefrtScreenViewModel = eefrtScreenViewModel,
                 onStartTaskPressed = {
                     navController.navigate(NavigationScreens.EFFRT.route)
                 },
@@ -123,6 +125,7 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
 
 @Composable
 fun HomeScreen(
+    eefrtScreenViewModel: EefrtScreenViewModel,
     onStartTaskPressed: () -> Unit,
     onViewEventLogsPressed: () -> Unit
 ) {
@@ -133,12 +136,18 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             AppButton(
-                name = "Begin EEFRT Task",
+                name = "Begin new EEFRT Task",
                 modifier = Modifier.padding(innerPadding),
                 onClick = onStartTaskPressed
             )
 
-            Spacer(modifier = Modifier.padding(vertical = 20.0.dp))
+            if (eefrtScreenViewModel.resumeTrialAvailable.value) {
+                AppButton(
+                    name = "Resume current EEFRT Task",
+                    modifier = Modifier.padding(innerPadding),
+                    onClick = onStartTaskPressed
+                )
+            }
 
             AppButton(
                 name = "View Event Logs",
