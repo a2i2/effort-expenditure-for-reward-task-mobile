@@ -1,7 +1,3 @@
-// Scene to inform participants they can now start the main task, routes to Main Task scene
-
-// import task info from versionInfo file
-import { approxTime} from "../versionInfo.js";  // time participant will have to try and exert effort (ms)
 import { BaseScene } from "./baseScene.js";
 
 export default class StartTaskScene extends BaseScene {
@@ -12,105 +8,121 @@ export default class StartTaskScene extends BaseScene {
     }
 
     preload() {
-        // load cloud sprites to add texture to background
-        this.load.image('cloud1', './src/assets/imgs/cloud1.png');
+        this.load.image('close', './src/assets/imgs/close.svg');
+        this.load.image('image', './src/assets/imgs/eefrt-start.svg');
     }
     
     create() {
-        // load a few cloud sprites dotted around
-        const cloud1 = this.add.sprite(180, 100, 'cloud1');
-        const cloud2 = this.add.sprite(320, 540, 'cloud1');
-        const cloud3 = this.add.sprite(630,  80, 'cloud1');
-        
-        // add popup dialogue box with text
-        var SoT = this.rexUI.add.dialog({
-            background: this.rexUI.add.roundRectangle(0, 0, 400, 400, 20, 0x1ea7e1),
-            title: this.rexUI.add.label({
-                background: this.rexUI.add.roundRectangle(0, 0, 100, 40, 20, 0x000000),
-                text: this.add.text(0, 0, "Welcome!", {
-                    fontSize: '24px'
-                    }),
-                align: 'center',
-                space: {
-                    left: 15,
-                    right: 15,
-                    top: 10,
-                    bottom: 10
-                }
-            }),
-            content: this.rexUI.add.BBCodeText(0, 0, 
-                ("[b]Remember[/b]\n" +
-                    "each route is\n" +
-                    "[b]completely[/b]\nyour choice.\n\n" +
-                    "Your journey lasts\n"+
-                    (approxTime) + " minutes.\n\n" +
-                    "You can take a\n" +
-                    "break at halfway.\n\n"),
-                   {fontSize: '22px',
-                    align: 'center',
-                    color: '#000000'
-                   }),
-            actions: [
-                createLabel(this, 'Start!')
-            ],
-            space: {
-                title: 25,
-                content: 10,
-                action: 10,
-                left: 10,
-                right: 10,
-                top: 10,
-                bottom: 40,
-            },
-            align: {
-                actions: 'center',
-            },
-            expand: {
-                content: false, 
-            }
-            });
-        
-        // control panel position and layout
-        var gameHeight = this.sys.game.config.height;
-        var gameWidth = this.sys.game.config.width;
-        SoT
-        .setPosition(gameWidth/2, gameHeight/2)
-        .layout()
-        .popUp(500);
-        
-        // control action button functionality (click, hover)
-        SoT
-        .once('button.click', function (button) {
-            SoT.scaleDownDestroy(500);
-            this.launchNextScene();
-        }, this)
-        .on('button.over', function (button) {
-            button.getElement('background').setStrokeStyle(2, 0xffffff);
-        })
-        .on('button.out', function (button) {
-            button.getElement('background').setStrokeStyle();
+        const width = this.game.config.width;
+        const height = this.game.config.height;
+        const maxWidth = width - 50; // Width - padding 25px left and right
+        const panelHeight = height - 100;
+        const panelX = width / 2;
+        const panelY = height - panelHeight / 2;
+
+        // Panel background
+        this.rexUI.add.roundRectangle(
+            panelX,
+            panelY,
+            width,
+            panelHeight,
+            { tl: 30, tr: 30, bl: 0, br: 0 },
+            0xffffff,
+            1.0 // alpha
+        );
+
+        const insetTop = EmbedContext.getInsetTop();
+        this.closeButton = this.add.image(width - 24, insetTop + 5, 'close');
+        this.closeButton.setScrollFactor(0);
+        this.closeButton.setInteractive();
+        this.closeButton.on('pointerup', () => {
+            EmbedContext.sendMessage('close');
         });
+
+        const container = this.rexUI.add.sizer({
+            orientation: 'y',
+            x: width / 2,
+            y: panelY,
+            width: maxWidth,
+            height: panelHeight,
+            space: { top: 35, bottom: 35, item: 20 }
+        });
+
+        // Title
+        const title = this.add.text(0, 0, "Let’s get started!", {
+            fontSize: '18px',
+            fontFamily: 'DMSans',
+            color: '#000'
+        });
+
+        const imageKey = 'image'; // Change as needed
+        
+        // Get natural size of image
+        const frame = this.textures.get(imageKey).getSourceImage();
+        const imageNaturalWidth = frame.width;
+        const imageNaturalHeight = frame.height;
+        const aspectRatio = imageNaturalHeight / imageNaturalWidth;
+        
+        // Calculate scaled dimensions
+        const displayWidth = Math.min(maxWidth, imageNaturalWidth);
+        const displayHeight = displayWidth * aspectRatio;
+        
+        // Add the image with dynamic size
+        const image = this.add.image(0, 0, imageKey)
+            .setDisplaySize(displayWidth, displayHeight);
+
+        // Description
+        const descText = this.add.text(0, 0,
+            "Nice work! You are now ready to start the main part of the game.\n\nFrom now on, every coin you collect matters – good luck!",
+            {
+                fontSize: '16px',
+                fontFamily: 'DMSans',
+                color: '#404040',
+                lineSpacing: 4,
+                wordWrap: { width: maxWidth }
+            }
+        );
+
+        // Get Started Button
+        const buttonBackground = this.rexUI.add.roundRectangle(0, 0, 0, 0, 30, 0xFFFFFF);
+        buttonBackground.setStrokeStyle(2, 0xD64204);
+        const buttonText = this.add.text(0, 0, 'GET STARTED', {
+            fontSize: '14px',
+            color: '#D64204',
+            fontFamily: 'DMSans',
+            fontStyle: 'bold'
+        });
+        const button = this.rexUI.add.label({
+            width: maxWidth,
+            height: 60,
+            background: buttonBackground,
+            text: buttonText,
+            align: 'center'
+        })
+        .setInteractive()
+        .on('pointerdown', () => {
+            buttonBackground.setFillStyle(0xFEE1D5);
+        })
+        .on('pointerup', () => {
+            buttonBackground.setFillStyle(0xFFFFFF);
+            this.launchNextScene();
+        })
+        .on('pointerout', () => {
+            buttonBackground.setFillStyle(0xFFFFFF);
+        });
+
+        // Build layout
+        container
+            .add(title, 0, 'left')
+            .add(image, 0, 'center')
+            .add(descText, 0, 'center')
+            .addSpace()  // Push button to bottom
+            .add(button, 0, 'center');
+
+        // Final layout
+        container.layout();
     }
     
     update(time, delta) {
     }
 }
-
-// generic function to create button labels
-var createLabel = function (scene, text) {
-    return scene.rexUI.add.label({
-        background: scene.rexUI.add.roundRectangle(0, 0, 0, 150, 50, 0x5e81a2),
-        text: scene.add.text(0, 0, text, {
-            fontSize: '24px',
-            fill: '#000000'
-        }),
-        align: 'center',
-        width: 40,
-        space: {
-            left: 10,
-            right: 10,
-            top: 10,
-            bottom: 10
-        }
-    });
-};

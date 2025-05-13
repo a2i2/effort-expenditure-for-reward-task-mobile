@@ -58,11 +58,10 @@ const loadFont = async function(name, url, weight) {
 
 // Start the game using the configuration defined above
 export function runTask() {
-    // create new phaser game configured as above
-    new Phaser.Game(config);
-
     Promise.all([
         loadFont('DMSans', './src/assets/fonts/DMSans-Bold.ttf', 700),
         loadFont('DMSans', './src/assets/fonts/DMSans-Regular.ttf', 400)
-    ]);
+    ]).then(() => {
+        new Phaser.Game(config);
+    });
 };
