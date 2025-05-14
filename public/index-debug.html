@@ -81,12 +81,12 @@
             import GameCache from './src/embedContext/GameCache.js'
             import { runTask } from "./src/task.js";
 
-            // Initiate the game, no longer need to rely info.js
-            runTask();
-
             window.setupGameWithCache = function(gameCache) {
                 GameCache.cache = gameCache;
             };
+
+            // Initiate the game, no longer need to rely info.js
+            runTask();
         </script>
 
         <script>
