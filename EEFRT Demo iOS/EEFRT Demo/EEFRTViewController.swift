@@ -14,8 +14,14 @@ struct EEFRTView: UIViewControllerRepresentable {
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.modelContext) private var context
 
+    private var gameCache: GameCache?
+
+    init(gameCache: GameCache? = nil) {
+        self.gameCache = gameCache
+    }
+
     func makeUIViewController(context: Context) -> EEFRTViewController {
-        let controller = EEFRTViewController()
+        let controller = EEFRTViewController(useCachedData: gameCache != nil)
         controller.delegate = context.coordinator
         return controller
     }
@@ -56,15 +62,17 @@ class EEFRTViewController: UIViewController {
     private static let practiceTrialResultMessageKey = "practiceTrialResult"
     private static let trialResultMessageKey = "trialResult"
     private static let currentGameCacheKey = "currentGameCache"
+    private static let gameCompleteKey = "gameComplete"
 
     weak var delegate: EEFRTViewControllerDelegate?
 
     private var webView: WKWebView!
+    private var useCachedData: Bool
 
     private let publicPath: String
     private let indexFileUrl: URL
 
-    init() {
+    init(useCachedData: Bool = false) {
         guard let publicPath = Bundle.main.path(forResource: "assets", ofType: nil) else {
             fatalError("Unable to locate 'assets' folder in main bundle")
         }
@@ -72,6 +80,7 @@ class EEFRTViewController: UIViewController {
             fatalError("Unable to locate 'assets/index.html' in main bundle")
         }
 
+        self.useCachedData = useCachedData
         self.publicPath = publicPath
         self.indexFileUrl = indexFileURL
         super.init(nibName: nil, bundle: nil)
@@ -114,8 +123,15 @@ class EEFRTViewController: UIViewController {
         config.userContentController.add(self, name: Self.practiceTrialResultMessageKey)
         config.userContentController.add(self, name: Self.trialResultMessageKey)
         config.userContentController.add(self, name: Self.currentGameCacheKey)
+        config.userContentController.add(self, name: Self.gameCompleteKey)
 
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
+
+        if useCachedData, let gameCache = try? Defaults.gameCache?.stringify() {
+            let gameCacheJsString = "window.setupGameWithCache(\(gameCache));"
+            let gameCacheUserScript = WKUserScript(source: gameCacheJsString, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
+            config.userContentController.addUserScript(gameCacheUserScript)
+        }
 
         webView = WKWebView(frame: .zero, configuration: config)
         webView.scrollView.isScrollEnabled = false
@@ -181,6 +197,11 @@ extension EEFRTViewController: WKScriptMessageHandler {
             } catch {
                 os_log(.error, "Couldn't decode game cache from EEFRT task into a native object")
             }
+
+        case Self.gameCompleteKey:
+            // clear the cache as the user has finished the task
+            Defaults.gameCache = nil
+            delegate?.eefrtViewControllerDidRequestClose(self)
 
         default:
             os_log(.error, "Message type %s not implemented yet!", message.name)

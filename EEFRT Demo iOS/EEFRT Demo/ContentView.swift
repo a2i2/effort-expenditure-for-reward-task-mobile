@@ -23,7 +23,7 @@ struct ContentView: View {
 
                 if let cache = viewModel.gameCache {
                     NavigationLink(
-                        destination: EEFRTView() // pass along config file
+                        destination: EEFRTView(gameCache: cache)
                             .ignoresSafeArea()
                             .navigationBarBackButtonHidden(),
 

@@ -49,14 +49,14 @@
 
         <!-- Main study components -->
         <script type="module">
-            import eventsCenter from './src/eventsCenter.js';
+            import GameCache from './src/embedContext/GameCache.js'
             import { runTask } from "./src/task.js";
 
             // Initiate the game, no longer need to rely info.js
             runTask();
 
-            window.breakOver = function() {
-                eventsCenter.emit('breakover');
+            window.setupGameWithCache = function(gameCache) {
+                GameCache.cache = gameCache;
             };
         </script>
 

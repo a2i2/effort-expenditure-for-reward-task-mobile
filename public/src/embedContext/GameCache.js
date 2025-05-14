@@ -1,4 +1,6 @@
 export default class GameCache {
+    static cache = null;
+
     constructor(practiceComplete, trialNumber, maxPressCount, coinRunningTotal, trialResults, randTrialsIdx) {
         this.practiceComplete = practiceComplete;
         this.trialNumber = trialNumber;

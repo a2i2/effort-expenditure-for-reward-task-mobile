@@ -37,4 +37,13 @@ struct GameCache: Codable, DefaultsSerializable {
         case trialResults
         case randTrialsIdx
     }
+    
+    public func stringify() throws -> String {
+        let encoder = JSONEncoder()
+
+        let data = try encoder.encode(self)
+        let jsonString = String(decoding: data, as: UTF8.self)
+
+        return jsonString
+    }
 }

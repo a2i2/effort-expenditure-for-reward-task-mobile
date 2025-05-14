@@ -68,7 +68,7 @@ var practiceorReal = 1; // use the main task instruction panels
 var coinsWonThisTrial = 0;
 
 // pre-shuffle the trials here with nTrials specified in ./versionInfo.js
-const randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
+var randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
 // check
 if (debug_mode) {
     console.log('random trial indices check: ' + randTrialsIdx)
@@ -171,6 +171,9 @@ export default class MainTask extends BaseScene {
         gameWidth = this.sys.game.config.width;
         mapHeight = map.heightInPixels;
         mapWidth = map.widthInPixels;
+
+        // setup the game with the cached game state if present
+        loadGameFromCache();
 
         // determine the background based on the current block (chapter)
         var bgStr = 'chapter-1-1';
@@ -702,13 +705,13 @@ var trialEnd = function () {
     // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
     //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
     
-    // save the current coin choice to the registry
-    let coinChoices = this.registry.get("coinChoices") ?? {};
+    // save the current coin choice to the cache by adding on to the previous dictionary if present
+    let coinChoices = GameCache.cache?.trialResults ?? {};
     coinChoices['trial' + trialNo] = trialSuccess ? coinsWonThisTrial : 0;
-    this.registry.set("coinChoices", coinChoices);
-    let currentGameState = new GameCache(true, trialNo, maxPressCount, nCoins, coinChoices, randTrialsIdx);
 
     // notify the native apps of what the current game state is so they can cache it
+    let currentGameState = new GameCache(true, trialNo + 1, maxPressCount, nCoins, coinChoices, randTrialsIdx);
+    GameCache.cache = currentGameState;
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
     
     // if end of task, display taskend screen 
@@ -774,3 +777,17 @@ var collectCoins = function(player, coin, trial){
     nCoins++;
     coinsWonThisTrial++;
 };
+
+// function which restores the game state based on the given cache state
+var loadGameFromCache = function() {
+    const cache = GameCache.cache;
+    if (cache == null) {
+        return; // no cache to load from so just return
+    }
+
+    // set up the game based on the previous state
+    trialNo = cache.trialNumber;
+    maxPressCount = cache.maxPressCount;
+    nCoins = cache.coinRunningTotal;
+    randTrialsIdx = cache.randTrialsIdx;
+}
