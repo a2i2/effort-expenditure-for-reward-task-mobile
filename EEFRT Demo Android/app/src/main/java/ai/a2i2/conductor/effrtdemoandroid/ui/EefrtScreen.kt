@@ -31,6 +31,8 @@ import androidx.webkit.WebViewAssetLoader.AssetsPathHandler
 import androidx.webkit.WebViewAssetLoader.DEFAULT_DOMAIN
 import androidx.webkit.WebViewClientCompat
 import com.google.gson.Gson
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Date
@@ -38,6 +40,7 @@ import java.util.Date
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun EefrtScreen(
+    useCachedData: Boolean = false,
     eefrtViewModel: EefrtScreenViewModel,
     onBack: () -> Unit,
 ) {
@@ -78,6 +81,19 @@ fun EefrtScreen(
                             // Attempt to resolve the url to an application resource or asset
                             return request?.let { req ->
                                 assetLoader.shouldInterceptRequest(req.url)
+                            }
+                        }
+
+                        override fun onPageFinished(view: WebView?, url: String?) {
+                            super.onPageFinished(view, url)
+
+                            // if we have a cached game state available, attempt to load it
+                            if (useCachedData) {
+                                GameStorage(context).getCurrentGameState()?.let {
+                                    val cacheJson = Json.encodeToString(it)
+                                    val jsString = "window.setupGameWithCache(${cacheJson});"
+                                    evaluateJavascript(jsString, null)
+                                }
                             }
                         }
                     }
@@ -149,6 +165,11 @@ private fun handleMessage(
                 val gson = Gson()
                 val gameCache = gson.fromJson(body, GameCache::class.java)
                 eefrtViewModel.setCurrentGameState(context, gameCache)
+            }
+
+            "gameComplete" -> {
+                eefrtViewModel.setCurrentGameState(context, null)
+                dismiss(onBack)
             }
 
             else -> Log.i(

@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.Button
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import androidx.navigation.Navigator
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -67,6 +68,11 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
             HomeScreen(
                 eefrtScreenViewModel = eefrtScreenViewModel,
                 onStartTaskPressed = {
+                    eefrtScreenViewModel.setShouldUseCachedData(false)
+                    navController.navigate(NavigationScreens.EFFRT.route)
+                },
+                onResumeTaskPressed = {
+                    eefrtScreenViewModel.setShouldUseCachedData(true)
                     navController.navigate(NavigationScreens.EFFRT.route)
                 },
                 onViewEventLogsPressed = {
@@ -77,6 +83,7 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
 
         composable(NavigationScreens.EFFRT.route) {
             EefrtScreen(
+                useCachedData = eefrtScreenViewModel.getShouldUseCachedData(),
                 eefrtViewModel = eefrtScreenViewModel,
                 onBack = {
                     navController.popBackStack()
@@ -127,6 +134,7 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
 fun HomeScreen(
     eefrtScreenViewModel: EefrtScreenViewModel,
     onStartTaskPressed: () -> Unit,
+    onResumeTaskPressed: () -> Unit,
     onViewEventLogsPressed: () -> Unit
 ) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -145,7 +153,7 @@ fun HomeScreen(
                 AppButton(
                     name = "Resume current EEFRT Task",
                     modifier = Modifier.padding(innerPadding),
-                    onClick = onStartTaskPressed
+                    onClick = onResumeTaskPressed
                 )
             }
 

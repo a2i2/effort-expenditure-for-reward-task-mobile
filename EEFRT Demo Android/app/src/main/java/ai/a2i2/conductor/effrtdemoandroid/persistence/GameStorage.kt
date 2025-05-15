@@ -13,7 +13,7 @@ data class GameCache(
     val maxPressCount: Int,
     val coinRunningTotal: Int,
     val trialResults: Map<String, Int>,
-    val randTrialsIdx: List<Int>
+    val randTrialsIdx: List<Int>?
 )
 
 class GameStorage(context: Context) : SimpleKrate(context) {
@@ -22,7 +22,7 @@ class GameStorage(context: Context) : SimpleKrate(context) {
     )
 
     fun getCurrentGameState(): GameCache? = cachedGameState
-    fun setCurrentGameState(newGameState: GameCache) {
+    fun setCurrentGameState(newGameState: GameCache?) {
         cachedGameState = newGameState
     }
 }
