@@ -269,6 +269,11 @@ export default class PracticeTask extends BaseScene {
         
         ////////////MOVE ON TO NEXT SCENE WHEN ALL TRIALS HAVE RUN////////////////
         if (pracTrial == nPracTrials) {
+            // signal to the cache that the practice is complete
+            let cache = new GameCache(true, 0, maxPressCount, 0, {}, null)
+            EmbedContext.sendMessage('currentGameCache', cache.stringify);
+
+            // progress to the next scene
             this.registry.set('maxPressCount', maxPressCount);
             this.launchNextScene();
         }
