@@ -68,7 +68,7 @@ var practiceorReal = 1; // use the main task instruction panels
 var coinsWonThisTrial = 0;
 
 // pre-shuffle the trials here with nTrials specified in ./versionInfo.js
-var randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
+var randTrialsIdx
 // check
 if (debug_mode) {
     console.log('random trial indices check: ' + randTrialsIdx)
@@ -172,6 +172,10 @@ export default class MainTask extends BaseScene {
         mapHeight = map.heightInPixels;
         mapWidth = map.widthInPixels;
 
+        // determine the maxPresscount and generate the randTrialsIdx if required
+        setUpMaxThreshold(this);
+        setUpRandTrialsIdx();
+
         // setup the game with the cached game state if present
         loadGameFromCache();
 
@@ -256,25 +260,6 @@ export default class MainTask extends BaseScene {
         //////////////////////////GET TRIAL INFO//////////////////////////////////  
         // load trial info (must be done within create())
         let trials = this.cache.json.get("trials"); // automates trials from version info 
-
-        // if a practice is run, take the minPressMax from the practice task
-        // otherwise assign maxPressCount as the fetched threshold max
-        if (runPractice == true && trialNo == 0) {
-            maxPressCount = this.registry.get('maxPressCount');
-            if (maxPressCount < minPressMax) {
-                // enforce minimum to guard against gaming from practice
-                maxPressCount = minPressMax;
-            }
-        }
-        else {
-            // add a catch if thresholdMax is undefined
-            if (typeof thresholdMax === "undefined") {
-                maxPressCount = thresholdAutoSet;
-
-            } else {
-                maxPressCount = thresholdMax; // fetch 
-            }
-        };
 
         // randomly select the order of trials for ema study:
         // save the random index:
@@ -615,8 +600,14 @@ var trialEnd = function () {
     trialEndTime = Math.round(this.time.now);
 
     // n.b. nCalibrates now set in versionInfo.js
-    // we only recalibrate if a practice was run first
-    if (trialNo < nCalibrates) {
+    // we completed the practice, but might be loading back from a cached run so we've already calibrated
+
+    var updatedNumCalibrates = nCalibrates;
+    if (GameCache.cache.practiceComplete == true && runPractice) {
+        updatedNumCalibrates = 0;
+    }
+
+    if (trialNo < updatedNumCalibrates) {
         // get variables to use 
         pressTimes = this.registry.get('pressTimes');
         pressCount = this.registry.get('pressCount');
@@ -786,8 +777,45 @@ var loadGameFromCache = function() {
     }
 
     // set up the game based on the previous state
-    trialNo = cache.trialNumber;
-    maxPressCount = cache.maxPressCount;
-    nCoins = cache.coinRunningTotal;
-    randTrialsIdx = cache.randTrialsIdx;
+    trialNo = cache.trialNumber ?? 0;
+    maxPressCount = cache.maxPressCount ?? thresholdAutoSet;
+    nCoins = cache.coinRunningTotal ?? 0;
+    randTrialsIdx = cache.randTrialsIdx ?? randTrialsIdx; // this was already set from the global scope so keep it if we dont have it in the cache
+}
+
+// sets up the max presses count depending on if the user did the practice or not
+var setUpMaxThreshold = function(context) {
+    // if a practice is run, take the minPressMax from the practice task
+    // otherwise assign maxPressCount as the fetched threshold max
+    if (runPractice == true && trialNo == 0) {
+        maxPressCount = context.registry.get('maxPressCount');
+        if (maxPressCount < minPressMax) {
+            // enforce minimum to guard against gaming from practice
+            maxPressCount = minPressMax;
+        }
+    }
+    else {
+        // add a catch if thresholdMax is undefined
+        if (typeof thresholdMax === "undefined") {
+            maxPressCount = thresholdAutoSet;
+
+        } else {
+            maxPressCount = thresholdMax; // fetch 
+        }
+    };
+}
+
+// checks the cache to see if we have a randTrialsIdx already to use, otherwise generates a new one and updates the cache with it
+var setUpRandTrialsIdx = function() {
+    randTrialsIdx = GameCache.cache?.randTrialsIdx ?? shuffleTrials(nTrials, catchIdx, nCalibrates);
+    if (GameCache.cache?.randTrialsIdx) {
+        // we have a cache available so use that value rather than generating a new randTrialsIdx
+        randTrialsIdx = GameCache.cache.randTrialsIdx
+    } else {
+        // no cache available, generate a new randTrialsIdx and update the cache with it
+        randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
+        let cache = new GameCache(true, 0, maxPressCount, 0, {}, randTrialsIdx);
+        GameCache.cache = cache
+        EmbedContext.sendMessage('currentGameCache', JSON.stringify(cache));
+    }
 }

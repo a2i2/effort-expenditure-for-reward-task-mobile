@@ -7,7 +7,7 @@ struct GameCache: Codable, DefaultsSerializable {
     var maxPressCount: Int
     var coinRunningTotal: Int
     var trialResults: [String: Int]
-    var randTrialsIdx: [Int]
+    var randTrialsIdx: [Int]?
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -16,7 +16,7 @@ struct GameCache: Codable, DefaultsSerializable {
         self.maxPressCount = try container.decode(Int.self, forKey: .maxPressCount)
         self.coinRunningTotal = try container.decode(Int.self, forKey: .coinRunningTotal)
         self.trialResults = try container.decode([String: Int].self, forKey: .trialResults)
-        self.randTrialsIdx = try container.decode([Int].self, forKey: .randTrialsIdx)
+        self.randTrialsIdx = try container.decodeIfPresent([Int].self, forKey: .randTrialsIdx)
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -26,7 +26,7 @@ struct GameCache: Codable, DefaultsSerializable {
         try container.encode(maxPressCount, forKey: .maxPressCount)
         try container.encode(coinRunningTotal, forKey: .coinRunningTotal)
         try container.encode(trialResults, forKey: .trialResults)
-        try container.encode(randTrialsIdx, forKey: .randTrialsIdx)
+        try container.encodeIfPresent(randTrialsIdx, forKey: .randTrialsIdx)
     }
 
     private enum CodingKeys: String, CodingKey {
