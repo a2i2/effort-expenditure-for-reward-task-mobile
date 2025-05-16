@@ -271,7 +271,7 @@ export default class PracticeTask extends BaseScene {
         if (pracTrial == nPracTrials) {
             // signal to the cache that the practice is complete
             let cache = new GameCache(true, 0, maxPressCount, 0, {}, null)
-            EmbedContext.sendMessage('currentGameCache', cache.stringify);
+            EmbedContext.sendMessage('currentGameCache', cache.stringify());
 
             // progress to the next scene
             this.registry.set('maxPressCount', maxPressCount);
