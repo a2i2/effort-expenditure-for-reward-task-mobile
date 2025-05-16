@@ -161,6 +161,13 @@ export default class MainTask extends BaseScene {
         // game world created in Tiled (https://www.mapeditor.org/)
         // import tilemap
 
+        // determine the maxPresscount and generate the randTrialsIdx if required
+        setUpMaxThreshold(this);
+        setUpRandTrialsIdx();
+
+        // setup the game with the cached game state if present
+        loadGameFromCache();
+
         // 3rd block is a "snow" level
         var mapKey = (blockNo == 2) ? 'snow-map' : 'grass-map';
         var map = this.make.tilemap({ key: mapKey });
@@ -171,13 +178,6 @@ export default class MainTask extends BaseScene {
         gameWidth = this.sys.game.config.width;
         mapHeight = map.heightInPixels;
         mapWidth = map.widthInPixels;
-
-        // determine the maxPresscount and generate the randTrialsIdx if required
-        setUpMaxThreshold(this);
-        setUpRandTrialsIdx();
-
-        // setup the game with the cached game state if present
-        loadGameFromCache();
 
         // determine the background based on the current block (chapter)
         var bgStr = 'chapter-1-1';
@@ -781,6 +781,7 @@ var loadGameFromCache = function() {
     maxPressCount = cache.maxPressCount ?? thresholdAutoSet;
     nCoins = cache.coinRunningTotal ?? 0;
     randTrialsIdx = cache.randTrialsIdx ?? randTrialsIdx; // this was already set from the global scope so keep it if we dont have it in the cache
+    blockNo = Math.floor(trialNo / trialsPerBlock);
 }
 
 // sets up the max presses count depending on if the user did the practice or not
