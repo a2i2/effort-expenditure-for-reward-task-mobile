@@ -21,7 +21,9 @@ export default class PowerPanel {
         this.timeLeft = timeLimit;
 
         // Main panel background
-        this.panelBg = scene.rexUI.add.roundRectangle(x, y, width, height, { tl: 30, tr: 30, bl: 0, br: 0 }, 0xFFFFFF);
+        this.panelBg = scene.rexUI.add.roundRectangle(x, y, width, height, { tl: 30, tr: 30, bl: 0, br: 0 }, 0xFFFFFF)
+            .setStrokeStyle(2, 0xffffff) // just to ensure that the entire panel is covering the game window width
+            .setOrigin(0.5);
 
         // Outer vertical container
         this.container = scene.rexUI.add.sizer({
