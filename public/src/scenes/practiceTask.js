@@ -15,6 +15,7 @@ import eventsCenter from '../eventsCenter.js'
 import { effortTime, pracTrialEfforts, pracTrialRewards, timeout } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
+import GameCache from "../embedContext/GameCache.js";
 
 // initialize some global vars
 var gameHeight;
@@ -68,6 +69,12 @@ export default class PracticeTask extends BaseScene {
     }
 
     preload() {
+        // skip the practice task if we've already completed it
+        if (GameCache.cache && GameCache.cache.practiceComplete) {
+            this.launchNextScene();
+            return;
+        }
+
         ////////////////////PRELOAD GAME ASSETS///////////////////////////////////
         // load tilemap and tileset created using Tiled (see below)
         this.load.tilemapTiledJSON('pmap', './src/assets/tilemaps/tilemap-main-grass.json');
@@ -113,6 +120,11 @@ export default class PracticeTask extends BaseScene {
     }
     
     create() {
+        // don't bother creating anything if we've already completed practice task, it will be skipped momentarily.
+        if (GameCache.cache && GameCache.cache.practiceComplete) {
+            return;
+        }
+
         ////////////////////////CREATE WORLD//////////////////////////////////////
         // game world created in Tiled (https://www.mapeditor.org/)
         // import practice world tilemap
@@ -230,26 +242,38 @@ export default class PracticeTask extends BaseScene {
 
         // // 3. if desired, add listener functions to pause game when focus taken away
         // // from game browser tab/window [necessary for mobile devices]
-        window.addEventListener('blur', () => { 
-        console.log('pausing game content...');      // useful for debugging pause/resume
-            this.scene.pause();
-        }, false);
-        // // and resume when focus returns
-        window.addEventListener('focus', () => { 
-            setTimeout(() => {
-                console.log('resuming game content...');
-                this.scene.resume();
-            }, 250);
-        }, false);
+        // window.addEventListener('blur', () => { 
+        // console.log('pausing game content...');      // useful for debugging pause/resume
+        //     this.scene.pause();
+        // }, false);
+        // // // and resume when focus returns
+        // window.addEventListener('focus', () => { 
+        //     setTimeout(() => {
+        //         console.log('resuming game content...');
+        //         this.scene.resume();
+        //     }, 250);
+        // }, false);
     }
     
     update(time, delta) {
+        // backup check to skip the practice task already and it wasn't availiable to read during preload
+        if (GameCache.cache && GameCache.cache.practiceComplete) {
+            console.log("practice task passed");
+            this.launchNextScene();
+            return;
+        }
+
         ///////////SPRITES THAT REQUIRE TIME-STEP UPDATING FOR ANIMATION//////////
         // allow player to move
         this.player.update(); 
         
         ////////////MOVE ON TO NEXT SCENE WHEN ALL TRIALS HAVE RUN////////////////
         if (pracTrial == nPracTrials) {
+            // signal to the cache that the practice is complete
+            let cache = new GameCache(true, 0, maxPressCount, 0, {}, null)
+            EmbedContext.sendMessage('currentGameCache', cache.stringify());
+
+            // progress to the next scene
             this.registry.set('maxPressCount', maxPressCount);
             this.launchNextScene();
         }

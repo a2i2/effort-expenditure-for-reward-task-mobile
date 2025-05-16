@@ -1,0 +1,49 @@
+import Foundation
+import SwiftyUserDefaults
+
+struct GameCache: Codable, DefaultsSerializable {
+    var practiceComplete: Bool
+    var trialNumber: Int
+    var maxPressCount: Int
+    var coinRunningTotal: Int
+    var trialResults: [String: Int]
+    var randTrialsIdx: [Int]?
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.practiceComplete = try container.decode(Bool.self, forKey: .practiceComplete)
+        self.trialNumber = try container.decode(Int.self, forKey: .trialNumber)
+        self.maxPressCount = try container.decode(Int.self, forKey: .maxPressCount)
+        self.coinRunningTotal = try container.decode(Int.self, forKey: .coinRunningTotal)
+        self.trialResults = try container.decode([String: Int].self, forKey: .trialResults)
+        self.randTrialsIdx = try container.decodeIfPresent([Int].self, forKey: .randTrialsIdx)
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(practiceComplete, forKey: .practiceComplete)
+        try container.encode(trialNumber, forKey: .trialNumber)
+        try container.encode(maxPressCount, forKey: .maxPressCount)
+        try container.encode(coinRunningTotal, forKey: .coinRunningTotal)
+        try container.encode(trialResults, forKey: .trialResults)
+        try container.encodeIfPresent(randTrialsIdx, forKey: .randTrialsIdx)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case practiceComplete
+        case trialNumber
+        case maxPressCount
+        case coinRunningTotal
+        case trialResults
+        case randTrialsIdx
+    }
+    
+    public func stringify() throws -> String {
+        let encoder = JSONEncoder()
+
+        let data = try encoder.encode(self)
+        let jsonString = String(decoding: data, as: UTF8.self)
+
+        return jsonString
+    }
+}

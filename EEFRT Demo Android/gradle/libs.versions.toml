@@ -16,6 +16,7 @@ roomCommon = "2.6.1"
 roomKtx = "2.6.1"
 roomCompiler = "2.6.1"
 gson = "2.8.8"
+krate = "2.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,9 +40,12 @@ androidx-room-common = { group = "androidx.room", name = "room-common", version.
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+krate = { group = "hu.autsoft", name = "krate", version.ref = "krate" }
+krate-kotlinx = { group = "hu.autsoft", name = "krate-kotlinx", version.ref = "krate" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp" }
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

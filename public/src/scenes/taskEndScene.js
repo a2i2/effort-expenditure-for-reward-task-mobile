@@ -102,7 +102,7 @@ export default class TaskEndScene extends Phaser.Scene {
         // end scene
         eventsCenter.once('page2complete', function () {
             if (runPractice == false) {
-                EmbedContext.sendMessage('close', {});
+                EmbedContext.sendMessage('gameComplete', {});
                 // for FU games without a practice, don't display prolific complete link
                 // BeApp.postMessage(JSON.stringify({
                 //     "type": "back",
@@ -120,7 +120,7 @@ export default class TaskEndScene extends Phaser.Scene {
                 // }))
             }
             else {
-                EmbedContext.sendMessage('close', {});
+                EmbedContext.sendMessage('gameComplete', {});
                 // for baseline games, display the complete link in postGame resources
                 // BeApp.postMessage(JSON.stringify({
                 //     "type": "back",

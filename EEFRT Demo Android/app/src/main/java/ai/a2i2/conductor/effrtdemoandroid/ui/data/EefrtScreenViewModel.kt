@@ -1,8 +1,12 @@
 package ai.a2i2.conductor.effrtdemoandroid.ui.data
 
 import ai.a2i2.conductor.effrtdemoandroid.persistence.AppDatabase
+import ai.a2i2.conductor.effrtdemoandroid.persistence.GameCache
+import ai.a2i2.conductor.effrtdemoandroid.persistence.GameStorage
 import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
+import android.content.Context
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -10,17 +14,21 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 class EefrtScreenViewModel(
-    private val appDatabase: AppDatabase
+    private val appDatabase: AppDatabase,
+    context: Context
 ) : ViewModel() {
 
     private val _practiceTrialData = mutableStateOf<List<PracticeTaskAttempt>>(emptyList())
-    private val practiceTrialData: State<List<PracticeTaskAttempt>> = _practiceTrialData
-
     private val _actualTrialData = mutableStateOf<List<TaskAttempt>>(emptyList())
-    private val actualTrialData: State<List<TaskAttempt>> = _actualTrialData
+    private val _shouldUseCachedData: MutableState<Boolean>
+    val resumeTrialAvailable: MutableState<Boolean>
 
     init {
         refreshData()
+        val currentGameState = GameStorage(context).getCurrentGameState()
+        resumeTrialAvailable =
+            if (currentGameState == null) mutableStateOf(false) else mutableStateOf(true)
+        _shouldUseCachedData = mutableStateOf(resumeTrialAvailable.value)
     }
 
     private fun refreshData() {
@@ -32,7 +40,7 @@ class EefrtScreenViewModel(
     }
 
     fun getPracticeTaskAttempts(): State<List<PracticeTaskAttempt>> {
-        return practiceTrialData
+        return _practiceTrialData
     }
 
     fun savePracticeTaskAttempt(practiceTaskAttempt: PracticeTaskAttempt) {
@@ -50,7 +58,7 @@ class EefrtScreenViewModel(
     }
 
     fun getActualTaskAttempts(): State<List<TaskAttempt>> {
-        return actualTrialData
+        return _actualTrialData
     }
 
     fun saveActualTaskAttempt(taskAttempt: TaskAttempt) {
@@ -73,5 +81,18 @@ class EefrtScreenViewModel(
             appDatabase.practiceTaskAttemptDao().deleteAllEvents()
             refreshData()
         }
+    }
+
+    fun setCurrentGameState(context: Context, newGameState: GameCache?) {
+        GameStorage(context).setCurrentGameState(newGameState)
+        resumeTrialAvailable.value = newGameState != null
+    }
+
+    fun getShouldUseCachedData(): Boolean {
+        return _shouldUseCachedData.value
+    }
+
+    fun setShouldUseCachedData(newValue: Boolean) {
+        _shouldUseCachedData.value = newValue
     }
 }

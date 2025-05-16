@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8B0F92472DCC1F5A003EB354 /* SwiftyUserDefaults in Frameworks */ = {isa = PBXBuildFile; productRef = 8B0F92462DCC1F5A003EB354 /* SwiftyUserDefaults */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		8B34BEE72D78240000E73A72 /* EEFRT Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "EEFRT Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -26,6 +30,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8B0F92472DCC1F5A003EB354 /* SwiftyUserDefaults in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -68,6 +73,7 @@
 			);
 			name = "EEFRT Demo";
 			packageProductDependencies = (
+				8B0F92462DCC1F5A003EB354 /* SwiftyUserDefaults */,
 			);
 			productName = "EEFRT Demo";
 			productReference = 8B34BEE72D78240000E73A72 /* EEFRT Demo.app */;
@@ -97,6 +103,9 @@
 			);
 			mainGroup = 8B34BEDE2D78240000E73A72;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				8B0F92452DCC1F5A003EB354 /* XCRemoteSwiftPackageReference "SwiftyUserDefaults" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8B34BEE82D78240000E73A72 /* Products */;
 			projectDirPath = "";
@@ -337,6 +346,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8B0F92452DCC1F5A003EB354 /* XCRemoteSwiftPackageReference "SwiftyUserDefaults" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sunshinejr/SwiftyUserDefaults";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8B0F92462DCC1F5A003EB354 /* SwiftyUserDefaults */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8B0F92452DCC1F5A003EB354 /* XCRemoteSwiftPackageReference "SwiftyUserDefaults" */;
+			productName = SwiftyUserDefaults;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8B34BEDF2D78240000E73A72 /* Project object */;
 }
