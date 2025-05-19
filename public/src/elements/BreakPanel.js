@@ -5,7 +5,7 @@ const BREAK_TIME_MS = 120000; // 2 mins
 const BREAK_OVER_KEY = 'breakover';
 
 export default class BreakPanel {
-    constructor(scene, x, y, width, height, breakTimeMS = BREAK_TIME_MS) {
+    constructor(scene, x, y, width, breakTimeMS = BREAK_TIME_MS) {
         this.scene = scene;
         this.breakTimeMS = breakTimeMS;
 
@@ -23,7 +23,7 @@ export default class BreakPanel {
         // this.underlay.fillRect(scene.cameras.main.scrollX, 0, scene.cameras.main.width, scene.cameras.main.height);
 
         // Main panel background
-        this.panelBg = scene.rexUI.add.roundRectangle(x, y, width, height, { tl: 30, tr: 30, bl: 0, br: 0 }, 0xFFFFFF);
+        this.panelBg = scene.rexUI.add.roundRectangle(x, y, width, 0, { tl: 30, tr: 30, bl: 0, br: 0 }, 0xFFFFFF);
 
         // Outer vertical container
         this.container = scene.rexUI.add.sizer({
@@ -32,7 +32,7 @@ export default class BreakPanel {
             y,
             width,
             height: 0,
-            space: { top: 20, bottom: 20, left: 25, right: 25, item: 20 }
+            space: { top: 30, bottom: 20, left: 25, right: 25, item: 20 }
         });
 
         // Header row: title + countdown
@@ -95,12 +95,19 @@ export default class BreakPanel {
                 this.continueButtonBg.setFillStyle(0xFFFFFF);
             });
 
+        const sizer = this.scene.rexUI.add.overlapSizer({
+            orientation: 'vertical',
+            space: { top: 0, bottom: 20, left: 0, right: 0 }
+        });
+
         // Assemble layout
         this.container.add(headerRow);
         this.container.add(this.breakText, { expand: true });
         this.container.add(this.continueButton, { expand: true });
+        this.container.add(sizer);
 
         this.container.layout();
+        this.panelBg.height = this.container.height;
     }
 
     onContinuePressed() {

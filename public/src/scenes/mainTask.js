@@ -716,9 +716,8 @@ var trialEnd = function () {
         this.breakPanel = new BreakPanel(
             this,
             camera.scrollX + camera.width / 2,
-            camera.height - panelHeight / 2,
+            camera.height - panelHeight / 3,
             camera.width,
-            panelHeight
         );
 
         this.tweens.add({        
@@ -731,7 +730,6 @@ var trialEnd = function () {
             yoyo: false
         });
 
-        // this.breakPanel = new BreakPanel(this, mapWidth-gameWidth/2, 600, nCoins);
         eventsCenter.once('breakover', function () {
             //  restart coin total from 0 after each block
             // nCoins=0; - keep coins to gamify
