@@ -5,9 +5,12 @@ const BREAK_TIME_MS = 120000; // 2 mins
 const BREAK_OVER_KEY = 'breakover';
 
 export default class BreakPanel {
-    constructor(scene, x, y, width, height, breakTimeMS = BREAK_TIME_MS) {
+    constructor(scene, x, breakTimeMS = BREAK_TIME_MS) {
         this.scene = scene;
         this.breakTimeMS = breakTimeMS;
+
+        let y = 0; // This coordinate will be calculated after the panel height is calculated
+        let width = window.innerWidth;
 
         // Register break over event listener
         eventsCenter.once(BREAK_OVER_KEY, () => {
@@ -23,7 +26,7 @@ export default class BreakPanel {
         // this.underlay.fillRect(scene.cameras.main.scrollX, 0, scene.cameras.main.width, scene.cameras.main.height);
 
         // Main panel background
-        this.panelBg = scene.rexUI.add.roundRectangle(x, y, width, height, { tl: 30, tr: 30, bl: 0, br: 0 }, 0xFFFFFF);
+        this.panelBg = scene.rexUI.add.roundRectangle(x, y, width, 0, { tl: 30, tr: 30, bl: 0, br: 0 }, 0xFFFFFF);
 
         // Outer vertical container
         this.container = scene.rexUI.add.sizer({
@@ -32,7 +35,7 @@ export default class BreakPanel {
             y,
             width,
             height: 0,
-            space: { top: 20, bottom: 20, left: 25, right: 25, item: 20 }
+            space: { top: 30, bottom: 35, left: 25, right: 25, item: 20 }
         });
 
         // Header row: title + countdown
@@ -101,6 +104,10 @@ export default class BreakPanel {
         this.container.add(this.continueButton, { expand: true });
 
         this.container.layout();
+        this.panelBg.height = this.container.height;
+        // Position at the bottom of the screen
+        this.container.y = window.innerHeight - this.panelBg.height / 2;
+        this.panelBg.y = window.innerHeight - this.panelBg.height / 2;
     }
 
     onContinuePressed() {

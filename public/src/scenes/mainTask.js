@@ -712,13 +712,9 @@ var trialEnd = function () {
         this.player.sprite.anims.play('wait', true);
         
         let camera = this.cameras.main;
-        let panelHeight = camera.height * 0.35;
         this.breakPanel = new BreakPanel(
             this,
-            camera.scrollX + camera.width / 2,
-            camera.height - panelHeight / 2,
-            camera.width,
-            panelHeight
+            camera.scrollX + camera.width / 2
         );
 
         this.tweens.add({        
@@ -731,7 +727,6 @@ var trialEnd = function () {
             yoyo: false
         });
 
-        // this.breakPanel = new BreakPanel(this, mapWidth-gameWidth/2, 600, nCoins);
         eventsCenter.once('breakover', function () {
             //  restart coin total from 0 after each block
             // nCoins=0; - keep coins to gamify
@@ -741,7 +736,7 @@ var trialEnd = function () {
             // move to next trial
             this.scene.restart();    // [?wrap in delay function to ensure saving works]
         }, this);      
-    } 
+    }
     else {
         // iterate trial number
         trialNo++;     
