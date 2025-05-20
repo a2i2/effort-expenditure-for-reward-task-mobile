@@ -5,9 +5,12 @@ const BREAK_TIME_MS = 120000; // 2 mins
 const BREAK_OVER_KEY = 'breakover';
 
 export default class BreakPanel {
-    constructor(scene, x, y, width, breakTimeMS = BREAK_TIME_MS) {
+    constructor(scene, x, breakTimeMS = BREAK_TIME_MS) {
         this.scene = scene;
         this.breakTimeMS = breakTimeMS;
+
+        let y = 0; // This coordinate will be calculated after the panel height is calculated
+        let width = window.innerWidth;
 
         // Register break over event listener
         eventsCenter.once(BREAK_OVER_KEY, () => {
@@ -32,7 +35,7 @@ export default class BreakPanel {
             y,
             width,
             height: 0,
-            space: { top: 30, bottom: 20, left: 25, right: 25, item: 20 }
+            space: { top: 30, bottom: 35, left: 25, right: 25, item: 20 }
         });
 
         // Header row: title + countdown
@@ -95,19 +98,16 @@ export default class BreakPanel {
                 this.continueButtonBg.setFillStyle(0xFFFFFF);
             });
 
-        const sizer = this.scene.rexUI.add.overlapSizer({
-            orientation: 'vertical',
-            space: { top: 0, bottom: 20, left: 0, right: 0 }
-        });
-
         // Assemble layout
         this.container.add(headerRow);
         this.container.add(this.breakText, { expand: true });
         this.container.add(this.continueButton, { expand: true });
-        this.container.add(sizer);
 
         this.container.layout();
         this.panelBg.height = this.container.height;
+        // Position at the bottom of the screen
+        this.container.y = window.innerHeight - this.panelBg.height / 2;
+        this.panelBg.y = window.innerHeight - this.panelBg.height / 2;
     }
 
     onContinuePressed() {

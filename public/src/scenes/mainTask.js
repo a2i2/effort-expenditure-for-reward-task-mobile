@@ -712,12 +712,9 @@ var trialEnd = function () {
         this.player.sprite.anims.play('wait', true);
         
         let camera = this.cameras.main;
-        let panelHeight = camera.height * 0.35;
         this.breakPanel = new BreakPanel(
             this,
-            camera.scrollX + camera.width / 2,
-            camera.height - panelHeight / 3,
-            camera.width,
+            camera.scrollX + camera.width / 2
         );
 
         this.tweens.add({        
@@ -739,7 +736,7 @@ var trialEnd = function () {
             // move to next trial
             this.scene.restart();    // [?wrap in delay function to ensure saving works]
         }, this);      
-    } 
+    }
     else {
         // iterate trial number
         trialNo++;     
