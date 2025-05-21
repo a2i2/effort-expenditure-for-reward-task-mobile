@@ -36,7 +36,7 @@ export default class PowerPanel {
             y,
             width,
             height,
-            space: { top: 20, bottom: 20, left: 25, right: 25, item: 20 }
+            space: { top: 20, bottom: 30, left: 25, right: 25, item: 20 }
         });
 
         const powerPanelState = Object.freeze({

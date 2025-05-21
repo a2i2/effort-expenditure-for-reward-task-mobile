@@ -37,7 +37,7 @@ export default class RouteSelectorPanel {
             width: this.width,
             height: height,
             // padding-space, and space between items
-            space: { top: 20, bottom: 20, left: 20, right: 20, item: 20 }
+            space: { top: 20, bottom: 30, left: 20, right: 20, item: 20 }
         });
 
         // Header: Title + Timer
