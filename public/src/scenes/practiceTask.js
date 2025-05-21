@@ -438,7 +438,7 @@ var doChoice = function () {
     const centerX = camera.scrollX + camera.width / 2;
 
     // power panel pops up
-    this.powerPanel = new PowerPanel(this, centerX, this.cameras.main.height - 170, window.innerWidth, 340, effortTime, selectedReward, selectedEffortProp, selectedEffort, true);
+    this.powerPanel = new PowerPanel(this, centerX, effortTime, selectedReward, selectedEffortProp, selectedEffort, true);
     
     // we want to start the power up animation when the timer is actually counting down
     eventsCenter.once('powerStatePassed', startPowerUpAnimation, this);
