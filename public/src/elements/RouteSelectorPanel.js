@@ -5,7 +5,7 @@ import PowerMeterBar from './PowerMeterBar.js';
 const ROUTE_TIMEOUT_KEY = 'routeTimeout';
 
 export default class RouteSelectorPanel {
-    constructor(scene, x, y, width, height, route1Coins, route1Power, route2Coins, route2Power, onSelect, timeoutMillis = 10000) {
+    constructor(scene, x, route1Coins, route1Power, route2Coins, route2Power, onSelect, timeoutMillis = 10000) {
         this.scene = scene;
         this.route1Coins = route1Coins;
         this.route2Coins = route2Coins;
@@ -13,10 +13,12 @@ export default class RouteSelectorPanel {
         this.route2Power = (route2Power * 100).toFixed();
         this.onSelect = onSelect;
 
-        this.width = width;
+        this.width = window.innerWidth;
+        let y = 0; // This coordinate will be calculated after the panel height is calculated
+        let height = 0; // the height for the panel background will be calculated after the rest of the layout is done
 
         // background panel
-        this.panel = scene.rexUI.add.roundRectangle(x, y, width, height, 
+        this.panel = scene.rexUI.add.roundRectangle(x, y, this.width, height, 
             { // rounded corners top
                 tl: 30,
                 tr: 30,
@@ -32,7 +34,7 @@ export default class RouteSelectorPanel {
             orientation: 'vertical',
             x: x,
             y: y,
-            width: width,
+            width: this.width,
             height: height,
             // padding-space, and space between items
             space: { top: 20, bottom: 20, left: 20, right: 20, item: 20 }
@@ -71,6 +73,11 @@ export default class RouteSelectorPanel {
         this.container.add(optionsRow, { align: 'center' });
 
         this.container.layout();
+
+        // dynamically determine the panel height, y position and the container y position after the view layout has occured
+        this.panel.height = this.container.height;
+        this.container.y = window.innerHeight - this.panel.height / 2;
+        this.panel.y = window.innerHeight - this.panel.height / 2;
 
         if (timeoutMillis == null) {
             this.overlay = this.scene.add.graphics();
