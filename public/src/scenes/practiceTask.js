@@ -59,6 +59,7 @@ const PRACTICE_TIMEOUT_KEY = 'practiceTimeout';
 const PRACTICE_CHOICE_KEY = 'practiceChoiceComplete';
 
 var routeSelectionTransitionTimer;
+var smallDeviceOffset = 0;
 
 // this function extends Phaser.Scene and includes the core logic for the game
 export default class PracticeTask extends BaseScene {
@@ -125,6 +126,11 @@ export default class PracticeTask extends BaseScene {
             return;
         }
 
+        // if we're on a smaller screen we want to shift most of the UI elements up so they are visible
+        if (window.innerHeight < 800) {
+            smallDeviceOffset = -175;
+        }
+
         ////////////////////////CREATE WORLD//////////////////////////////////////
         // game world created in Tiled (https://www.mapeditor.org/)
         // import practice world tilemap
@@ -140,8 +146,8 @@ export default class PracticeTask extends BaseScene {
         this.background = this.add.tileSprite(mapWidth/2, mapHeight/2.2, 1107, 970, "chapter-1-1");
 
         // import scene layers (using names set up in Tiled)
-        platforms = pmap.createStaticLayer("platforms", tileset, 0, 0);
-        bridge = pmap.createStaticLayer("bridge", tileset, 0, 0);
+        platforms = pmap.createStaticLayer("platforms", tileset, 0, smallDeviceOffset);
+        bridge = pmap.createStaticLayer("bridge", tileset, 0, smallDeviceOffset);
 
         // set up collision property for tiles that can be walked on (set in Tiled)
         platforms.setCollisionByProperty({ collide: true });
@@ -152,7 +158,7 @@ export default class PracticeTask extends BaseScene {
         for (var i = 0; i < 2; i++) {
             var x = 25;
             var y = 473;
-            this.plants.create(x, y, 'smallShrub').setScale(1.2).refreshBody();
+            this.plants.create(x, y + smallDeviceOffset, 'smallShrub').setScale(1.2).refreshBody();
         }
 
         // set the boundaries of the world
@@ -179,7 +185,7 @@ export default class PracticeTask extends BaseScene {
         });
 
         //////////////ADD PLAYER SPRITE////////////////////
-        this.player = new Player(this, 0, 300); // (this, spawnPoint.x, spawnPoint.y);
+        this.player = new Player(this, 0, 300 + smallDeviceOffset); // (this, spawnPoint.x, spawnPoint.y);
         this.physics.add.collider(this.player.sprite, platforms);    // player walks on platforms 
         this.physics.add.collider(this.player.sprite, bridge);       // player walks on platforms and bridge     
 
@@ -290,8 +296,8 @@ var displayInfoPanel = function () {
     
     // if the user is shown the route selection panel then we will want to show the coins
     if (pracTrial > 1) {
-        this.coins1 = new Coins(this, midbridgeX-(trialReward1*65)/2, 235, trialReward1); // coins in sky
-        this.coins2 = new Coins(this, midbridgeX-(trialReward2*155)/2, 360, trialReward2); // coins on bridge
+        this.coins1 = new Coins(this, midbridgeX-(trialReward1*65)/2, 235 + smallDeviceOffset, trialReward1); // coins in sky
+        this.coins2 = new Coins(this, midbridgeX-(trialReward2*155)/2, 360 + smallDeviceOffset, trialReward2); // coins on bridge
     }
 
     // each practice trial has a custom message displayed at the same time as the choice panel,
@@ -548,9 +554,10 @@ var effortOutcome = function() {
             // then player floats across 'high route' and collects coins
             this.time.addEvent({delay: pracFeedbackTime + 250, 
                 callback: function(){
+                    let playerSpeedAdjustment = window.innerHeight < 800 ? 4 : 3; // slow down the player a bit more on the smaller screens so they dont miss the coins
                     feedbackMessage?.destroy();
                     this.player.sprite.anims.play('float', true);    
-                    this.player.sprite.setVelocityX(playerVelocity/3);
+                    this.player.sprite.setVelocityX(playerVelocity/playerSpeedAdjustment);
                     this.time.addEvent({ delay: 120, 
                                         callback: function(){this.player.sprite.setVelocityY(-280);},
                                         callbackScope: this, 

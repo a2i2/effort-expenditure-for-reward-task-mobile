@@ -66,6 +66,7 @@ var maxPressCount;
 var thresholdMax;
 var practiceorReal = 1; // use the main task instruction panels 
 var coinsWonThisTrial = 0;
+var smallDeviceOffset = 0;
 
 // pre-shuffle the trials here with nTrials specified in ./versionInfo.js
 var randTrialsIdx
@@ -168,6 +169,10 @@ export default class MainTask extends BaseScene {
         // setup the game with the cached game state if present
         loadGameFromCache();
 
+        if (window.innerHeight < 800) {
+            smallDeviceOffset = -175;
+        }
+
         // 3rd block is a "snow" level
         var mapKey = (blockNo == 2) ? 'snow-map' : 'grass-map';
         var map = this.make.tilemap({ key: mapKey });
@@ -193,8 +198,8 @@ export default class MainTask extends BaseScene {
         this.background = this.add.tileSprite(mapWidth/2, mapHeight/2.2, 1107, 970, bgStr);
 
         // import scene layers (using names set up in Tiled)
-        platforms = map.createStaticLayer("platforms", tileset, 0, 0);
-        bridge = map.createStaticLayer("bridge", tileset, 0, 0);
+        platforms = map.createStaticLayer("platforms", tileset, 0, 0 + smallDeviceOffset);
+        bridge = map.createStaticLayer("bridge", tileset, 0, 0 + smallDeviceOffset);
         
         // set up collision property for tiles that can be walked on (set in Tiled)
         platforms.setCollisionByProperty({ collide: true });
@@ -204,10 +209,10 @@ export default class MainTask extends BaseScene {
         let objManager = new StaticObjects(this);
         // determine decision x coordinate for left of bridge
         var x = Phaser.Math.RND.between(50, decisionPointX-60);
-        objManager.addRandomObject(x, blockNo === 1);
+        objManager.addRandomObject(x, smallDeviceOffset, blockNo === 1);
         // determine x coordinate for right of bridge
         x = Phaser.Math.RND.between(860, mapWidth-100);
-        objManager.addRandomObject(x, blockNo === 1);
+        objManager.addRandomObject(x, smallDeviceOffset, blockNo === 1);
 
         // set the boundaries of the world
         this.physics.world.bounds.width = mapWidth;
@@ -233,7 +238,7 @@ export default class MainTask extends BaseScene {
         });
 
         //////////////ADD PLAYER SPRITE////////////////////
-        this.player = new Player(this, 0, 350); // (this, spawnPoint.x, spawnPoint.y);
+        this.player = new Player(this, 0, 350 + smallDeviceOffset); // (this, spawnPoint.x, spawnPoint.y);
         this.physics.add.collider(this.player.sprite, platforms); 
         this.physics.add.collider(this.player.sprite, bridge);       // player walks on platforms and bridge
 
@@ -371,8 +376,10 @@ var displayChoicePanel = function () {
     this.decisionPoint.destroy();
     
     // display reward coins for each option
-    this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 235, trialReward1); // coins in sky
-    this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 360, trialReward2); // coins on bridge
+    this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 235 + smallDeviceOffset, trialReward1); // coins in sky
+    this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 360 + smallDeviceOffset, trialReward2); // coins on bridge
+    // TODO: Fix how the coins are collected along the top row, 6 is fine for an iPhone SE but 7 will result in a missed coin. Bottom row is fine
+    // Consider keeping track of coins collected via trial information rather than actual coins collected in case game bugs out and coins are visually missed
 
     const camera = this.cameras.main;
     const centerX = camera.scrollX + camera.width / 2;
