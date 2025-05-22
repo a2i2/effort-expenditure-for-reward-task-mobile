@@ -378,8 +378,6 @@ var displayChoicePanel = function () {
     // display reward coins for each option
     this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 235 + smallDeviceOffset, trialReward1); // coins in sky
     this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 360 + smallDeviceOffset, trialReward2); // coins on bridge
-    // TODO: Fix how the coins are collected along the top row, 6 is fine for an iPhone SE but 7 will result in a missed coin. Bottom row is fine
-    // Consider keeping track of coins collected via trial information rather than actual coins collected in case game bugs out and coins are visually missed
 
     const camera = this.cameras.main;
     const centerX = camera.scrollX + camera.width / 2;
@@ -446,7 +444,8 @@ var effortOutcome = function() {
     if (choice == 'route 1' && pressCount >= trialEffort1) {
         trialSuccess = 1;
         // add overlap colliders so coins disappear when overlap with player body
-        this.physics.add.overlap(this.player.sprite, this.coins1.sprite, collectCoins, null, this); 
+        this.physics.add.overlap(this.player.sprite, this.coins1.sprite, collectCoins, null, this);
+
         // display success message for a couple of seconds,
         this.feedbackMessage = new Message(
             this,
@@ -700,6 +699,17 @@ var trialEnd = function () {
     // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
     //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
     
+    // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
+    if (trialSuccess && choice == 'route 1') {
+        coinsWonThisTrial = trialReward1;
+        nCoins += coinsWonThisTrial;
+    } else if (trialSuccess && choice == 'route 2') {
+        coinsWonThisTrial = trialReward2;
+        nCoins += coinsWonThisTrial;
+    } else {
+        coinsWonThisTrial = 0;
+    }
+
     // save the current coin choice to the cache by adding on to the previous dictionary if present
     let coinChoices = GameCache.cache?.trialResults ?? {};
     coinChoices['trial' + trialNo] = trialSuccess ? coinsWonThisTrial : 0;
@@ -752,7 +762,7 @@ var trialEnd = function () {
 //////////////////////MISC FUNCTIONS/////////////////////
 // function to get player up other side of bridge by performing single jump
 // used on reject and unsucessful accept trials
-var onejump = function () {
+var onejump = function() {
     this.bridgeEndPoint.destroy();
     let jumpHeight = -400;
     this.player.sprite.setVelocityY(jumpHeight);
@@ -762,10 +772,8 @@ var onejump = function () {
 
 // function to make coin sprites disappear upon contact with player
 // (so player appears to 'collect' them)
-var collectCoins = function(player, coin, trial){
+var collectCoins = function(player, coin, trial) {
     coin.disableBody(true, true);   // individual coins from group become invisible upon overlap
-    nCoins++;
-    coinsWonThisTrial++;
 };
 
 // function which restores the game state based on the given cache state
