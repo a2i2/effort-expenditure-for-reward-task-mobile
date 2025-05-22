@@ -195,7 +195,7 @@ export default class MainTask extends BaseScene {
             bgStr = `chapter-${blockNo+1}-${i}`;
         }
 
-        this.background = this.add.tileSprite(mapWidth/2, mapHeight/2.2, 1107, 970, bgStr);
+        this.background = this.add.tileSprite(mapWidth/2, mapHeight/2.2 + smallDeviceOffset, 1107, 970, bgStr);
 
         // import scene layers (using names set up in Tiled)
         platforms = map.createStaticLayer("platforms", tileset, 0, 0 + smallDeviceOffset);

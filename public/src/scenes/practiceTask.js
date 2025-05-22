@@ -143,7 +143,7 @@ export default class PracticeTask extends BaseScene {
         mapWidth = pmap.widthInPixels;
         mapHeight = pmap.heightInPixels;
 
-        this.background = this.add.tileSprite(mapWidth/2, mapHeight/2.2, 1107, 970, "chapter-1-1");
+        this.background = this.add.tileSprite(mapWidth/2, mapHeight/2.2 + smallDeviceOffset, 1107, 970, "chapter-1-1");
 
         // import scene layers (using names set up in Tiled)
         platforms = pmap.createStaticLayer("platforms", tileset, 0, smallDeviceOffset);
