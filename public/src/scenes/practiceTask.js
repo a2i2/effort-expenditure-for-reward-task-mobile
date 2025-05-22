@@ -16,6 +16,7 @@ import { effortTime, pracTrialEfforts, pracTrialRewards, timeout } from "../vers
 
 import Message from "../elements/message.js";
 import GameCache from "../embedContext/GameCache.js";
+import PracticeTaskAttempt from "../embedContext/PracticeTaskAttempt.js";
 
 // initialize some global vars
 var gameHeight;
@@ -30,7 +31,6 @@ const endbridgeX = 765;        // where the player must jump up to cross bridge 
 const playerVelocity = 1000;   // baseline player velocity (rightward)
 // initialize practice task vars
 var pracTrial = 0;
-var nGems = 0;
 var nPracTrials = pracTrialRewards.length;
 var feedbackMessage;
 var pressCount;
@@ -637,18 +637,19 @@ var pracTrialEnd = function () {
        this.registry.set('maxPressCount', maxPressCount);
     }
     // set data to be saved into registry
-    this.registry.set("pracTrial"+pracTrial, {pracTrialNo: pracTrial, 
-                                              trialReward: selectedReward,
-                                              trialEffort: selectedReward,
-                                              pressCount: pressCount,
-                                              pressTimes: pressTimes,
-                                              trialSuccess: trialSuccess,
-                                              gemsRunningTotal: nGems,
-                                              maxPressCount: this.registry.get('maxPressCount')
-                                             });
+    let practiceTaskAttempt = new PracticeTaskAttempt(
+        pracTrial,
+        selectedReward, 
+        selectedEffort,
+        pressCount,
+        pressTimes,
+        trialSuccess,
+        this.registry.get('maxPressCount')
+    );
+    this.registry.set("pracTrial"+pracTrial, practiceTaskAttempt);
     // save data
     console.log(this.registry.get("pracTrial"+pracTrial));
-    EmbedContext.sendMessage("practiceTrialResult", this.registry.get("pracTrial"+pracTrial));
+    EmbedContext.sendMessage("practiceTrialResult", practiceTaskAttempt.stringify());
     // savePracTaskData(pracTrial, this.registry.get(`pracTrial${pracTrial}`));    // [for firebase]
     //saveTrialDataPav(this.registry.get(`pracTrial${pracTrial}`));             // [for Pavlovia deployment]
     
@@ -664,7 +665,6 @@ var pracTrialEnd = function () {
 // (so player appears to 'collect' them)
 var collectGems = function(player, gem) {
     gem.disableBody(true, true);      // individual gems from physics group become invisible upon overlap
-    nGems++; 
 };
 
 // function to get player up other side of bridge by performing single jump

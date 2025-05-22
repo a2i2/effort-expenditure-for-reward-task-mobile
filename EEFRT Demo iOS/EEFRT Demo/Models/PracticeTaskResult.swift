@@ -10,10 +10,9 @@ class PracticeTaskResult: Codable {
     var pressCount: Int
     var pressTimes: [Int]
     var trialSuccess: Int
-    var gemsRunningTotal: Int
     var maxPressCount: Int
 
-    init(pracTrialNo: Int, trialReward: Int, trialEffort: Int, pressCount: Int, pressTimes: [Int], trialSuccess: Int, gemsRunningTotal: Int, maxPressCount: Int) {
+    init(pracTrialNo: Int, trialReward: Int, trialEffort: Int, pressCount: Int, pressTimes: [Int], trialSuccess: Int, maxPressCount: Int) {
         self.createdAt = Date()
         self.pracTrialNo = pracTrialNo
         self.trialReward = trialReward
@@ -21,7 +20,6 @@ class PracticeTaskResult: Codable {
         self.pressCount = pressCount
         self.pressTimes = pressTimes
         self.trialSuccess = trialSuccess
-        self.gemsRunningTotal = gemsRunningTotal
         self.maxPressCount = maxPressCount
     }
 
@@ -34,10 +32,9 @@ class PracticeTaskResult: Codable {
         self.pressCount = try container.decode(Int.self, forKey: .pressCount)
         self.pressTimes = try container.decode([Int].self, forKey: .pressTimes)
         self.trialSuccess = try container.decode(Int.self, forKey: .trialSuccess)
-        self.gemsRunningTotal = try container.decode(Int.self, forKey: .gemsRunningTotal)
         self.maxPressCount = try container.decode(Int.self, forKey: .maxPressCount)
     }
-    
+
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(createdAt, forKey: .createdAt)
@@ -47,12 +44,10 @@ class PracticeTaskResult: Codable {
         try container.encode(pressCount, forKey: .pressCount)
         try container.encode(pressTimes, forKey: .pressTimes)
         try container.encode(trialSuccess, forKey: .trialSuccess)
-        try container.encode(gemsRunningTotal, forKey: .gemsRunningTotal)
         try container.encode(maxPressCount, forKey: .maxPressCount)
-
     }
 
     enum CodingKeys: String, CodingKey {
-        case createdAt, pracTrialNo, trialReward, trialEffort, pressCount, pressTimes, trialSuccess, gemsRunningTotal, maxPressCount
+        case createdAt, pracTrialNo, trialReward, trialEffort, pressCount, pressTimes, trialSuccess, maxPressCount
     }
 }

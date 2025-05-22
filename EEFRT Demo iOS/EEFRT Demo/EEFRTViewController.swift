@@ -168,7 +168,9 @@ extension EEFRTViewController: WKScriptMessageHandler {
             guard let stringifiedData = (message.body as? String)?.data(using: .utf8) else { return }
             do {
                 os_log(.debug, "%s", message.body as! String)
-                let decodedPracticeTaskResult = try JSONDecoder().decode(PracticeTaskResult.self, from: stringifiedData)
+                let decoder = JSONDecoder()
+                let decodedPracticeTaskResultString = try decoder.decode(String.self, from: stringifiedData)
+                let decodedPracticeTaskResult = try JSONDecoder().decode(PracticeTaskResult.self, from: Data(decodedPracticeTaskResultString.utf8))
                 decodedPracticeTaskResult.createdAt = .now
                 delegate?.eefrtViewControllerDidSubmitPracticeResult(practiceResult: decodedPracticeTaskResult)
             } catch {
@@ -179,7 +181,9 @@ extension EEFRTViewController: WKScriptMessageHandler {
             guard let stringifiedData = (message.body as? String)?.data(using: .utf8) else { return }
             do {
                 os_log(.debug, "%s", message.body as! String)
-                let decodedTaskResult = try JSONDecoder().decode(TaskResult.self, from: stringifiedData)
+                let decoder = JSONDecoder()
+                let decodedTaskResultString = try decoder.decode(String.self, from: stringifiedData)
+                let decodedTaskResult = try JSONDecoder().decode(TaskResult.self, from: Data(decodedTaskResultString.utf8))
                 decodedTaskResult.createdAt = .now
                 delegate?.eefrtViewControllerDidSubmitTaskResult(taskResult: decodedTaskResult)
             } catch {

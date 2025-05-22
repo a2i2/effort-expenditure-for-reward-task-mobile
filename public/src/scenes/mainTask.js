@@ -23,6 +23,7 @@ import Message from "../elements/message.js";
 import PowerPanel from "../elements/PowerPanel.js";
 import { POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
 import GameCache from "../embedContext/GameCache.js";
+import TaskAttempt from "../embedContext/TaskAttempt.js";
 
 // initialize all the global vars (must be a better way of doing this...)
 var gameHeight; 
@@ -669,29 +670,32 @@ var trialEnd = function () {
     }
 
     // set data to be saved into registry
-    this.registry.set("trial" + trialNo, {
-                                    trialNo: trialNo,
-                                    trialStartTime: trialStartTime,
-                                    trialReward1: trialReward1,
-                                    trialEffort1: trialEffort1,
-                                    trialEffortPropMax1: trialEffortPropMax1,
-                                    trialReward2: trialReward2,
-                                    trialEffort2: trialEffort2,
-                                    trialEffortPropMax2: trialEffortPropMax2,
-                                    choice: choice,
-                                    choiceRT: choiceRT,
-                                    pressCount: pressCount,
-                                    pressTimes: pressTimes,
-                                    trialSuccess: trialSuccess,
-                                    coinsRunningTotal: nCoins,
-                                    trialEndTime: trialEndTime,
-                                    effortTimeLimit: effortTime,
-                                    recalibration: recalibration, // log of recalibration event
-                                    thresholdMax: thresholdMax !== undefined ? thresholdMax : maxPressCount // current max threshold or maxPressCount as autoset/practice
-                                     });
+    let taskAttempt = new TaskAttempt(
+        trialNo,
+        trialStartTime,
+        trialReward1,
+        trialEffort1,
+        trialEffortPropMax1,
+        trialReward2,
+        trialEffort2,
+        trialEffortPropMax2,
+        choice,
+        choiceRT,
+        pressCount,
+        pressTimes,
+        trialSuccess,
+        nCoins,
+        trialEndTime,
+        effortTime,
+        recalibration,
+        thresholdMax
+    );
+
+    // save the data in a registry for later retrieval
+    this.registry.set("trial" + trialNo, taskAttempt);
 
     // save data
-    EmbedContext.sendMessage("trialResult", this.registry.get("trial" + trialNo));
+    EmbedContext.sendMessage("trialResult", taskAttempt.stringify());
     console.log(this.registry.get("trial" + trialNo));
     // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
     //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
