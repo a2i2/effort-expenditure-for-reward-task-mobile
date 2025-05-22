@@ -7,7 +7,7 @@ export const POWER_UP_COMPLETE_KEY = 'powerUpComplete';
 export const PRACTICE_POWER_UP_COMPLETE_KEY = 'practicePowerUpComplete';
 
 export default class PowerPanel {
-    constructor(scene, x, y, width, height, timeLimit, rewardCoins, power, trialEffort, isPractice = false) {
+    constructor(scene, x, timeLimit, rewardCoins, power, trialEffort, isPractice = false) {
         this.scene = scene;
         this.powerPercent = 0;
         this.powerText = (power * 100).toFixed();
@@ -19,6 +19,10 @@ export default class PowerPanel {
         this.pressCount = 0;
         this.pressTimes = [];
         this.timeLeft = timeLimit;
+
+        let y = 0; // This coordinate will be calculated after the panel height is calculated
+        let width = window.innerWidth;
+        let height = 0; // the height for the panel background will be calculated after the rest of the layout is done
 
         // Main panel background
         this.panelBg = scene.rexUI.add.roundRectangle(x, y, width, height, { tl: 30, tr: 30, bl: 0, br: 0 }, 0xFFFFFF)
@@ -32,7 +36,7 @@ export default class PowerPanel {
             y,
             width,
             height,
-            space: { top: 20, bottom: 20, left: 25, right: 25, item: 20 }
+            space: { top: 20, bottom: 30, left: 25, right: 25, item: 20 }
         });
 
         const powerPanelState = Object.freeze({
@@ -209,6 +213,10 @@ export default class PowerPanel {
         this.container.add(this.powerButton, { expand: true });
 
         this.container.layout();
+
+        this.panelBg.height = this.container.height;
+        this.container.y = window.innerHeight - this.panelBg.height / 2;
+        this.panelBg.y = window.innerHeight - this.panelBg.height / 2;
 
         // Ran out of time to reach the trialEffort
         eventsCenter.once(POWER_UP_TIMEOUT_KEY, () => {

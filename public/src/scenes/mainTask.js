@@ -66,6 +66,7 @@ var maxPressCount;
 var thresholdMax;
 var practiceorReal = 1; // use the main task instruction panels 
 var coinsWonThisTrial = 0;
+var smallDeviceOffset = 0;
 
 // pre-shuffle the trials here with nTrials specified in ./versionInfo.js
 var randTrialsIdx
@@ -168,6 +169,10 @@ export default class MainTask extends BaseScene {
         // setup the game with the cached game state if present
         loadGameFromCache();
 
+        if (window.innerHeight < 800) {
+            smallDeviceOffset = -175;
+        }
+
         // 3rd block is a "snow" level
         var mapKey = (blockNo == 2) ? 'snow-map' : 'grass-map';
         var map = this.make.tilemap({ key: mapKey });
@@ -190,11 +195,11 @@ export default class MainTask extends BaseScene {
             bgStr = `chapter-${blockNo+1}-${i}`;
         }
 
-        this.background = this.add.tileSprite(mapWidth/2, mapHeight/2.2, 1107, 970, bgStr);
+        this.background = this.add.tileSprite(mapWidth/2, mapHeight/2.2 + smallDeviceOffset, 1107, 970, bgStr);
 
         // import scene layers (using names set up in Tiled)
-        platforms = map.createStaticLayer("platforms", tileset, 0, 0);
-        bridge = map.createStaticLayer("bridge", tileset, 0, 0);
+        platforms = map.createStaticLayer("platforms", tileset, 0, 0 + smallDeviceOffset);
+        bridge = map.createStaticLayer("bridge", tileset, 0, 0 + smallDeviceOffset);
         
         // set up collision property for tiles that can be walked on (set in Tiled)
         platforms.setCollisionByProperty({ collide: true });
@@ -204,10 +209,10 @@ export default class MainTask extends BaseScene {
         let objManager = new StaticObjects(this);
         // determine decision x coordinate for left of bridge
         var x = Phaser.Math.RND.between(50, decisionPointX-60);
-        objManager.addRandomObject(x, blockNo === 1);
+        objManager.addRandomObject(x, smallDeviceOffset, blockNo === 1);
         // determine x coordinate for right of bridge
         x = Phaser.Math.RND.between(860, mapWidth-100);
-        objManager.addRandomObject(x, blockNo === 1);
+        objManager.addRandomObject(x, smallDeviceOffset, blockNo === 1);
 
         // set the boundaries of the world
         this.physics.world.bounds.width = mapWidth;
@@ -233,7 +238,7 @@ export default class MainTask extends BaseScene {
         });
 
         //////////////ADD PLAYER SPRITE////////////////////
-        this.player = new Player(this, 0, 350); // (this, spawnPoint.x, spawnPoint.y);
+        this.player = new Player(this, 0, 350 + smallDeviceOffset); // (this, spawnPoint.x, spawnPoint.y);
         this.physics.add.collider(this.player.sprite, platforms); 
         this.physics.add.collider(this.player.sprite, bridge);       // player walks on platforms and bridge
 
@@ -371,8 +376,8 @@ var displayChoicePanel = function () {
     this.decisionPoint.destroy();
     
     // display reward coins for each option
-    this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 235, trialReward1); // coins in sky
-    this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 360, trialReward2); // coins on bridge
+    this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 235 + smallDeviceOffset, trialReward1); // coins in sky
+    this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 360 + smallDeviceOffset, trialReward2); // coins on bridge
 
     const camera = this.cameras.main;
     const centerX = camera.scrollX + camera.width / 2;
@@ -380,9 +385,6 @@ var displayChoicePanel = function () {
     const panel = new RouteSelectorPanel(
         this,
         centerX,
-        this.cameras.main.height - 170,
-        gameWidth,
-        340,
         trialReward1,
         trialEffortPropMax1,
         trialReward2,
@@ -411,7 +413,7 @@ var doChoice = function () {
     
     if (choice == 'route 1') {  // if participant chooses the high effort option
         // timer panel pops up  
-        this.powerPanel = new PowerPanel(this, centerX, this.cameras.main.height - 170, gameWidth, 340, effortTime, trialReward1, trialEffortPropMax1, trialEffort1);
+        this.powerPanel = new PowerPanel(this, centerX, effortTime, trialReward1, trialEffortPropMax1, trialEffort1);
         // and play player 'power-up' animation
         this.player.sprite.anims.play('powerup', true);
         // until time limit reached:
@@ -419,7 +421,7 @@ var doChoice = function () {
         }
     else if (choice == 'route 2') {  // if participant chooses the low effort option
         // timer panel pops up  
-        this.powerPanel = new PowerPanel(this, centerX, this.cameras.main.height - 170, gameWidth, 340, effortTime, trialReward2, trialEffortPropMax2, trialEffort2);
+        this.powerPanel = new PowerPanel(this, centerX, effortTime, trialReward2, trialEffortPropMax2, trialEffort2);
         // and play player 'power-up' animation
         this.player.sprite.anims.play('powerup', true);
         // until time limit reached:
@@ -442,7 +444,8 @@ var effortOutcome = function() {
     if (choice == 'route 1' && pressCount >= trialEffort1) {
         trialSuccess = 1;
         // add overlap colliders so coins disappear when overlap with player body
-        this.physics.add.overlap(this.player.sprite, this.coins1.sprite, collectCoins, null, this); 
+        this.physics.add.overlap(this.player.sprite, this.coins1.sprite, collectCoins, null, this);
+
         // display success message for a couple of seconds,
         this.feedbackMessage = new Message(
             this,
@@ -696,6 +699,17 @@ var trialEnd = function () {
     // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
     //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
     
+    // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
+    if (trialSuccess && choice == 'route 1') {
+        coinsWonThisTrial = trialReward1;
+        nCoins += coinsWonThisTrial;
+    } else if (trialSuccess && choice == 'route 2') {
+        coinsWonThisTrial = trialReward2;
+        nCoins += coinsWonThisTrial;
+    } else {
+        coinsWonThisTrial = 0;
+    }
+
     // save the current coin choice to the cache by adding on to the previous dictionary if present
     let coinChoices = GameCache.cache?.trialResults ?? {};
     coinChoices['trial' + trialNo] = trialSuccess ? coinsWonThisTrial : 0;
@@ -748,7 +762,7 @@ var trialEnd = function () {
 //////////////////////MISC FUNCTIONS/////////////////////
 // function to get player up other side of bridge by performing single jump
 // used on reject and unsucessful accept trials
-var onejump = function () {
+var onejump = function() {
     this.bridgeEndPoint.destroy();
     let jumpHeight = -400;
     this.player.sprite.setVelocityY(jumpHeight);
@@ -758,10 +772,8 @@ var onejump = function () {
 
 // function to make coin sprites disappear upon contact with player
 // (so player appears to 'collect' them)
-var collectCoins = function(player, coin, trial){
+var collectCoins = function(player, coin, trial) {
     coin.disableBody(true, true);   // individual coins from group become invisible upon overlap
-    nCoins++;
-    coinsWonThisTrial++;
 };
 
 // function which restores the game state based on the given cache state
