@@ -58,3 +58,37 @@ npm run preview
 1. Original created by [Dr Agnes Norbury](https://www.agnesnorbury.com/); published in [Science Advances](https://www.science.org/doi/full/10.1126/sciadv.adk3222?af=R)
 
 2. The game world was compiled using [Tiled](https://www.mapeditor.org/) using art assets by [kenney](https://kenney.nl/). Based on the [phaser3](https://phaser.io/phaser3) and [rexUI plugins](https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ui-overview/).
+
+## Response Data Structure
+Note: When 'Game Time' is mentioned it refers to the Clock used by the Phaser Game Engine which counts in milliseconds from the time the scene is originally created. The scene is restarted whenever a new trial occurs but will retain the same Clock for the scene and thus the the will continue to increment without resetting untill a new scene is raeached.
+
+### PracticeTaskAttempt
+`pracTrialNo`: Number - The current practice trial number. This value is 0-indexed.  
+`trialReward`: Number - The reward in coins for the current trial. For practice trials 1 & 2 (index 0 & 1) there is no visual reward but is automatically set to the higher effort threshold reward.  
+`trialEffort`: Int - The number of taps required to reach the effort threshold for the current practice trial.  
+`pressCount`: Int - The number of times the user pressed the power button during the power up animation.  
+`pressTimes`: Array[Number] - An array containing each time the power button was pressed curing the power up animation. Individual press counts are derived from the current Game Time at which the tap occured.  
+`trialSuccess`: Boolean - Whether or not the user reached the effort threshold current trial (0 or 1).  
+`maxPressCount`: Number - The maximum number of times the power button was pressed during the power up animation.  
+`createdAt`: Date - A timestamp measured in seconds since January 1, 1970 (UTC).  
+
+### TaskAttempt
+`trialNo`: Number - The trial number. This value is 0-indexed.  
+`trialStartTime`: Number - The current Game Time at which the current trial started.  
+`trialReward1`: Number - The reward in coins for the first choice for the current trial.  
+`trialEffort1`: Number - The number of taps required to reach the effort threshold for the first choice in the current trial.  
+`trialEffortPropMax1`: Float - A percentage value of the number of taps required to reach the effort threshold for the first choice in the current trial vs the `thresholdMax` determined from the calibration trials.  
+`trialReward2`: Number - The reward in coins for the second choice for the current trial.  
+`trialEffort2`: Number - The number of taps required to reach the effort threshold for the second choice in the current trial.  
+`trialEffortPropMax2`: Float - A percentage value of the number of taps required to reach the effort threshold for the second choice in the current trial vs the `thresholdMax` determined from the calibration trials.  
+`choice`: String - The user's choice of which reward they want ('route 1', 'route 2' or 'timeout').  
+`choiceRT`: Float - The time in milliseconds it took for the user to make their choice after being shown the RouteSelectorPanel.  
+`pressCount`: Number - The number of times the user pressed the power button during the power up animation.  
+`pressTimes`: Array[Number] - An array containing each time the power button was pressed curing the power up animation. Individual press counts are derived from the current Game Time at which the tap occured.  
+`trialSuccess`: Boolean - Whether or not the user reached the effort threshold current trial (0 or 1).  
+`coinsRunningTotal`: Float - The total number of coins the user has earned so far in the task across all completed trials.  
+`trialEndTime`: Number - The Game Time at which the current trial ended. the practice task ended.  
+`effortTimeLimit`: Number - The amount of time in milliseconds given to the user to reach the effort threshold for the current trial.  
+`recalibration`: Boolean - Whether or the `thresholdMax` was adjusted due to the user reaching a new maximum number of presses (0 or 1).  
+`thresholdMax`: Number - The maximum number of taps the user has achieved so far across all completed trials, include the calibration trials.  
+`createdAt`: Date - A timestamp measured in seconds since January 1, 1970 (UTC).  

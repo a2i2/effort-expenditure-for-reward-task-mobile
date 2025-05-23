@@ -10,7 +10,6 @@ export default class PracticeTaskAttempt {
     }
 
     stringify() {
-        console.log(JSON.stringify(this));
         return JSON.stringify(this);
     }
 }
