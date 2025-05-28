@@ -58,10 +58,13 @@ var maxBonus = (maxCoins * bonusRate) / 100;
 var nGames = 8; 
 var MaxTotalBonus = completionBonus100 + (nGames * maxBonus);
 var completionMin = 80;
+var maxMissedTrials = 3; // allows 3 missed trials before showing the 'Are you still there?' message
+var breakTime = 120000; // 2 mins
 
 export {
 	demo_mode, debug_mode, randomiseOrder, runPractice,
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
 	trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
-	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, pracTrialEffortProp, minPressMax, nCalibrates, nBlocks, complete_link, buttonText, powerupDelay
+	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, pracTrialEffortProp, minPressMax, nCalibrates,
+	nBlocks, complete_link, buttonText, powerupDelay, maxMissedTrials, breakTime
 };
