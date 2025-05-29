@@ -58,7 +58,8 @@ var maxBonus = (maxCoins * bonusRate) / 100;
 var nGames = 8; 
 var MaxTotalBonus = completionBonus100 + (nGames * maxBonus);
 var completionMin = 80;
-var maxMissedTrials = 3; // allows 3 missed trials before showing the 'Are you still there?' message
+var missedTrialLimit = 3; // allows 3 missed trials before showing the 'Are you still there?' message
+var missedTrialDialogLimit = 1; // maximum number of times to show the 'Are you still there?' message before exiting the task automatically
 var breakTime = 120000; // 2 mins
 
 export {
@@ -66,5 +67,5 @@ export {
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
 	trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
 	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, pracTrialEffortProp, minPressMax, nCalibrates,
-	nBlocks, complete_link, buttonText, powerupDelay, maxMissedTrials, breakTime
+	nBlocks, complete_link, buttonText, powerupDelay, missedTrialLimit, missedTrialDialogLimit, breakTime
 };

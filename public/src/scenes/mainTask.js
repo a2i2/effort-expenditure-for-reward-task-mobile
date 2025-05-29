@@ -16,7 +16,7 @@ import { shuffleTrials } from "../utils.js";
 import {
     runPractice, effortTime, nBlocks, nCalibrates, debug_mode,
     trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet,
-    timeout, maxMissedTrials, breakTime
+    timeout, missedTrialLimit, missedTrialDialogLimit, breakTime
 } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
@@ -68,8 +68,8 @@ var thresholdMax;
 var practiceorReal = 1; // use the main task instruction panels 
 var coinsWonThisTrial = 0;
 var smallDeviceOffset = 0;
-var missedTrials = 0;
-var missedTrialDialogShown = false;
+var consecutiveMissedTrials = 0;
+var missedTrialDialogsShown = 0;
 
 // pre-shuffle the trials here with nTrials specified in ./versionInfo.js
 var randTrialsIdx
@@ -446,7 +446,7 @@ var effortOutcome = function() {
     // if ppt chooses high effort and clears trial effort threshold, fly across sky and collect coins!
     if (choice == 'route 1' && pressCount >= trialEffort1) {
         trialSuccess = 1;
-        missedTrials = 0;
+        consecutiveMissedTrials = 0;
 
         // add overlap colliders so coins disappear when overlap with player body
         this.physics.add.overlap(this.player.sprite, this.coins1.sprite, collectCoins, null, this);
@@ -487,7 +487,7 @@ var effortOutcome = function() {
     // if ppt chooses low effect and clears trial effort threshold, fly across mid-sky and collect coins!
     else if (choice == 'route 2' && pressCount >= trialEffort2)  {
         trialSuccess = 1;
-        missedTrials = 0;
+        consecutiveMissedTrials = 0;
 
         // add overlap colliders so coins disappear when overlap with player body
         this.physics.add.overlap(this.player.sprite, this.coins2.sprite, collectCoins, null, this, trialNo); 
@@ -527,7 +527,7 @@ var effortOutcome = function() {
     }
     else if (choice == 'timeout') {
         trialSuccess = 0;
-        missedTrials += 1;
+        consecutiveMissedTrials += 1;
 
         // display failure message for a couple of seconds
         this.feedbackMessage = new Message(
@@ -566,7 +566,7 @@ var effortOutcome = function() {
 
     } else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
-        missedTrials = 0;
+        consecutiveMissedTrials = 0;
 
         // display failure message for a couple of seconds
         this.feedbackMessage = new Message(
@@ -733,21 +733,22 @@ var trialEnd = function () {
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
 
     let isLastTrial = trialNo == nTrials - 1;
+    let missedTrialDialogShownLimitReached = (missedTrialDialogsShown >= missedTrialDialogLimit) && missedTrialDialogLimit > 0; // ensure that a limit of 0 allows the dialog to be shown as many times as needed
     let camera = this.cameras.main;
 
     // if the user has been shown the 'Are you still there?' message and they trigger it again, kick them out of the task
-    if (missedTrials >= maxMissedTrials && !isLastTrial && missedTrialDialogShown) {
+    if (consecutiveMissedTrials >= missedTrialLimit && !isLastTrial && missedTrialDialogShownLimitReached) {
         exitGame();
     }
     
     // If the 3rd missed trial ends up on the same trial as the break then we want to show the 'Are you still there?' message. If they press continue they will continue to the next block
-    if (missedTrials >= maxMissedTrials && !isLastTrial) {
+    if (consecutiveMissedTrials >= missedTrialLimit && !isLastTrial) {
         this.player.sprite.setVelocityX(0);
         this.player.sprite.anims.play('wait', true);
 
         let missedTrialsDialogText = "Continue within the next 2 minutes to keep collecting coins.";
-        missedTrialDialogShown = true;
-        missedTrials = 0;
+        missedTrialDialogsShown += 1;
+        consecutiveMissedTrials = 0;
 
         this.bottomScreenPanel = new BottomScreenPanel(
             this,
