@@ -67,10 +67,10 @@ Note: When 'Game Time' is mentioned it refers to the Clock used by the Phaser Ga
 `trialReward`: Number - The reward in coins for the current trial. For practice trials 1 & 2 (index 0 & 1) there is no visual reward but is automatically set to the higher effort threshold reward.  
 `trialEffort`: Int - The number of taps required to reach the effort threshold for the current practice trial.  
 `pressCount`: Int - The number of times the user pressed the power button during the power up animation.  
-`pressTimes`: Array[Number] - An array containing each time the power button was pressed curing the power up animation. Individual press counts are derived from the current Game Time at which the tap occured.  
+`pressTimes`: Array[Number] - An array containing each time the power button was pressed during the power up animation. Individual press counts are derived from the current Game Time at which the tap occurred.  
 `trialSuccess`: Boolean - Whether or not the user reached the effort threshold current trial (0 or 1).  
 `maxPressCount`: Number - The maximum number of times the power button was pressed during the power up animation.  
-`createdAt`: Date - A timestamp measured in seconds since January 1, 1970 (UTC).  
+`createdAt`: Date - A timestamp measured in seconds since January 1, 1970 (UTC), of when each trial (practice and main) are saved to the local database.  
 
 ### TaskAttempt
 `trialNo`: Number - The trial number. This value is 0-indexed.  
@@ -81,7 +81,7 @@ Note: When 'Game Time' is mentioned it refers to the Clock used by the Phaser Ga
 `trialReward2`: Number - The reward in coins for the second choice for the current trial.  
 `trialEffort2`: Number - The number of taps required to reach the effort threshold for the second choice in the current trial.  
 `trialEffortPropMax2`: Float - A percentage value of the number of taps required to reach the effort threshold for the second choice in the current trial vs the `thresholdMax` determined from the calibration trials.  
-`choice`: String - The user's choice of which reward they want ('route 1', 'route 2' or 'timeout').  
+`choice`: String - The user's choice of which reward they want ('route 1', 'route 2' or 'timeout'). 'Timeout' means they failed to select a route within the time given.  
 `choiceRT`: Float - The time in milliseconds it took for the user to make their choice after being shown the RouteSelectorPanel.  
 `pressCount`: Number - The number of times the user pressed the power button during the power up animation.  
 `pressTimes`: Array[Number] - An array containing each time the power button was pressed curing the power up animation. Individual press counts are derived from the current Game Time at which the tap occured.  
@@ -89,6 +89,6 @@ Note: When 'Game Time' is mentioned it refers to the Clock used by the Phaser Ga
 `coinsRunningTotal`: Float - The total number of coins the user has earned so far in the task across all completed trials.  
 `trialEndTime`: Number - The Game Time at which the current trial ended. the practice task ended.  
 `effortTimeLimit`: Number - The amount of time in milliseconds given to the user to reach the effort threshold for the current trial.  
-`recalibration`: Boolean - Whether or the `thresholdMax` was adjusted due to the user reaching a new maximum number of presses (0 or 1).  
+`recalibration`: Boolean - Whether or not the `thresholdMax` was adjusted due to the user reaching a new maximum number of presses (0 or 1).  
 `thresholdMax`: Number - The maximum number of taps the user has achieved so far across all completed trials, include the calibration trials.  
 `createdAt`: Date - A timestamp measured in seconds since January 1, 1970 (UTC).  
