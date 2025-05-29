@@ -16,7 +16,7 @@ import { shuffleTrials } from "../utils.js";
 import {
     runPractice, effortTime, nBlocks, nCalibrates, debug_mode,
     trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet,
-    timeout, maxMissedTrials, breakTime
+    timeout, maxMissedTrials, breakTime, taskRewardsPayoutThreshold
 } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
@@ -728,42 +728,48 @@ var trialEnd = function () {
     GameCache.cache = currentGameState;
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
 
-    let isLastTrial = trialNo == nTrials - 1;
-    let camera = this.cameras.main;
-
     // if the user has been shown the 'Are you still there?' message and they trigger it again, kick them out of the task
+    let isLastTrial = trialNo == nTrials - 1;
     if (missedTrials >= maxMissedTrials && !isLastTrial && missedTrialDialogShown) {
-        exitGame();
+        stopPlayer(this);
+
+        var timeoutMessage;
+        if (trialNo + 1 >= nTrials * taskRewardsPayoutThreshold) {
+            timeoutMessage = "Unfortunately you've run out of time to continue the this task, but you'll still recieve a bonus payout.";
+        } else {
+            timeoutMessage = "Unfortunately you've run out of time to continue the this task. Try again to recieve a bonus payment.";
+        }
+
+        showBottomScreenPanel(
+            this,
+            "Times up!",
+            timeoutMessage,
+            "EXIT",
+            null,
+            () => { exitGame(); },
+            () => { exitGame(); }
+        );
+
+        return;
     }
     
     // If the 3rd missed trial ends up on the same trial as the break then we want to show the 'Are you still there?' message. If they press continue they will continue to the next block
     if (missedTrials >= maxMissedTrials && !isLastTrial) {
-        this.player.sprite.setVelocityX(0);
-        this.player.sprite.anims.play('wait', true);
+        stopPlayer(this);
 
         let missedTrialsDialogText = "Continue within the next 2 minutes to keep collecting coins.";
         missedTrialDialogShown = true;
         missedTrials = 0;
 
-        this.bottomScreenPanel = new BottomScreenPanel(
+        showBottomScreenPanel(
             this,
-            camera.scrollX + camera.width / 2,
             "Are you still there?",
             missedTrialsDialogText,
+            "CONTINUE",
             breakTime,
             () => { continueGameAfterBreak(this); },
             () => { exitGame(); }
-        )
-
-        this.tweens.add({        
-            targets: this.bottomScreenPanel,
-            scaleX: { start: 0, to: 1 },
-            scaleY: { start: 0, to: 1 },
-            ease: 'Linear',    
-            duration: animationTime,
-            repeat: 0,      
-            yoyo: false
-        }); 
+        );
 
         return;
     }
@@ -771,30 +777,18 @@ var trialEnd = function () {
     // if end of task, display taskend screen 
     // if end of block, display end of block screen
     if ((trialNo + 1) % trialsPerBlock == 0 && !isLastTrial) {
-        this.player.sprite.setVelocityX(0);
-        this.player.sprite.anims.play('wait', true);
+        stopPlayer(this);
         
-        let breakTextContent = "You\'re doing an amazing job!\nTake a short break if you need one. The task will automatically continue after 2 minutes."
-
-        this.bottomScreenPanel = new BottomScreenPanel(
+        let breakTextContent = "You\'re doing an amazing job!\nTake a short break if you need one. The task will automatically continue after 2 minutes.";
+        showBottomScreenPanel(
             this,
-            camera.scrollX + camera.width / 2,
             "Break time",
             breakTextContent,
+            "CONTINUE",
             breakTime,
             () => { continueGameAfterBreak(this); }, // continue the game regardless after the break is automatically or manually stopped
             () => { continueGameAfterBreak(this); }
-        );
-
-        this.tweens.add({        
-            targets: this.bottomScreenPanel,
-            scaleX: { start: 0, to: 1 },
-            scaleY: { start: 0, to: 1 },
-            ease: 'Linear',    
-            duration: animationTime,
-            repeat: 0,      
-            yoyo: false
-        });    
+        ); 
     }
     else {
         // iterate trial number
@@ -888,4 +882,34 @@ var continueGameAfterBreak = function(context) {
 
 var exitGame = function() {
     EmbedContext.sendMessage('close');
+}
+
+var stopPlayer = function(context) {
+    context.player.sprite.setVelocityX(0);
+    context.player.sprite.anims.play('wait', true);
+}
+
+var showBottomScreenPanel = function(context, titleText, subtitleText, bottomButtonText, countdownTimerMS, onContinuePressed, onTimeout) {
+    let camera = context.cameras.main;
+
+    context.bottomScreenPanel = new BottomScreenPanel(
+        context,
+        camera.scrollX + camera.width / 2,
+        titleText,
+        subtitleText,
+        bottomButtonText,
+        countdownTimerMS,
+        onContinuePressed,
+        onTimeout
+    );
+
+    context.tweens.add({        
+        targets: context.bottomScreenPanel,
+        scaleX: { start: 0, to: 1 },
+        scaleY: { start: 0, to: 1 },
+        ease: 'Linear',    
+        duration: animationTime,
+        repeat: 0,      
+        yoyo: false
+    });    
 }
