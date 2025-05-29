@@ -16,7 +16,7 @@ import { shuffleTrials } from "../utils.js";
 import {
     runPractice, effortTime, nBlocks, nCalibrates, debug_mode,
     trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet,
-    timeout, missedTrialLimit, missedTrialDialogLimit, breakTime
+    timeout, missedTrialLimit, missedTrialDialogLimit, breakTime, taskRewardsPayoutThreshold
 } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
@@ -732,74 +732,23 @@ var trialEnd = function () {
     GameCache.cache = currentGameState;
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
 
+    // if the user has been shown the 'Are you still there?' message and they trigger it again, kick them out of the task
     let isLastTrial = trialNo == nTrials - 1;
     let missedTrialDialogShownLimitReached = (missedTrialDialogsShown >= missedTrialDialogLimit) && missedTrialDialogLimit > 0; // ensure that a limit of 0 allows the dialog to be shown as many times as needed
-    let camera = this.cameras.main;
-
-    // if the user has been shown the 'Are you still there?' message and they trigger it again, kick them out of the task
     if (consecutiveMissedTrials >= missedTrialLimit && !isLastTrial && missedTrialDialogShownLimitReached) {
-        exitGame();
+        stopPlayer(this);
+        showTimeUpDialog(this);
     }
-    
     // If the 3rd missed trial ends up on the same trial as the break then we want to show the 'Are you still there?' message. If they press continue they will continue to the next block
-    if (consecutiveMissedTrials >= missedTrialLimit && !isLastTrial) {
-        this.player.sprite.setVelocityX(0);
-        this.player.sprite.anims.play('wait', true);
-
-        let missedTrialsDialogText = "Continue within the next 2 minutes to keep collecting coins.";
-        missedTrialDialogsShown += 1;
-        consecutiveMissedTrials = 0;
-
-        this.bottomScreenPanel = new BottomScreenPanel(
-            this,
-            camera.scrollX + camera.width / 2,
-            "Are you still there?",
-            missedTrialsDialogText,
-            breakTime,
-            () => { continueGameAfterBreak(this); },
-            () => { exitGame(); }
-        )
-
-        this.tweens.add({        
-            targets: this.bottomScreenPanel,
-            scaleX: { start: 0, to: 1 },
-            scaleY: { start: 0, to: 1 },
-            ease: 'Linear',    
-            duration: animationTime,
-            repeat: 0,      
-            yoyo: false
-        }); 
-
-        return;
+    else if (consecutiveMissedTrials >= missedTrialLimit && !isLastTrial) {
+        stopPlayer(this);
+        showMissedTrialDialog(this);
     }
-
     // if end of task, display taskend screen 
     // if end of block, display end of block screen
-    if ((trialNo + 1) % trialsPerBlock == 0 && !isLastTrial) {
-        this.player.sprite.setVelocityX(0);
-        this.player.sprite.anims.play('wait', true);
-        
-        let breakTextContent = "You\'re doing an amazing job!\nTake a short break if you need one. The task will automatically continue after 2 minutes."
-
-        this.bottomScreenPanel = new BottomScreenPanel(
-            this,
-            camera.scrollX + camera.width / 2,
-            "Break time",
-            breakTextContent,
-            breakTime,
-            () => { continueGameAfterBreak(this); }, // continue the game regardless after the break is automatically or manually stopped
-            () => { continueGameAfterBreak(this); }
-        );
-
-        this.tweens.add({        
-            targets: this.bottomScreenPanel,
-            scaleX: { start: 0, to: 1 },
-            scaleY: { start: 0, to: 1 },
-            ease: 'Linear',    
-            duration: animationTime,
-            repeat: 0,      
-            yoyo: false
-        });    
+    else if ((trialNo + 1) % trialsPerBlock == 0 && !isLastTrial) {
+        stopPlayer(this);
+        showBreakDialog(this);
     }
     else {
         // iterate trial number
@@ -893,4 +842,82 @@ var continueGameAfterBreak = function(context) {
 
 var exitGame = function() {
     EmbedContext.sendMessage('close');
+}
+
+var stopPlayer = function(context) {
+    context.player.sprite.setVelocityX(0);
+    context.player.sprite.anims.play('wait', true);
+}
+
+var showMissedTrialDialog = function(context) {
+    let missedTrialsDialogText = "Continue within the next 2 minutes to keep collecting coins.";
+    missedTrialDialogsShown += 1;
+    consecutiveMissedTrials = 0;
+
+    showBottomScreenPanel(
+        context,
+        "Are you still there?",
+        missedTrialsDialogText,
+        "CONTINUE",
+        breakTime,
+        () => { continueGameAfterBreak(context); },
+        () => { showTimeUpDialog(context); }
+    );
+}
+
+var showTimeUpDialog = function(context) {
+    var timeoutMessage;
+    if (trialNo + 1 >= nTrials * taskRewardsPayoutThreshold) {
+        timeoutMessage = "Unfortunately you've run out of time to continue the this task, but you'll still recieve a bonus payout.";
+    } else {
+        timeoutMessage = "Unfortunately you've run out of time to continue the this task. Try again to recieve a bonus payment.";
+    }
+
+    showBottomScreenPanel(
+        context,
+        "Times up!",
+        timeoutMessage,
+        "EXIT",
+        null,
+        () => { exitGame(); },
+        () => { exitGame(); }
+    );
+}
+
+var showBreakDialog = function(context) {
+    let breakTextContent = "You\'re doing an amazing job!\nTake a short break if you need one. The task will automatically continue after 2 minutes.";
+    showBottomScreenPanel(
+        context,
+        "Break time",
+        breakTextContent,
+        "CONTINUE",
+        breakTime,
+        () => { continueGameAfterBreak(context); }, // continue the game regardless after the break is automatically or manually stopped
+        () => { continueGameAfterBreak(context); }
+    );
+}
+
+var showBottomScreenPanel = function(context, titleText, subtitleText, bottomButtonText, countdownTimerMS, onContinuePressed, onTimeout) {
+    let camera = context.cameras.main;
+
+    context.bottomScreenPanel = new BottomScreenPanel(
+        context,
+        camera.scrollX + camera.width / 2,
+        titleText,
+        subtitleText,
+        bottomButtonText,
+        countdownTimerMS,
+        onContinuePressed,
+        onTimeout
+    );
+
+    context.tweens.add({        
+        targets: context.bottomScreenPanel,
+        scaleX: { start: 0, to: 1 },
+        scaleY: { start: 0, to: 1 },
+        ease: 'Linear',    
+        duration: animationTime,
+        repeat: 0,      
+        yoyo: false
+    });    
 }

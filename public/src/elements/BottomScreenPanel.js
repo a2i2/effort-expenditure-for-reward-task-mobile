@@ -4,7 +4,7 @@ import eventsCenter from "../eventsCenter.js";
 export const TIMER_EXPIRED_KEY = 'bottomPanelTimerExpired';
 
 export default class BottomScreenPanel {
-    constructor(scene, x, titleString, subtitleString, breakTimeMS, onContinuePressed = () => {}, onTimeout = () => {}) {
+    constructor(scene, x, titleString, subtitleString, bottomButtonString, breakTimeMS, onContinuePressed = () => {}, onTimeout = () => {}) {
         this.scene = scene;
         this.breakTimeMS = breakTimeMS;
         this.onTimeout = onTimeout;
@@ -40,9 +40,13 @@ export default class BottomScreenPanel {
             color: '#000000'
         });
 
-        this.countdownPanel = new CountdownPanel(this.scene, 0, 0, this.breakTimeMS, TIMER_EXPIRED_KEY);
         headerRow.add(titleText, { expand: true });
-        headerRow.add(this.countdownPanel.container);
+
+        // add in the countdown panel if we've defined a timeout
+        if (breakTimeMS != null) {
+            this.countdownPanel = new CountdownPanel(this.scene, 0, 0, this.breakTimeMS, TIMER_EXPIRED_KEY);
+            headerRow.add(this.countdownPanel.container);
+        }
 
         const textPadding = 20;
         const maxWidth = scene.cameras.main.width - (textPadding * 2);
@@ -61,7 +65,7 @@ export default class BottomScreenPanel {
 
         this.continueButtonBg = scene.rexUI.add.roundRectangle(0, 0, 50, 0, 30, 0xFFFFFF);
         this.continueButtonBg.setStrokeStyle(2, 0xD64204);
-        this.continueButtonText = scene.add.text(0, 0, "CONTINUE", {
+        this.continueButtonText = scene.add.text(0, 0, bottomButtonString, {
             fontSize: '14px',
             fontFamily: 'DMSans',
             fontStyle: 'bold',
