@@ -20,7 +20,6 @@ data class PracticeTaskAttempt(
     @ColumnInfo(name = "press_count") val pressCount: Int,
     @ColumnInfo(name = "press_times") val pressTimes: List<Int>,
     @ColumnInfo(name = "trial_success") val trialSuccess: Int,
-    @ColumnInfo(name = "gems_running_total") val gemsRunningTotal: Int,
     @ColumnInfo(name = "max_press_count") val maxPressCount: Int,
 ) : EefrtTaskAttempt
 
