@@ -49,7 +49,9 @@ jobs:
       - name: Prepare index-frame.html
         working-directory: ./public
         run: |
-          sed 's/src="index.html"/src="index-og.html"/' index-frame.html > index-frame-deploy.html
+          sed -e 's/src="index.html"/src="index-og.html"/' \
+              -e 's/iframe.src = .index.html.;/iframe.src = "index-og.html";/' \
+              index-frame.html > index-frame-deploy.html
 
       - name: Copy files to dist
         working-directory: ./public
