@@ -55,7 +55,7 @@ window.EmbedContext = (function () {
     } else if (platform === 'ios') {
       return this.insetTop;
     } else {
-      return 20; // Default
+      return this.insetTop ? this.insetTop : 20; // Default
     }
   }
 
@@ -84,6 +84,7 @@ window.EmbedContext = (function () {
       sendMessage: sendMessage,
       getMessage: getMessage,
       getInsetTop: getInsetTop,
+      setInsetTop: setInsetTop,
     };
   }
 })();
