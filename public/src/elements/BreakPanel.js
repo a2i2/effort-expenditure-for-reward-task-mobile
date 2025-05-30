@@ -1,21 +1,29 @@
 import CountdownPanel from "./CountdownPanel.js";
 import eventsCenter from "../eventsCenter.js";
 
-export const TIMER_EXPIRED_KEY = 'bottomPanelTimerExpired';
+const BREAK_TIME_MS = 120000; // 2 mins
+const BREAK_OVER_KEY = 'breakover';
 
-export default class BottomScreenPanel {
-    constructor(scene, x, titleString, subtitleString, bottomButtonString, breakTimeMS, onContinuePressed = () => {}, onTimeout = () => {}) {
+export default class BreakPanel {
+    constructor(scene, x, breakTimeMS = BREAK_TIME_MS) {
         this.scene = scene;
         this.breakTimeMS = breakTimeMS;
-        this.onTimeout = onTimeout;
 
         let y = 0; // This coordinate will be calculated after the panel height is calculated
         let width = window.innerWidth;
 
         // Register break over event listener
-        eventsCenter.once(TIMER_EXPIRED_KEY, () => {
-            this.onTimerExpired();
+        eventsCenter.once(BREAK_OVER_KEY, () => {
+            this.onTimeout();
         });
+
+        // FIXME: Grayed out underlay not extending all the way to the top of the screen
+        // - will require fixes to the layout on all devices in order to work properly
+        // Add grayed out underlay to the scene
+        // this.underlay = scene.add.graphics();
+        // this.underlay.fillStyle(0x000000, 1);
+        // this.underlay.setAlpha(0.25);
+        // this.underlay.fillRect(scene.cameras.main.scrollX, 0, scene.cameras.main.width, scene.cameras.main.height);
 
         // Main panel background
         this.panelBg = scene.rexUI.add.roundRectangle(x, y, width, 0, { tl: 30, tr: 30, bl: 0, br: 0 }, 0xFFFFFF);
@@ -33,25 +41,23 @@ export default class BottomScreenPanel {
         // Header row: title + countdown
         const headerRow = scene.rexUI.add.sizer({ orientation: 'horizontal', space: { item: 40 } });
 
-        const titleText = scene.add.text(0, 0, titleString, {
+        const titleText = scene.add.text(0, 0, 'Break time', {
             fontSize: '20px',
             fontStyle: 'bold',
             fontFamily: 'DMSans',
             color: '#000000'
         });
 
+        this.countdownPanel = new CountdownPanel(this.scene, 0, 0, this.breakTimeMS, BREAK_OVER_KEY);
         headerRow.add(titleText, { expand: true });
-
-        // add in the countdown panel if we've defined a timeout
-        if (breakTimeMS != null) {
-            this.countdownPanel = new CountdownPanel(this.scene, 0, 0, this.breakTimeMS, TIMER_EXPIRED_KEY);
-            headerRow.add(this.countdownPanel.container);
-        }
+        headerRow.add(this.countdownPanel.container);
 
         const textPadding = 20;
         const maxWidth = scene.cameras.main.width - (textPadding * 2);
 
-        this.breakText = scene.add.text(scene.cameras.main.scrollX, 0, subtitleString, {
+        let breakTextContent = "You\'re doing an amazing job!\nTake a short break if you need one. The task will automatically continue after 2 minutes."
+
+        this.breakText = scene.add.text(scene.cameras.main.scrollX, 0, breakTextContent, {
             fontSize: '14px',
             fontFamily: 'DMSans',
             color: '#000000',
@@ -65,7 +71,7 @@ export default class BottomScreenPanel {
 
         this.continueButtonBg = scene.rexUI.add.roundRectangle(0, 0, 50, 0, 30, 0xFFFFFF);
         this.continueButtonBg.setStrokeStyle(2, 0xD64204);
-        this.continueButtonText = scene.add.text(0, 0, bottomButtonString, {
+        this.continueButtonText = scene.add.text(0, 0, "CONTINUE", {
             fontSize: '14px',
             fontFamily: 'DMSans',
             fontStyle: 'bold',
@@ -86,7 +92,7 @@ export default class BottomScreenPanel {
             })
             .on('pointerup', () => {
                 this.continueButtonBg.setFillStyle(0xFFFFFF);
-                onContinuePressed()
+                this.onContinuePressed()
             })
             .on('pointerout', () => {
                 this.continueButtonBg.setFillStyle(0xFFFFFF);
@@ -104,9 +110,12 @@ export default class BottomScreenPanel {
         this.panelBg.y = window.innerHeight - this.panelBg.height / 2;
     }
 
-    onTimerExpired() {
+    onContinuePressed() {
+        eventsCenter.emit(BREAK_OVER_KEY);
+    }
+
+    onTimeout() {
         this.destroy();
-        this.onTimeout();
     }
 
     destroy() {

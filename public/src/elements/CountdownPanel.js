@@ -9,7 +9,7 @@ export default class CountdownPanel {
         this.timeoutKey = timeoutKey;
 
         // Background
-        this.panel = scene.rexUI.add.roundRectangle(21, 0, 90, 30, 6, 0xF2F4F7);
+        this.panel = scene.rexUI.add.roundRectangle(27.5, 0, 100, 30, 6, 0xF2F4F7);
         this.panel.setOrigin(0.5);
         
         // Create the main container for our countdown elements
