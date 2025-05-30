@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <!-- <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"> -->
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+        <!-- https://github.com/picturepan2/devices.css -->
+        <link rel="stylesheet" href="devices.min.css">
+
+        <style>
+            .device {
+                position: relative;
+                margin: 0 auto;
+            }
+
+            /* Match rounded border of device */
+            #device-iframe {
+                /* Match rounded border of device */
+                border-radius: 50px;
+            }
+        </style>
+
+    </head>
+
+    <body>
+        <div class="device device-iphone-14-pro">
+            <div class="device-frame">
+                <iframe id="device-iframe" src="index.html" width="100%" height="100%"></iframe>
+            </div>
+            <div class="device-stripe"></div>
+            <div class="device-header"></div>
+            <div class="device-sensors"></div>
+            <div class="device-btns"></div>
+            <div class="device-power"></div>
+        </div>
+    </body>
+
+    <script>
+        const iframe = document.getElementById('device-iframe');
+        iframe.addEventListener('load', () => {
+            try {
+                const iframeWindow = iframe.contentWindow;
+                
+                // Ensure the function exists before calling
+                if (iframeWindow && typeof iframeWindow.EmbedContext.setInsetTop === 'function') {
+                    // Set inset top to 60px to match the device
+                    iframeWindow.EmbedContext.setInsetTop(60);
+                } else {
+                    console.warn('myFunction is not available in the iframe.');
+                }
+            } catch (e) {
+                console.error('Error accessing iframe:', e);
+            }
+        });
+    </script>
+</html>
