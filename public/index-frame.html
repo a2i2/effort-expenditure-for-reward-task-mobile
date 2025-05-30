@@ -92,24 +92,23 @@
             container.appendChild(createDeviceWrapper());
         }
 
-        // Original iframe load handler
-        const iframe = document.getElementById('device-iframe');
-        iframe.addEventListener('load', () => {
-            try {
-                const iframeWindow = iframe.contentWindow;
-                
-                // Ensure the function exists before calling
-                if (iframeWindow && typeof iframeWindow.EmbedContext.setInsetTop === 'function') {
-                    // Only set inset top if we're in device mode
-                    if (!isMobileDevice()) {
+        // Only when we're simulating a device, set the inset top to 60px
+        if (!isMobileDevice()) {
+            const iframe = document.getElementById('device-iframe');
+            iframe.addEventListener('load', () => {
+                try {
+                    const iframeWindow = iframe.contentWindow;
+                    
+                    // Ensure the function exists before calling
+                    if (iframeWindow && typeof iframeWindow.EmbedContext.setInsetTop === 'function') {
                         iframeWindow.EmbedContext.setInsetTop(60);
+                    } else {
+                        console.warn('EmbedContext.setInsetTop is not available in the iframe.');
                     }
-                } else {
-                    console.warn('EmbedContext.setInsetTop is not available in the iframe.');
+                } catch (e) {
+                    console.error('Error accessing iframe:', e);
                 }
-            } catch (e) {
-                console.error('Error accessing iframe:', e);
-            }
-        });
+            });
+        }
     </script>
 </html>
