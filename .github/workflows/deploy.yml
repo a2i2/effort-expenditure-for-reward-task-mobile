@@ -51,9 +51,11 @@ jobs:
         run: |
           sed 's/src="index.html"/src="index-og.html"/' index-frame.html > index-frame-deploy.html
 
-      - name: Copy index-frame.html
+      - name: Copy files to dist
         working-directory: ./public
-        run: cp index-frame-deploy.html dist/index.html
+        run: |
+          cp index-frame-deploy.html dist/index.html
+          cp devices.min.css dist/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
