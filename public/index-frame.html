@@ -2,13 +2,26 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <!-- <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"> -->
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
         <!-- https://github.com/picturepan2/devices.css -->
         <link rel="stylesheet" href="devices.min.css">
 
         <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            #content-container {
+                width: 100%;
+                height: 100%;
+            }
+
             .device {
                 position: relative;
                 margin: 0 auto;
@@ -19,24 +32,67 @@
                 /* Match rounded border of device */
                 border-radius: 50px;
             }
+
+            /* When not in device mode, make iframe fill the viewport */
+            #content-container:not(:has(.device)) #device-iframe {
+                border-radius: 0;
+                width: 100vw;
+                height: 100vh;
+                position: fixed;
+                top: 0;
+                left: 0;
+            }
         </style>
 
     </head>
 
     <body>
-        <div class="device device-iphone-14-pro">
-            <div class="device-frame">
-                <iframe id="device-iframe" src="index.html" width="100%" height="100%"></iframe>
-            </div>
-            <div class="device-stripe"></div>
-            <div class="device-header"></div>
-            <div class="device-sensors"></div>
-            <div class="device-btns"></div>
-            <div class="device-power"></div>
+        <div id="content-container">
+            <!-- Content will be dynamically inserted here -->
         </div>
     </body>
 
     <script>
+        // Function to detect if user is on a mobile device
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        // Function to create the device wrapper
+        function createDeviceWrapper() {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'device device-iphone-14-pro';
+            wrapper.innerHTML = `
+                <div class="device-frame">
+                    <iframe id="device-iframe" src="index.html" width="100%" height="100%"></iframe>
+                </div>
+                <div class="device-stripe"></div>
+                <div class="device-header"></div>
+                <div class="device-sensors"></div>
+                <div class="device-btns"></div>
+                <div class="device-power"></div>
+            `;
+            return wrapper;
+        }
+
+        // Function to create a simple iframe without device wrapper
+        function createSimpleIframe() {
+            const iframe = document.createElement('iframe');
+            iframe.id = 'device-iframe';
+            iframe.src = 'index.html';
+            iframe.style.border = 'none';
+            return iframe;
+        }
+
+        // Initialize the content based on device type
+        const container = document.getElementById('content-container');
+        if (isMobileDevice()) {
+            container.appendChild(createSimpleIframe());
+        } else {
+            container.appendChild(createDeviceWrapper());
+        }
+
+        // Original iframe load handler
         const iframe = document.getElementById('device-iframe');
         iframe.addEventListener('load', () => {
             try {
@@ -44,10 +100,12 @@
                 
                 // Ensure the function exists before calling
                 if (iframeWindow && typeof iframeWindow.EmbedContext.setInsetTop === 'function') {
-                    // Set inset top to 60px to match the device
-                    iframeWindow.EmbedContext.setInsetTop(60);
+                    // Only set inset top if we're in device mode
+                    if (!isMobileDevice()) {
+                        iframeWindow.EmbedContext.setInsetTop(60);
+                    }
                 } else {
-                    console.warn('myFunction is not available in the iframe.');
+                    console.warn('EmbedContext.setInsetTop is not available in the iframe.');
                 }
             } catch (e) {
                 console.error('Error accessing iframe:', e);
