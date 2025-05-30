@@ -61,11 +61,12 @@ var completionMin = 80;
 var missedTrialLimit = 3; // allows 3 missed trials before showing the 'Are you still there?' message
 var missedTrialDialogLimit = 1; // maximum number of times to show the 'Are you still there?' message before exiting the task automatically
 var breakTime = 120000; // 2 mins
+var taskRewardsPayoutThreshold = 0.8; // requires 80% of trials to be reached before offering monetary payout
 
 export {
 	demo_mode, debug_mode, randomiseOrder, runPractice,
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
 	trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
 	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, pracTrialEffortProp, minPressMax, nCalibrates,
-	nBlocks, complete_link, buttonText, powerupDelay, missedTrialLimit, missedTrialDialogLimit, breakTime
+	nBlocks, complete_link, buttonText, powerupDelay, missedTrialLimit, missedTrialDialogLimit, breakTime, taskRewardsPayoutThreshold
 };
