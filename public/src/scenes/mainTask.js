@@ -4,7 +4,7 @@ import { BaseScene } from "./baseScene.js";
 // import js game element modules (sprites, ui, outcome animations, etc.)
 import Player from "../elements/player.js";
 import Coins from "../elements/coins.js";
-import BreakPanel from "../elements/BreakPanel.js";
+import BottomScreenPanel from "../elements/BottomScreenPanel.js";
 import StaticObjects from "../elements/staticObjects.js";
 import ProgressBar from "../elements/progressBar.js";
 import RouteSelectorPanel from "../elements/RouteSelectorPanel.js";
@@ -16,7 +16,7 @@ import { shuffleTrials } from "../utils.js";
 import {
     runPractice, effortTime, nBlocks, nCalibrates, debug_mode,
     trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet,
-    timeout
+    timeout, maxMissedTrials, breakTime, taskRewardsPayoutThreshold
 } from "../versionInfo.js";
 
 import Message from "../elements/message.js";
@@ -68,6 +68,8 @@ var thresholdMax;
 var practiceorReal = 1; // use the main task instruction panels 
 var coinsWonThisTrial = 0;
 var smallDeviceOffset = 0;
+var missedTrials = 0;
+var missedTrialDialogShown = false;
 
 // pre-shuffle the trials here with nTrials specified in ./versionInfo.js
 var randTrialsIdx
@@ -444,6 +446,8 @@ var effortOutcome = function() {
     // if ppt chooses high effort and clears trial effort threshold, fly across sky and collect coins!
     if (choice == 'route 1' && pressCount >= trialEffort1) {
         trialSuccess = 1;
+        missedTrials = 0;
+
         // add overlap colliders so coins disappear when overlap with player body
         this.physics.add.overlap(this.player.sprite, this.coins1.sprite, collectCoins, null, this);
 
@@ -483,6 +487,8 @@ var effortOutcome = function() {
     // if ppt chooses low effect and clears trial effort threshold, fly across mid-sky and collect coins!
     else if (choice == 'route 2' && pressCount >= trialEffort2)  {
         trialSuccess = 1;
+        missedTrials = 0;
+
         // add overlap colliders so coins disappear when overlap with player body
         this.physics.add.overlap(this.player.sprite, this.coins2.sprite, collectCoins, null, this, trialNo); 
 
@@ -521,6 +527,7 @@ var effortOutcome = function() {
     }
     else if (choice == 'timeout') {
         trialSuccess = 0;
+        missedTrials += 1;
 
         // display failure message for a couple of seconds
         this.feedbackMessage = new Message(
@@ -559,6 +566,8 @@ var effortOutcome = function() {
 
     } else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
+        missedTrials = 0;
+
         // display failure message for a couple of seconds
         this.feedbackMessage = new Message(
             this,
@@ -722,38 +731,68 @@ var trialEnd = function () {
     let currentGameState = new GameCache(true, trialNo + 1, maxPressCount, nCoins, coinChoices, randTrialsIdx);
     GameCache.cache = currentGameState;
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
-    
-    // if end of task, display taskend screen 
-    // if end of block, display end of block screen
-    if ((trialNo + 1) % trialsPerBlock == 0 && trialNo != nTrials - 1) {
-        this.player.sprite.setVelocityX(0);
-        this.player.sprite.anims.play('wait', true);
-        
-        let camera = this.cameras.main;
-        this.breakPanel = new BreakPanel(
+
+    // if the user has been shown the 'Are you still there?' message and they trigger it again, kick them out of the task
+    let isLastTrial = trialNo == nTrials - 1;
+    if (missedTrials >= maxMissedTrials && !isLastTrial && missedTrialDialogShown) {
+        stopPlayer(this);
+
+        var timeoutMessage;
+        if (trialNo + 1 >= nTrials * taskRewardsPayoutThreshold) {
+            timeoutMessage = "Unfortunately you've run out of time to continue the this task, but you'll still recieve a bonus payout.";
+        } else {
+            timeoutMessage = "Unfortunately you've run out of time to continue the this task. Try again to recieve a bonus payment.";
+        }
+
+        showBottomScreenPanel(
             this,
-            camera.scrollX + camera.width / 2
+            "Times up!",
+            timeoutMessage,
+            "EXIT",
+            null,
+            () => { exitGame(); },
+            () => { exitGame(); }
         );
 
-        this.tweens.add({        
-            targets: this.breakPanel,
-            scaleX: { start: 0, to: 1 },
-            scaleY: { start: 0, to: 1 },
-            ease: 'Linear',    
-            duration: animationTime,
-            repeat: 0,      
-            yoyo: false
-        });
+        return;
+    }
+    
+    // If the 3rd missed trial ends up on the same trial as the break then we want to show the 'Are you still there?' message. If they press continue they will continue to the next block
+    if (missedTrials >= maxMissedTrials && !isLastTrial) {
+        stopPlayer(this);
 
-        eventsCenter.once('breakover', function () {
-            //  restart coin total from 0 after each block
-            // nCoins=0; - keep coins to gamify
-            // iterate trial number
-            trialNo++;
-            blockNo++;
-            // move to next trial
-            this.scene.restart();    // [?wrap in delay function to ensure saving works]
-        }, this);      
+        let missedTrialsDialogText = "Continue within the next 2 minutes to keep collecting coins.";
+        missedTrialDialogShown = true;
+        missedTrials = 0;
+
+        showBottomScreenPanel(
+            this,
+            "Are you still there?",
+            missedTrialsDialogText,
+            "CONTINUE",
+            breakTime,
+            () => { continueGameAfterBreak(this); },
+            () => { exitGame(); }
+        );
+
+        return;
+    }
+
+    // if end of task, display taskend screen 
+    // if end of block, display end of block screen
+    if ((trialNo + 1) % trialsPerBlock == 0 && !isLastTrial) {
+        stopPlayer(this);
+        
+        let breakTextContent = "You\'re doing an amazing job!\nTake a short break if you need one. The task will automatically continue after 2 minutes.";
+        showBottomScreenPanel(
+            this,
+            "Break time",
+            breakTextContent,
+            "CONTINUE",
+            breakTime,
+            () => { continueGameAfterBreak(this); }, // continue the game regardless after the break is automatically or manually stopped
+            () => { continueGameAfterBreak(this); }
+        ); 
     }
     else {
         // iterate trial number
@@ -830,4 +869,51 @@ var setUpRandTrialsIdx = function() {
         GameCache.cache = cache
         EmbedContext.sendMessage('currentGameCache', JSON.stringify(cache));
     }
+}
+
+var continueGameAfterBreak = function(context) {
+    // iterate trial number
+    trialNo++;
+
+    // increment the block if required
+    if (trialNo % trialsPerBlock == 0) {
+        blockNo++;
+    }
+
+    // move to next trial
+    context.scene.restart();
+}
+
+var exitGame = function() {
+    EmbedContext.sendMessage('close');
+}
+
+var stopPlayer = function(context) {
+    context.player.sprite.setVelocityX(0);
+    context.player.sprite.anims.play('wait', true);
+}
+
+var showBottomScreenPanel = function(context, titleText, subtitleText, bottomButtonText, countdownTimerMS, onContinuePressed, onTimeout) {
+    let camera = context.cameras.main;
+
+    context.bottomScreenPanel = new BottomScreenPanel(
+        context,
+        camera.scrollX + camera.width / 2,
+        titleText,
+        subtitleText,
+        bottomButtonText,
+        countdownTimerMS,
+        onContinuePressed,
+        onTimeout
+    );
+
+    context.tweens.add({        
+        targets: context.bottomScreenPanel,
+        scaleX: { start: 0, to: 1 },
+        scaleY: { start: 0, to: 1 },
+        ease: 'Linear',    
+        duration: animationTime,
+        repeat: 0,      
+        yoyo: false
+    });    
 }
