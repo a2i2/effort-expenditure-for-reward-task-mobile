@@ -237,7 +237,7 @@ export default class MainTask extends BaseScene {
         this.closeButton.setScrollFactor(0);
         this.closeButton.setInteractive();
         this.closeButton.on('pointerdown', () => {
-            EmbedContext.sendMessage('close');
+            exitGame();
         });
 
         //////////////ADD PLAYER SPRITE////////////////////
@@ -841,7 +841,8 @@ var continueGameAfterBreak = function(context) {
 }
 
 var exitGame = function() {
-    EmbedContext.sendMessage('close');
+    const rewardPaymentThresholdReached = trialNo + 1 >= nTrials * taskRewardsPayoutThreshold
+    EmbedContext.sendMessage('close', rewardPaymentThresholdReached);
 }
 
 var stopPlayer = function(context) {

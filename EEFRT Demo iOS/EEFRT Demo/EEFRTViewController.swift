@@ -154,6 +154,35 @@ class EEFRTViewController: UIViewController {
         super.viewWillAppear(animated)
         webView.loadFileURL(indexFileUrl, allowingReadAccessTo: URL(fileURLWithPath: publicPath))
     }
+
+    private func showDismissDialog(didReachRewardThreshold: Bool) {
+        let message = didReachRewardThreshold
+            ? "You'll still receive a bonus but won't be able to return to the task and add to your bonus payment."
+            : "You have not completed enough rounds to earn the bonus payment and will lose your progress."
+
+        let alert = UIAlertController(
+            title: "Quit task?",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(
+            UIAlertAction(
+                title: "Cancel",
+                style: .cancel
+            )
+        )
+        alert.addAction(
+            UIAlertAction(
+                title: "Yes, quit task",
+                style: .default
+            ) { [weak self] _ in
+                guard let self else { return }
+                delegate?.eefrtViewControllerDidRequestClose(self)
+            }
+        )
+
+        present(alert, animated: true)
+    }
 }
 
 extension EEFRTViewController: WKScriptMessageHandler {
@@ -162,7 +191,14 @@ extension EEFRTViewController: WKScriptMessageHandler {
 
         switch message.name {
         case Self.closedMessageKey:
-            delegate?.eefrtViewControllerDidRequestClose(self)
+            guard let didReachRewardThresholdFromJS = message.body as? String,
+                  let didReachRewardThreshold = Bool(didReachRewardThresholdFromJS) else {
+                // couldnt find a flag to signal that the user reached the reward threshold, just exit the task
+                delegate?.eefrtViewControllerDidRequestClose(self)
+                return
+            }
+
+            showDismissDialog(didReachRewardThreshold: didReachRewardThreshold)
 
         case Self.practiceTrialResultMessageKey:
             guard let stringifiedData = (message.body as? String)?.data(using: .utf8) else { return }
