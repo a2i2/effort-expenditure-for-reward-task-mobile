@@ -22,17 +22,13 @@ class EefrtScreenViewModel(
 
     private val _practiceTrialData = mutableStateOf<List<PracticeTaskAttempt>>(emptyList())
     private val _actualTrialData = mutableStateOf<List<TaskAttempt>>(emptyList())
-    private val _shouldUseCachedData: MutableState<Boolean>
-
     val resumeTrialAvailable: MutableState<Boolean>
     var showExitDialog: MutableState<Boolean> = mutableStateOf(false)
 
     init {
         refreshData()
         val currentGameState = GameStorage(context).getCurrentGameState()
-        resumeTrialAvailable =
-            if (currentGameState == null) mutableStateOf(false) else mutableStateOf(true)
-        _shouldUseCachedData = mutableStateOf(resumeTrialAvailable.value)
+        resumeTrialAvailable = mutableStateOf((currentGameState?.trialNumber ?: 0) > 0)
     }
 
     private fun refreshData() {
@@ -89,15 +85,7 @@ class EefrtScreenViewModel(
 
     fun setCurrentGameState(context: Context, newGameState: GameCache?) {
         GameStorage(context).setCurrentGameState(newGameState)
-        resumeTrialAvailable.value = newGameState != null
-    }
-
-    fun getShouldUseCachedData(): Boolean {
-        return _shouldUseCachedData.value
-    }
-
-    fun setShouldUseCachedData(newValue: Boolean) {
-        _shouldUseCachedData.value = newValue
+        resumeTrialAvailable.value = (newGameState?.trialNumber ?: 0) > 0
     }
 
     fun rewardThresholdReached(context: Context): Boolean {

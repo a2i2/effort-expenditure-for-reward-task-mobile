@@ -13,7 +13,8 @@ data class GameCache(
     val maxPressCount: Int,
     val coinRunningTotal: Int,
     val trialResults: Map<String, Int>,
-    val randTrialsIdx: List<Int>?
+    val randTrialsIdx: List<Int>?,
+    val trialSeqFilename: String?
 )
 
 class GameStorage(context: Context) : SimpleKrate(context) {

@@ -4,7 +4,7 @@ const taskName = "rew-eff-ema"; // the name of this task in db: createss data fi
 const version = "demo"; // version: used to create data collection in firestore/task
 // var infoSheet = "./assets/Combined_information_and_consent_ema_motivation_15311_001.pdf";
 const gameType = "demo" //"baseline"/"FU"/"demo" (note which type)
-const randomiseOrder = true; // true: randomise the questions/game order upon each load (false=game first)
+const randomiseOrder = false; // true: randomise the game order upon each load (false=defined order)
 const debug_mode = false; // turns on console logging 
 const demo_mode = true; // a demo game without study info
 // UPDATE runPRACTICE to false for FU games ///

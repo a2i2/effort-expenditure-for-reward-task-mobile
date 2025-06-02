@@ -44,8 +44,7 @@ import java.util.Date
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun EefrtScreen(
-    useCachedData: Boolean = false,
-    eefrtViewModel: EefrtScreenViewModel,
+    viewModel: EefrtScreenViewModel,
     onBack: () -> Unit,
 ) {
     val exitRequested = remember { mutableStateOf(false) }
@@ -91,13 +90,10 @@ fun EefrtScreen(
                         override fun onPageFinished(view: WebView?, url: String?) {
                             super.onPageFinished(view, url)
 
-                            // if we have a cached game state available, attempt to load it
-                            if (useCachedData) {
-                                GameStorage(context).getCurrentGameState()?.let {
-                                    val cacheJson = Json.encodeToString(it)
-                                    val jsString = "window.setupGameWithCache(${cacheJson});"
-                                    evaluateJavascript(jsString, null)
-                                }
+                            GameStorage(context).getCurrentGameState()?.let { state ->
+                                val cacheJson = Json.encodeToString(state)
+                                val jsString = "window.setupGameWithCache(${cacheJson});"
+                                evaluateJavascript(jsString, null)
                             }
                         }
                     }
@@ -108,7 +104,7 @@ fun EefrtScreen(
                                 message,
                                 onBack,
                                 exitRequested,
-                                eefrtViewModel,
+                                viewModel,
                                 context
                             )
                         },
@@ -157,7 +153,7 @@ private fun handleMessage(
     message: String,
     onBack: () -> Unit,
     exitRequested: MutableState<Boolean>,
-    eefrtViewModel: EefrtScreenViewModel,
+    viewModel: EefrtScreenViewModel,
     context: Context
 ) {
     try {
@@ -202,7 +198,7 @@ private fun handleMessage(
                 val gson = Gson()
                 val practiceTaskAttempt = gson.fromJson(body, PracticeTaskAttempt::class.java)
                 practiceTaskAttempt.createdAt = Date()
-                eefrtViewModel.savePracticeTaskAttempt(practiceTaskAttempt)
+                viewModel.savePracticeTaskAttempt(practiceTaskAttempt)
             }
 
             "trialResult" -> {
@@ -210,18 +206,18 @@ private fun handleMessage(
                 val gson = Gson()
                 val taskAttempt = gson.fromJson(body, TaskAttempt::class.java)
                 taskAttempt.createdAt = Date()
-                eefrtViewModel.saveActualTaskAttempt(taskAttempt)
+                viewModel.saveActualTaskAttempt(taskAttempt)
             }
 
             "currentGameCache" -> {
                 val body = obj.getString("message")
                 val gson = Gson()
                 val gameCache = gson.fromJson(body, GameCache::class.java)
-                eefrtViewModel.setCurrentGameState(context, gameCache)
+                viewModel.setCurrentGameState(context, gameCache)
             }
 
             "gameComplete" -> {
-                eefrtViewModel.setCurrentGameState(context, null)
+                viewModel.setCurrentGameState(context, null)
                 dismiss(onBack)
             }
 

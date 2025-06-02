@@ -20,12 +20,10 @@ import ai.a2i2.conductor.effrtdemoandroid.ui.theme.EFFRTDemoAndroidTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.Button
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.Navigator
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -71,12 +69,19 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
             HomeScreen(
                 eefrtScreenViewModel = eefrtScreenViewModel,
                 onStartTaskPressed = {
-                    eefrtScreenViewModel.setShouldUseCachedData(false)
+                    eefrtScreenViewModel.setCurrentGameState(context, GameCache(
+                        practiceComplete = false,
+                        trialNumber = 0,
+                        maxPressCount = 0,
+                        coinRunningTotal = 0,
+                        trialResults = emptyMap(),
+                        randTrialsIdx = null,
+                        trialSeqFilename = "trial-seq-2.json"
+                    ))
                     navController.navigate(NavigationScreens.EFFRT.route)
                     eefrtScreenViewModel.setCurrentGameState(context, null) // we are starting a new eefrt task, remove any existing cached data
                 },
                 onResumeTaskPressed = {
-                    eefrtScreenViewModel.setShouldUseCachedData(true)
                     navController.navigate(NavigationScreens.EFFRT.route)
                 },
                 onViewEventLogsPressed = {
@@ -87,8 +92,7 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
 
         composable(NavigationScreens.EFFRT.route) {
             EefrtScreen(
-                useCachedData = eefrtScreenViewModel.getShouldUseCachedData(),
-                eefrtViewModel = eefrtScreenViewModel,
+                viewModel = eefrtScreenViewModel,
                 onBack = {
                     navController.popBackStack()
                 }

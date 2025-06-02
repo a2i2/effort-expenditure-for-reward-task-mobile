@@ -89,17 +89,18 @@ if (debug_mode) {
 };
 // this function extends Phaser.Scene and includes the core logic for the game
 export default class MainTask extends BaseScene {
-    constructor(trialSequenceFile) {
+    constructor() {
         super({
             key: 'MainTask'
         });
 
         this.staticObjManager = new StaticObjects(this);
-        // if a trial sequence file is provided, use it, otherwise use the default
-        this.trialSequenceFile = trialSequenceFile ? trialSequenceFile : defaultTrialSequenceFile;
     }
 
     preload() {
+        // if a trial sequence file is provided, use it, otherwise use the default
+        this.trialSequenceFile = GameCache.cache?.trialSeqFilename ?? defaultTrialSequenceFile;
+
         ////////////////////PRELOAD GAME ASSETS///////////////////////////////////
         // load tilemap and tileset created using Tiled (see below)
         this.load.tilemapTiledJSON('grass-map', './src/assets/tilemaps/tilemap-main-grass.json');
@@ -175,7 +176,7 @@ export default class MainTask extends BaseScene {
 
         // determine the maxPresscount and generate the randTrialsIdx if required
         setUpMaxThreshold(this);
-        setUpRandTrialsIdx(catchIdx);
+        setUpRandTrialsIdx(catchIdx, this.trialSequenceFile);
 
         // setup the game with the cached game state if present
         loadGameFromCache();
@@ -733,7 +734,7 @@ var trialEnd = function () {
     coinChoices['trial' + trialNo] = trialSuccess ? coinsWonThisTrial : 0;
 
     // notify the native apps of what the current game state is so they can cache it
-    let currentGameState = new GameCache(true, trialNo + 1, maxPressCount, nCoins, coinChoices, randTrialsIdx);
+    let currentGameState = new GameCache(true, trialNo + 1, maxPressCount, nCoins, coinChoices, randTrialsIdx, this.trialSequenceFile);
     GameCache.cache = currentGameState;
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
 
@@ -816,7 +817,7 @@ var setUpMaxThreshold = function(context) {
     };
 }
 
-var setUpRandTrialsIdx = function(catchIdx) {
+var setUpRandTrialsIdx = function(catchIdx, trialSequenceFile) {
     if (GameCache.cache?.randTrialsIdx) {
         randTrialsIdx = GameCache.cache.randTrialsIdx;
         return;
@@ -827,7 +828,7 @@ var setUpRandTrialsIdx = function(catchIdx) {
     } else {
         randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
     }
-    GameCache.cache = new GameCache(true, 0, maxPressCount, 0, {}, randTrialsIdx);
+    GameCache.cache = new GameCache(true, 0, maxPressCount, 0, {}, randTrialsIdx, trialSequenceFile);
     EmbedContext.sendMessage('currentGameCache', JSON.stringify(GameCache.cache));
 }
 
