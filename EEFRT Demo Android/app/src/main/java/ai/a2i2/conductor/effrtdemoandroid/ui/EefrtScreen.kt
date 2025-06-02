@@ -6,6 +6,7 @@ import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.ui.data.EefrtScreenViewModel
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -19,6 +20,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -115,6 +119,35 @@ fun EefrtScreen(
                 }
             }
         )
+
+        if (eefrtViewModel.showExitDialog.value) {
+            val message = if (eefrtViewModel.rewardThresholdReached)
+                "You'll still receive a bonus but won't be able to return to the task and add to your bonus payment."
+            else
+                "You have not completed enough rounds to earn the bonus payment and will lose your progress."
+
+            AlertDialog(
+                onDismissRequest = { eefrtViewModel.showExitDialog.value = false },
+                title = { Text("Quit task?") },
+                text = { Text(message) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            eefrtViewModel.showExitDialog.value = false
+
+                            dismiss(onBack)
+                        }
+                    ) {
+                        Text("Yes, quit task")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { eefrtViewModel.showExitDialog.value = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -135,13 +168,22 @@ private fun handleMessage(
                     Log.w(TAG, "User already requested close")
                     return
                 }
-                exitRequested.value = true
 
-                Log.i(
-                    TAG,
-                    String.format("User has dismissed eefrt task")
-                )
-                dismiss(onBack)
+                // if the close message doesn't contain the optional rewardThreshold flag then we just close the task
+                if (obj.isNull("message")) {
+                    Log.i(
+                        TAG,
+                        String.format("User has dismissed eefrt task")
+                    )
+                    exitRequested.value = true
+                    dismiss(onBack)
+                    return
+                }
+
+                // if the close message contains an additional optional boolean flag we use that to
+                // determine if the 80% reward threshold is reached to show a dismiss dialog
+                val rewardThresholdReached = obj.getBoolean("message")
+                showDialogMessage(eefrtViewModel, rewardThresholdReached)
             }
 
             "practiceTrialResult" -> {
@@ -184,4 +226,12 @@ private fun handleMessage(
 
 private fun dismiss(onBack: () -> Unit) {
     Handler(Looper.getMainLooper()).post { onBack() }
+}
+
+private fun showDialogMessage(
+    eefrtViewModel: EefrtScreenViewModel,
+    didReachRewardThreshold: Boolean
+) {
+    eefrtViewModel.rewardThresholdReached = didReachRewardThreshold
+    eefrtViewModel.showExitDialog.value = true
 }

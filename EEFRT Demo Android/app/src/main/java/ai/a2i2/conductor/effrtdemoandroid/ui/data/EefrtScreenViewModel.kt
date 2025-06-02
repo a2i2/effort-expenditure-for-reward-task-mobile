@@ -21,7 +21,10 @@ class EefrtScreenViewModel(
     private val _practiceTrialData = mutableStateOf<List<PracticeTaskAttempt>>(emptyList())
     private val _actualTrialData = mutableStateOf<List<TaskAttempt>>(emptyList())
     private val _shouldUseCachedData: MutableState<Boolean>
+
     val resumeTrialAvailable: MutableState<Boolean>
+    var showExitDialog: MutableState<Boolean> = mutableStateOf(false)
+    var rewardThresholdReached = false
 
     init {
         refreshData()
