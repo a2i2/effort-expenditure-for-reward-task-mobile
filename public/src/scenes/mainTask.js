@@ -15,7 +15,7 @@ import { shuffleTrials } from "../utils.js";
 // import version info
 import {
     runPractice, effortTime, nBlocks, nCalibrates, debug_mode,
-    trialsFile, nTrials, catchIdx, minPressMax, thresholdAutoSet,
+    defaultTrialSequenceFile, defaultCatchIdx, minPressMax, thresholdAutoSet, randomiseOrder,
     timeout, missedTrialLimit, missedTrialDialogLimit, breakTime, taskRewardsPayoutThreshold
 } from "../versionInfo.js";
 
@@ -37,8 +37,9 @@ const midbridgeX = 605;        // where trial reward coins will be displayed (x 
 const endbridgeX = 765;        // where the player must jump up to cross bridge (x coord in px)
 const playerVelocity = 1000;   // baseline player velocity (rightward)
 // initialize task vars
-var trialNo = 0; // error in baseline game: only 23 trials run: var maxTrials = nTrials-1;
-var maxTrials = nTrials; // fixed for FU games 28.06.2023 (study1)
+var nTrials;
+var maxTrials = nTrials;
+var trialNo = 0;
 var trialReward1;
 var trialEffort1; var trialEffortPropMax1;
 var trialReward2; var trialEffortPropMax2;
@@ -88,17 +89,17 @@ if (debug_mode) {
 };
 // this function extends Phaser.Scene and includes the core logic for the game
 export default class MainTask extends BaseScene {
-    constructor() {
+    constructor(trialSequenceFile) {
         super({
             key: 'MainTask'
         });
 
         this.staticObjManager = new StaticObjects(this);
+        // if a trial sequence file is provided, use it, otherwise use the default
+        this.trialSequenceFile = trialSequenceFile ? trialSequenceFile : defaultTrialSequenceFile;
     }
 
     preload() {
-        trialsPerBlock = nTrials / nBlocks;  // blocks divide trials
-
         ////////////////////PRELOAD GAME ASSETS///////////////////////////////////
         // load tilemap and tileset created using Tiled (see below)
         this.load.tilemapTiledJSON('grass-map', './src/assets/tilemaps/tilemap-main-grass.json');
@@ -130,7 +131,7 @@ export default class MainTask extends BaseScene {
         });
         
         // load trial type info from json array
-        this.load.json('trials', './src/assets/' + trialsFile);
+        this.load.json('trials', './src/assets/' + this.trialSequenceFile);
 
         // Chapter 1 has two different backgrounds, rather than five
         this.load.image('chapter-1-1', './src/assets/imgs/chapter-1-1.svg');
@@ -165,9 +166,16 @@ export default class MainTask extends BaseScene {
         // game world created in Tiled (https://www.mapeditor.org/)
         // import tilemap
 
+        //////////////////////////GET TRIAL INFO//////////////////////////////////  
+        // load trial info (must be done within create())
+        let trials = this.cache.json.get("trials");
+        nTrials = trials.reward1.length;
+        trialsPerBlock = nTrials / nBlocks;  // blocks divide trials
+        let catchIdx = trials.catchIdx ?? defaultCatchIdx;
+
         // determine the maxPresscount and generate the randTrialsIdx if required
         setUpMaxThreshold(this);
-        setUpRandTrialsIdx();
+        setUpRandTrialsIdx(catchIdx);
 
         // setup the game with the cached game state if present
         loadGameFromCache();
@@ -265,10 +273,6 @@ export default class MainTask extends BaseScene {
         // UI functionality built using Rex UI plugins for phaser3 
         // (see https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ui-overview/). 
         // These plugins are globally loaded from the min.js src in index.html
-        
-        //////////////////////////GET TRIAL INFO//////////////////////////////////  
-        // load trial info (must be done within create())
-        let trials = this.cache.json.get("trials"); // automates trials from version info 
 
         // randomly select the order of trials for ema study:
         // save the random index:
@@ -617,7 +621,7 @@ var trialEnd = function () {
     // we completed the practice, but might be loading back from a cached run so we've already calibrated
 
     var updatedNumCalibrates = nCalibrates;
-    if (GameCache.cache.practiceComplete == true && runPractice) {
+    if (GameCache.cache?.practiceComplete == true && runPractice) {
         updatedNumCalibrates = 0;
     }
 
@@ -806,26 +810,25 @@ var setUpMaxThreshold = function(context) {
         // add a catch if thresholdMax is undefined
         if (typeof thresholdMax === "undefined") {
             maxPressCount = thresholdAutoSet;
-
         } else {
             maxPressCount = thresholdMax; // fetch 
         }
     };
 }
 
-// checks the cache to see if we have a randTrialsIdx already to use, otherwise generates a new one and updates the cache with it
-var setUpRandTrialsIdx = function() {
-    randTrialsIdx = GameCache.cache?.randTrialsIdx ?? shuffleTrials(nTrials, catchIdx, nCalibrates);
+var setUpRandTrialsIdx = function(catchIdx) {
     if (GameCache.cache?.randTrialsIdx) {
-        // we have a cache available so use that value rather than generating a new randTrialsIdx
-        randTrialsIdx = GameCache.cache.randTrialsIdx
-    } else {
-        // no cache available, generate a new randTrialsIdx and update the cache with it
-        randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
-        let cache = new GameCache(true, 0, maxPressCount, 0, {}, randTrialsIdx);
-        GameCache.cache = cache
-        EmbedContext.sendMessage('currentGameCache', JSON.stringify(cache));
+        randTrialsIdx = GameCache.cache.randTrialsIdx;
+        return;
     }
+
+    if (!randomiseOrder) {
+        randTrialsIdx = Array.from({ length: nTrials }, (_, i) => i);
+    } else {
+        randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
+    }
+    GameCache.cache = new GameCache(true, 0, maxPressCount, 0, {}, randTrialsIdx);
+    EmbedContext.sendMessage('currentGameCache', JSON.stringify(GameCache.cache));
 }
 
 var continueGameAfterBreak = function(context) {
