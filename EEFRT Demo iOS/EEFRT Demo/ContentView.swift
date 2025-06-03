@@ -21,7 +21,8 @@ struct ContentView: View {
                     }
                 )
 
-                if let cache = viewModel.gameCache {
+                // Only allow user to resume if they've at least completed 1 round.
+                if viewModel.gameCache?.trialNumber ?? 0 > 0, let cache = viewModel.gameCache {
                     NavigationLink(
                         destination: EEFRTView(gameCache: cache)
                             .ignoresSafeArea()
