@@ -8,30 +8,29 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var shouldShowAlert = false
 
+    @State private var showingTrialDialog = false
+    @State private var navigateToEEFRT = false
+    @State private var newGameCache = GameCache()
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-                NavigationLink(
-                    destination: EEFRTView()
-                        .ignoresSafeArea()
-                        .navigationBarBackButtonHidden(),
+                Button("Start new EEFRT Task") {
+                    showingTrialDialog = true
+                }
+                .confirmationDialog("Choose a Trial", isPresented: $showingTrialDialog, titleVisibility: .visible) {
+                    Button("Trial 1") { startTrial(number: 1) }
+                    Button("Trial 2") { startTrial(number: 2) }
+                    Button("Trial 3") { startTrial(number: 3) }
+                    Button("Cancel", role: .cancel) {}
+                }
 
-                    label: {
-                        Text("Start new EEFRT Task")
-                    }
-                )
-
-                // Only allow user to resume if they've at least completed 1 round.
                 if viewModel.gameCache?.trialNumber ?? 0 > 0, let cache = viewModel.gameCache {
-                    NavigationLink(
-                        destination: EEFRTView(gameCache: cache)
-                            .ignoresSafeArea()
-                            .navigationBarBackButtonHidden(),
-
-                        label: {
-                            Text("Resume current EEFRT Task")
-                        }
-                    )
+                    NavigationLink(destination: EEFRTView(gameCache: cache)
+                        .ignoresSafeArea()
+                        .navigationBarBackButtonHidden()) {
+                        Text("Resume current EEFRT Task")
+                    }
                 }
 
                 NavigationLink(
@@ -52,6 +51,11 @@ struct ContentView: View {
                 )
             }
             .padding()
+            .navigationDestination(isPresented: $navigateToEEFRT) {
+                EEFRTView(gameCache: newGameCache)
+                    .ignoresSafeArea()
+                    .navigationBarBackButtonHidden()
+            }
             .alert(isPresented: $shouldShowAlert) {
                 Alert(
                     title: Text("Delete all events logs"),
@@ -63,6 +67,20 @@ struct ContentView: View {
                 )
             }
         }
+    }
+
+    private func startTrial(number: Int) {
+        newGameCache = GameCache()
+        switch(number) {
+        case 2:
+            newGameCache.trialSeqFilename = "trial-seq-2.json"
+        case 3:
+            newGameCache.trialSeqFilename = "trial-seq-3.json"
+        default:
+            newGameCache.trialSeqFilename = "trial-seq-1.json"
+        }
+        viewModel.gameCache = newGameCache
+        navigateToEEFRT = true
     }
 
     private func showAlert() {
@@ -89,8 +107,4 @@ struct ContentView: View {
             os_log(.error, "Error saving modelContext after deletion: \(error)")
         }
     }
-}
-
-#Preview {
-    ContentView()
 }

@@ -10,6 +10,26 @@ struct GameCache: Codable, DefaultsSerializable {
     var randTrialsIdx: [Int]?
     var trialSeqFilename: String?
 
+    // Default initializer with default values
+    init(
+        practiceComplete: Bool = false,
+        trialNumber: Int = 0,
+        maxPressCount: Int = 0,
+        coinRunningTotal: Int = 0,
+        trialResults: [String: Int] = [:],
+        randTrialsIdx: [Int]? = nil,
+        trialSeqFilename: String? = nil
+    ) {
+        self.practiceComplete = practiceComplete
+        self.trialNumber = trialNumber
+        self.maxPressCount = maxPressCount
+        self.coinRunningTotal = coinRunningTotal
+        self.trialResults = trialResults
+        self.randTrialsIdx = randTrialsIdx
+        self.trialSeqFilename = trialSeqFilename
+    }
+
+    // Decoder initializer
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.practiceComplete = try container.decode(Bool.self, forKey: .practiceComplete)
@@ -41,13 +61,10 @@ struct GameCache: Codable, DefaultsSerializable {
         case randTrialsIdx
         case trialSeqFilename
     }
-    
+
     public func stringify() throws -> String {
         let encoder = JSONEncoder()
-
         let data = try encoder.encode(self)
-        let jsonString = String(decoding: data, as: UTF8.self)
-
-        return jsonString
+        return String(decoding: data, as: UTF8.self)
     }
 }

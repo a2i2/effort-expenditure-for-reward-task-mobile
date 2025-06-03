@@ -8,7 +8,7 @@ const randomiseOrder = false; // true: randomise the game order upon each load (
 const debug_mode = false; // turns on console logging 
 const demo_mode = true; // a demo game without study info
 // UPDATE runPRACTICE to false for FU games ///
-const runPractice = false; // run a practice i.e., a baseline version or without practice (FU)
+const runPractice = true; // run a practice i.e., a baseline version or without practice (FU)
 // trials:
 const defaultTrialSequenceFile = "trial-seq-1.json" // name of the json file which includes trials
 const defaultCatchIdx = [13]; // a default catch idx to use if one is not provided
