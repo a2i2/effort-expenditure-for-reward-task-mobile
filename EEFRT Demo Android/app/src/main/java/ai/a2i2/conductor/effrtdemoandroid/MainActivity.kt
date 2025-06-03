@@ -20,10 +20,15 @@ import ai.a2i2.conductor.effrtdemoandroid.ui.theme.EFFRTDemoAndroidTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -63,23 +68,40 @@ class MainActivity : ComponentActivity() {
 fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val showDialog = remember { mutableStateOf(false) }
+    val selectedOption = remember { mutableStateOf<String?>(null) }
+
+    if (showDialog.value) {
+        OptionsDialog(
+            onDismissRequest = { showDialog.value = false },
+            onOptionSelected = { option ->
+                selectedOption.value = when(option) {
+                    "Trial 2" -> "trial-seq-2.json"
+                    "Trial 3" -> "trial-seq-3.json"
+                    else -> "trial-seq-1.json" // default
+                }
+                eefrtScreenViewModel.setCurrentGameState(
+                    context, GameCache(
+                        practiceComplete = false,
+                        trialNumber = 0,
+                        maxPressCount = 0, // Set this when using calibration value from previous attempts
+                        coinRunningTotal = 0,
+                        trialResults = emptyMap(),
+                        randTrialsIdx = null,
+                        trialSeqFilename = selectedOption.value
+                    )
+                )
+                showDialog.value = false
+            }
+        )
+    }
 
     NavHost(navController = navController, startDestination = NavigationScreens.HOME.route) {
         composable(NavigationScreens.HOME.route) {
             HomeScreen(
                 eefrtScreenViewModel = eefrtScreenViewModel,
                 onStartTaskPressed = {
-                    eefrtScreenViewModel.setCurrentGameState(context, GameCache(
-                        practiceComplete = false,
-                        trialNumber = 0,
-                        maxPressCount = 0,
-                        coinRunningTotal = 0,
-                        trialResults = emptyMap(),
-                        randTrialsIdx = null,
-                        trialSeqFilename = "trial-seq-2.json"
-                    ))
-                    navController.navigate(NavigationScreens.EFFRT.route)
-                    eefrtScreenViewModel.setCurrentGameState(context, null) // we are starting a new eefrt task, remove any existing cached data
+                    showDialog.value = true
                 },
                 onResumeTaskPressed = {
                     navController.navigate(NavigationScreens.EFFRT.route)
@@ -94,6 +116,7 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
             EefrtScreen(
                 viewModel = eefrtScreenViewModel,
                 onBack = {
+                    selectedOption.value = null
                     navController.popBackStack()
                 }
             )
@@ -135,6 +158,10 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
                 }
             )
         }
+
+        if (selectedOption.value != null) {
+            navController.navigate(NavigationScreens.EFFRT.route)
+        }
     }
 }
 
@@ -143,7 +170,7 @@ fun HomeScreen(
     eefrtScreenViewModel: EefrtScreenViewModel,
     onStartTaskPressed: () -> Unit,
     onResumeTaskPressed: () -> Unit,
-    onViewEventLogsPressed: () -> Unit
+    onViewEventLogsPressed: () -> Unit,
 ) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
@@ -188,4 +215,41 @@ fun AppButton(name: String, modifier: Modifier = Modifier, onClick: () -> Unit) 
             Text(name)
         }
     }
+}
+
+@Composable
+fun OptionsDialog(
+    onDismissRequest: () -> Unit,
+    onOptionSelected: (String) -> Unit,
+) {
+    val options = listOf("Trial 1", "Trial 2", "Trial 3")
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text("Choose a trial sequence") },
+        text = {
+            Column {
+                options.forEach { option ->
+                    TextButton(
+                        onClick = {
+                            onOptionSelected(option)
+                            onDismissRequest()
+                        },
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    ) {
+                        Text(option)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            // No confirm button, actions are handled by option clicks
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("Cancel")
+            }
+        },
+        properties = DialogProperties() // Optional: for further customization
+    )
 }
