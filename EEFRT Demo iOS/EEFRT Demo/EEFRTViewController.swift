@@ -159,8 +159,8 @@ class EEFRTViewController: UIViewController {
         webView.loadFileURL(indexFileUrl, allowingReadAccessTo: URL(fileURLWithPath: publicPath))
     }
 
-    private func showDismissDialog(didReachRewardThreshold: Bool) {
-        let message = didReachRewardThreshold
+    private func showDismissDialog() {
+        let message = GameConfigUtils.rewardThresholdReached()
             ? "You'll still receive a bonus but won't be able to return to the task and add to your bonus payment."
             : "You have not completed enough rounds to earn the bonus payment and will lose your progress."
 
@@ -195,14 +195,22 @@ extension EEFRTViewController: WKScriptMessageHandler {
 
         switch message.name {
         case Self.closedMessageKey:
-            guard let didReachRewardThresholdFromJS = message.body as? String,
-                  let didReachRewardThreshold = Bool(didReachRewardThresholdFromJS) else {
-                // couldnt find a flag to signal that the user reached the reward threshold, just exit the task
+            /*
+                The exit behaviour is slightly different depending on if we've reached the main trials or not:
+                If we've reached the main trials, show the exit dialog with the appropriate message based on their completion
+                If they are still in the practice trials, just exit the task
+
+                Messages from this key will contain an optional Boolean value which determines if the user reached the main trials or not
+             */
+            guard let reachedMainTrialsFromJs = message.body as? String,
+                  let reachedMainTrials = Bool(reachedMainTrialsFromJs) else {
                 delegate?.eefrtViewControllerDidRequestClose(self)
                 return
             }
 
-            showDismissDialog(didReachRewardThreshold: didReachRewardThreshold)
+            if reachedMainTrials {
+                showDismissDialog()
+            }
 
         case Self.practiceTrialResultMessageKey:
             guard let stringifiedData = (message.body as? String)?.data(using: .utf8) else { return }

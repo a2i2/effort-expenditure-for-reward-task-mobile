@@ -841,8 +841,7 @@ var continueGameAfterBreak = function(context) {
 }
 
 var exitGame = function() {
-    const rewardPaymentThresholdReached = trialNo + 1 >= nTrials * taskRewardsPayoutThreshold
-    EmbedContext.sendMessage('close', rewardPaymentThresholdReached);
+    EmbedContext.sendMessage('close', true);
 }
 
 var stopPlayer = function(context) {
