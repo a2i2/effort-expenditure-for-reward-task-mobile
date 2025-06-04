@@ -1,6 +1,7 @@
 package ai.a2i2.conductor.effrtdemoandroid
 
 import ai.a2i2.conductor.effrtdemoandroid.persistence.DatabaseProvider
+import ai.a2i2.conductor.effrtdemoandroid.persistence.GameCache
 import ai.a2i2.conductor.effrtdemoandroid.ui.EefrtScreen
 import ai.a2i2.conductor.effrtdemoandroid.ui.EventLogsView
 import ai.a2i2.conductor.effrtdemoandroid.ui.EefrtTrialDetailView
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.Button
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.Navigator
 import androidx.navigation.compose.NavHost
@@ -62,6 +64,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
     val navController = rememberNavController()
+    val context = LocalContext.current
 
     NavHost(navController = navController, startDestination = NavigationScreens.HOME.route) {
         composable(NavigationScreens.HOME.route) {
@@ -70,6 +73,7 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
                 onStartTaskPressed = {
                     eefrtScreenViewModel.setShouldUseCachedData(false)
                     navController.navigate(NavigationScreens.EFFRT.route)
+                    eefrtScreenViewModel.setCurrentGameState(context, null) // we are starting a new eefrt task, remove any existing cached data
                 },
                 onResumeTaskPressed = {
                     eefrtScreenViewModel.setShouldUseCachedData(true)
