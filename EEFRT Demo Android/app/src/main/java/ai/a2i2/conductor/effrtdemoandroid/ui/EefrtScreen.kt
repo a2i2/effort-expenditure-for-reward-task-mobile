@@ -121,7 +121,7 @@ fun EefrtScreen(
         )
 
         if (eefrtViewModel.showExitDialog.value) {
-            val message = if (eefrtViewModel.rewardThresholdReached)
+            val message = if (eefrtViewModel.rewardThresholdReached(context))
                 "You'll still receive a bonus but won't be able to return to the task and add to your bonus payment."
             else
                 "You have not completed enough rounds to earn the bonus payment and will lose your progress."
@@ -169,7 +169,14 @@ private fun handleMessage(
                     return
                 }
 
-                // if the close message doesn't contain the optional rewardThreshold flag then we just close the task
+                /*
+                    The exit behaviour is slightly different depending on if we've reached the main trials or not:
+                    If we've reached the main trials, show the exit dialog with the appropriate message based on their completion
+                    If they are still in the practice trials, just exit the task
+
+                    Messages from this key might contain an optional Boolean value which determines if the user reached the main trials or not
+                 */
+
                 if (obj.isNull("message")) {
                     Log.i(
                         TAG,
@@ -180,10 +187,10 @@ private fun handleMessage(
                     return
                 }
 
-                // if the close message contains an additional optional boolean flag we use that to
-                // determine if the 80% reward threshold is reached to show a dismiss dialog
-                val rewardThresholdReached = obj.getBoolean("message")
-                showDialogMessage(eefrtViewModel, rewardThresholdReached)
+                val mainTrialsReached = obj.getBoolean("message")
+                if (mainTrialsReached) {
+                    showDialogMessage(eefrtViewModel)
+                }
             }
 
             "practiceTrialResult" -> {
@@ -228,10 +235,6 @@ private fun dismiss(onBack: () -> Unit) {
     Handler(Looper.getMainLooper()).post { onBack() }
 }
 
-private fun showDialogMessage(
-    eefrtViewModel: EefrtScreenViewModel,
-    didReachRewardThreshold: Boolean
-) {
-    eefrtViewModel.rewardThresholdReached = didReachRewardThreshold
+private fun showDialogMessage(eefrtViewModel: EefrtScreenViewModel) {
     eefrtViewModel.showExitDialog.value = true
 }
