@@ -131,6 +131,10 @@ class EEFRTViewController: UIViewController {
             let gameCacheJsString = "window.setupGameWithCache(\(gameCache));"
             let gameCacheUserScript = WKUserScript(source: gameCacheJsString, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
             config.userContentController.addUserScript(gameCacheUserScript)
+        } else {
+            DispatchQueue.main.async {
+                Defaults.gameCache = nil
+            }
         }
 
         webView = WKWebView(frame: .zero, configuration: config)
