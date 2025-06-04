@@ -237,7 +237,8 @@ export default class MainTask extends BaseScene {
         this.closeButton.setScrollFactor(0);
         this.closeButton.setInteractive();
         this.closeButton.on('pointerdown', () => {
-            exitGame();
+            let shouldShowExitDialog = true
+            exitGame(shouldShowExitDialog);
         });
 
         //////////////ADD PLAYER SPRITE////////////////////
@@ -840,8 +841,8 @@ var continueGameAfterBreak = function(context) {
     context.scene.restart();
 }
 
-var exitGame = function() {
-    EmbedContext.sendMessage('close', true);
+var exitGame = function(shouldShowExitDialog) {
+    EmbedContext.sendMessage('close', shouldShowExitDialog);
 }
 
 var stopPlayer = function(context) {
@@ -879,8 +880,8 @@ var showTimeUpDialog = function(context) {
         timeoutMessage,
         "EXIT",
         null,
-        () => { exitGame(); },
-        () => { exitGame(); }
+        () => { exitGame(false); }, // no need to show the exit dialog as we're already showing the time up dialog
+        () => { exitGame(false); } // no need to show the exit dialog as we're already showing the time up dialog
     );
 }
 

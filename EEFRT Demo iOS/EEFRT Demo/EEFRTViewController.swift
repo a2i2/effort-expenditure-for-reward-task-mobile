@@ -197,19 +197,22 @@ extension EEFRTViewController: WKScriptMessageHandler {
         case Self.closedMessageKey:
             /*
                 The exit behaviour is slightly different depending on if we've reached the main trials or not:
-                If we've reached the main trials, show the exit dialog with the appropriate message based on their completion
-                If they are still in the practice trials, just exit the task
+                If we've reached the main trials, show the exit dialog with the appropriate message based on their completion.
+                If they are still in the practice trials, just exit the task.
+                We also want to not show the exit dialog if they are shown the Times Up message.
 
-                Messages from this key will contain an optional Boolean value which determines if the user reached the main trials or not
+                Messages from this key will contain an Boolean value which determines if we show the exit dialog or not
              */
-            guard let reachedMainTrialsFromJs = message.body as? String,
-                  let reachedMainTrials = Bool(reachedMainTrialsFromJs) else {
+            guard let shouldShowExitDialogFromJs = message.body as? String,
+                  let shouldShowExitDialog = Bool(shouldShowExitDialogFromJs) else {
                 delegate?.eefrtViewControllerDidRequestClose(self)
                 return
             }
 
-            if reachedMainTrials {
+            if shouldShowExitDialog {
                 showDismissDialog()
+            } else {
+                delegate?.eefrtViewControllerDidRequestClose(self)
             }
 
         case Self.practiceTrialResultMessageKey:
