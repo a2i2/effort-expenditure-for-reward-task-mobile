@@ -5,10 +5,12 @@ import ai.a2i2.conductor.effrtdemoandroid.persistence.GameCache
 import ai.a2i2.conductor.effrtdemoandroid.persistence.GameStorage
 import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
+import ai.a2i2.conductor.effrtdemoandroid.util.GameConfigUtils
 import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -21,7 +23,9 @@ class EefrtScreenViewModel(
     private val _practiceTrialData = mutableStateOf<List<PracticeTaskAttempt>>(emptyList())
     private val _actualTrialData = mutableStateOf<List<TaskAttempt>>(emptyList())
     private val _shouldUseCachedData: MutableState<Boolean>
+
     val resumeTrialAvailable: MutableState<Boolean>
+    var showExitDialog: MutableState<Boolean> = mutableStateOf(false)
 
     init {
         refreshData()
@@ -94,5 +98,9 @@ class EefrtScreenViewModel(
 
     fun setShouldUseCachedData(newValue: Boolean) {
         _shouldUseCachedData.value = newValue
+    }
+
+    fun rewardThresholdReached(context: Context): Boolean {
+        return GameConfigUtils.rewardThresholdReached(context)
     }
 }

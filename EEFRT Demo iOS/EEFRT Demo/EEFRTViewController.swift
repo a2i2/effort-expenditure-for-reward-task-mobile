@@ -131,6 +131,10 @@ class EEFRTViewController: UIViewController {
             let gameCacheJsString = "window.setupGameWithCache(\(gameCache));"
             let gameCacheUserScript = WKUserScript(source: gameCacheJsString, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
             config.userContentController.addUserScript(gameCacheUserScript)
+        } else {
+            DispatchQueue.main.async {
+                Defaults.gameCache = nil
+            }
         }
 
         webView = WKWebView(frame: .zero, configuration: config)
@@ -154,6 +158,35 @@ class EEFRTViewController: UIViewController {
         super.viewWillAppear(animated)
         webView.loadFileURL(indexFileUrl, allowingReadAccessTo: URL(fileURLWithPath: publicPath))
     }
+
+    private func showDismissDialog() {
+        let message = GameConfigUtils.rewardThresholdReached()
+            ? "You'll still receive a bonus but won't be able to return to the task and add to your bonus payment."
+            : "You have not completed enough rounds to earn the bonus payment and will lose your progress."
+
+        let alert = UIAlertController(
+            title: "Quit task?",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(
+            UIAlertAction(
+                title: "Cancel",
+                style: .cancel
+            )
+        )
+        alert.addAction(
+            UIAlertAction(
+                title: "Yes, quit task",
+                style: .default
+            ) { [weak self] _ in
+                guard let self else { return }
+                delegate?.eefrtViewControllerDidRequestClose(self)
+            }
+        )
+
+        present(alert, animated: true)
+    }
 }
 
 extension EEFRTViewController: WKScriptMessageHandler {
@@ -162,7 +195,25 @@ extension EEFRTViewController: WKScriptMessageHandler {
 
         switch message.name {
         case Self.closedMessageKey:
-            delegate?.eefrtViewControllerDidRequestClose(self)
+            /*
+                The exit behaviour is slightly different depending on if we've reached the main trials or not:
+                If we've reached the main trials, show the exit dialog with the appropriate message based on their completion.
+                If they are still in the practice trials, just exit the task.
+                We also want to not show the exit dialog if they are shown the Times Up message.
+
+                Messages from this key will contain an Boolean value which determines if we show the exit dialog or not
+             */
+            guard let shouldShowExitDialogFromJs = message.body as? String,
+                  let shouldShowExitDialog = Bool(shouldShowExitDialogFromJs) else {
+                delegate?.eefrtViewControllerDidRequestClose(self)
+                return
+            }
+
+            if shouldShowExitDialog {
+                showDismissDialog()
+            } else {
+                delegate?.eefrtViewControllerDidRequestClose(self)
+            }
 
         case Self.practiceTrialResultMessageKey:
             guard let stringifiedData = (message.body as? String)?.data(using: .utf8) else { return }

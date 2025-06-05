@@ -181,7 +181,8 @@ export default class PracticeTask extends BaseScene {
         this.closeButton.setScrollFactor(0);
         this.closeButton.setInteractive();
         this.closeButton.on('pointerdown', () => {
-            EmbedContext.sendMessage('close');
+            let shouldShowExitDialog = false
+            EmbedContext.sendMessage('close', shouldShowExitDialog);
         });
 
         //////////////ADD PLAYER SPRITE////////////////////

@@ -36,7 +36,8 @@ export default class StartTaskScene extends BaseScene {
         this.closeButton.setScrollFactor(0);
         this.closeButton.setInteractive();
         this.closeButton.on('pointerup', () => {
-            EmbedContext.sendMessage('close');
+            let shouldShowExitDialog = false
+            EmbedContext.sendMessage('close', shouldShowExitDialog);
         });
 
         const container = this.rexUI.add.sizer({
