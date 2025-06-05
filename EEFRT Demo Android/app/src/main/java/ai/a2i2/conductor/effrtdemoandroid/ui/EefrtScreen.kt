@@ -116,20 +116,20 @@ fun EefrtScreen(
             }
         )
 
-        if (eefrtViewModel.showExitDialog.value) {
-            val message = if (eefrtViewModel.rewardThresholdReached(context))
+        if (viewModel.showExitDialog.value) {
+            val message = if (viewModel.rewardThresholdReached(context))
                 "You'll still receive a bonus but won't be able to return to the task and add to your bonus payment."
             else
                 "You have not completed enough rounds to earn the bonus payment and will lose your progress."
 
             AlertDialog(
-                onDismissRequest = { eefrtViewModel.showExitDialog.value = false },
+                onDismissRequest = { viewModel.showExitDialog.value = false },
                 title = { Text("Quit task?") },
                 text = { Text(message) },
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            eefrtViewModel.showExitDialog.value = false
+                            viewModel.showExitDialog.value = false
 
                             dismiss(onBack)
                         }
@@ -138,7 +138,7 @@ fun EefrtScreen(
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { eefrtViewModel.showExitDialog.value = false }) {
+                    TextButton(onClick = { viewModel.showExitDialog.value = false }) {
                         Text("Cancel")
                     }
                 }
@@ -186,7 +186,7 @@ private fun handleMessage(
 
                 val shouldShowDialog = obj.getBoolean("message")
                 if (shouldShowDialog) {
-                    showDialogMessage(eefrtViewModel)
+                    showDialogMessage(viewModel)
                 } else {
                     exitRequested.value = true
                     dismiss(onBack)
