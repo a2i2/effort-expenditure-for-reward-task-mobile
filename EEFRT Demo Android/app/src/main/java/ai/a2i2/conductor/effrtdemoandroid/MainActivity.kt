@@ -20,6 +20,7 @@ import ai.a2i2.conductor.effrtdemoandroid.ui.theme.EFFRTDemoAndroidTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.TextButton
@@ -237,7 +238,10 @@ fun OptionsDialog(
                         },
                         modifier = Modifier.padding(vertical = 4.dp)
                     ) {
-                        Text(option)
+                        Text(
+                            text = option,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             }
