@@ -6,11 +6,9 @@ import SwiftyUserDefaults
 struct ContentView: View {
     @ObservedObject private var viewModel = ContentViewModel()
     @Environment(\.modelContext) private var modelContext
-    @State private var shouldShowAlert = false
 
     @State private var showingTrialDialog = false
     @State private var navigateToEEFRT = false
-    @State private var newGameCache = GameCache()
 
     var body: some View {
         NavigationStack {
@@ -33,44 +31,21 @@ struct ContentView: View {
                     }
                 }
 
-                NavigationLink(
-                    destination:
-                    EventLogsView()
-                        .toolbar {
-                            ToolbarItem(placement: .topBarTrailing) {
-                                Button {
-                                    showAlert()
-                                } label: {
-                                    Image(systemName: "trash")
-                                }
-                            }
-                        },
-                    label: {
-                        Text("View Event Logs")
-                    }
-                )
+                NavigationLink(destination: EventLogsView()) {
+                    Text("View Event Logs")
+                }
             }
             .padding()
             .navigationDestination(isPresented: $navigateToEEFRT) {
-                EEFRTView(gameCache: newGameCache)
+                EEFRTView(gameCache: viewModel.gameCache!)
                     .ignoresSafeArea()
                     .navigationBarBackButtonHidden()
-            }
-            .alert(isPresented: $shouldShowAlert) {
-                Alert(
-                    title: Text("Delete all events logs"),
-                    message: Text("Are you sure you want to remove all the practice and actual trial event log data?"),
-                    primaryButton: .destructive(Text("Delete")) {
-                        removeAllEventLogs()
-                    },
-                    secondaryButton: .cancel {}
-                )
             }
         }
     }
 
     private func startTrial(number: Int) {
-        newGameCache = GameCache()
+        var newGameCache = GameCache()
         switch(number) {
         case 2:
             newGameCache.trialSeqFilename = "trial-seq-2.json"
@@ -79,32 +54,7 @@ struct ContentView: View {
         default:
             newGameCache.trialSeqFilename = "trial-seq-1.json"
         }
-        viewModel.gameCache = newGameCache
+        Defaults.gameCache = newGameCache
         navigateToEEFRT = true
-    }
-
-    private func showAlert() {
-        shouldShowAlert = true
-    }
-
-    private func removeAllEventLogs() {
-        let practiceEvents = try? modelContext.fetch(FetchDescriptor<PracticeTaskResult>())
-        let actualEvents = try? modelContext.fetch(FetchDescriptor<TaskResult>())
-
-        guard let practiceEvents, let actualEvents else { return }
-
-        practiceEvents.forEach { practiceEvent in
-            modelContext.delete(practiceEvent)
-        }
-
-        actualEvents.forEach { trialData in
-            modelContext.delete(trialData)
-        }
-
-        do {
-            try modelContext.save()
-        } catch {
-            os_log(.error, "Error saving modelContext after deletion: \(error)")
-        }
     }
 }
