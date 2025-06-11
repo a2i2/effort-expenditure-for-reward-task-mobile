@@ -4,16 +4,15 @@ const taskName = "rew-eff-ema"; // the name of this task in db: createss data fi
 const version = "demo"; // version: used to create data collection in firestore/task
 // var infoSheet = "./assets/Combined_information_and_consent_ema_motivation_15311_001.pdf";
 const gameType = "demo" //"baseline"/"FU"/"demo" (note which type)
-const randomiseOrder = true; // true: randomise the questions/game order upon each load (false=game first)
+const randomiseOrder = false; // true: randomise the game order upon each load (false=defined order)
 const debug_mode = false; // turns on console logging 
 const demo_mode = true; // a demo game without study info
 // UPDATE runPRACTICE to false for FU games ///
 const runPractice = true; // run a practice i.e., a baseline version or without practice (FU)
 // trials:
-const trialsFile = "trials24.json" // name of the json file which includes trials
+const defaultTrialSequenceFile = "trial-seq-1.json" // name of the json file which includes trials
+const defaultCatchIdx = [13]; // a default catch idx to use if one is not provided
 const questionsFile = "questions.json" // json file storing the ema questions
-var nTrials = 24; // (24=will shuffle trials from 0-23)
-var catchIdx = 13; // specify the catch trial manually 
 // End behaviour: 
 var complete_link = "https://app.prolific.co/submissions/complete?cc=8B6EC8FC";  // link offered by brain explorer
 var buttonText = "Go back"; // text to display on the final button
@@ -66,7 +65,7 @@ var taskRewardsPayoutThreshold = 0.8; // requires 80% of trials to be reached be
 export {
 	demo_mode, debug_mode, randomiseOrder, runPractice,
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
-	trialsFile, questionsFile, nTrials, catchIdx, maxCoins, thresholdAutoSet,
+	defaultTrialSequenceFile, questionsFile, defaultCatchIdx, maxCoins, thresholdAutoSet,
 	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, pracTrialEffortProp, minPressMax, nCalibrates,
 	nBlocks, complete_link, buttonText, powerupDelay, missedTrialLimit, missedTrialDialogLimit, breakTime, taskRewardsPayoutThreshold
 };

@@ -14,14 +14,14 @@ struct EEFRTView: UIViewControllerRepresentable {
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.modelContext) private var context
 
-    private var gameCache: GameCache?
+    private var gameCache: GameCache
 
-    init(gameCache: GameCache? = nil) {
+    init(gameCache: GameCache) {
         self.gameCache = gameCache
     }
 
     func makeUIViewController(context: Context) -> EEFRTViewController {
-        let controller = EEFRTViewController(useCachedData: gameCache != nil)
+        let controller = EEFRTViewController(gameCache: self.gameCache)
         controller.delegate = context.coordinator
         return controller
     }
@@ -67,12 +67,12 @@ class EEFRTViewController: UIViewController {
     weak var delegate: EEFRTViewControllerDelegate?
 
     private var webView: WKWebView!
-    private var useCachedData: Bool
+    private var gameCache: GameCache
 
     private let publicPath: String
     private let indexFileUrl: URL
 
-    init(useCachedData: Bool = false) {
+    init(gameCache: GameCache) {
         guard let publicPath = Bundle.main.path(forResource: "assets", ofType: nil) else {
             fatalError("Unable to locate 'assets' folder in main bundle")
         }
@@ -80,7 +80,7 @@ class EEFRTViewController: UIViewController {
             fatalError("Unable to locate 'assets/index.html' in main bundle")
         }
 
-        self.useCachedData = useCachedData
+        self.gameCache = gameCache
         self.publicPath = publicPath
         self.indexFileUrl = indexFileURL
         super.init(nibName: nil, bundle: nil)
@@ -127,7 +127,7 @@ class EEFRTViewController: UIViewController {
 
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
 
-        if useCachedData, let gameCache = try? Defaults.gameCache?.stringify() {
+        if let gameCache = try? gameCache.stringify() {
             let gameCacheJsString = "window.setupGameWithCache(\(gameCache));"
             let gameCacheUserScript = WKUserScript(source: gameCacheJsString, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
             config.userContentController.addUserScript(gameCacheUserScript)
