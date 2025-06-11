@@ -68,6 +68,13 @@
                 font-weight: bold;
                 color: #4e4e4e;
             }
+
+            #firefox-message {
+                font-family: 'DM Sans', sans-serif;
+                font-size: 16px;
+                font-weight: bold;
+                color: #4e4e4e;
+            }
         </style>
 
     </head>
@@ -87,6 +94,10 @@
         // Function to detect if user is on a mobile device
         function isMobileDevice() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        function isFirefox() {
+            return navigator.userAgent.includes('Firefox');
         }
 
         // Function to create the device wrapper
@@ -115,9 +126,20 @@
             return iframe;
         }
 
+        function createFirefoxMessage() {
+            const message = document.createElement('div');
+            message.id = 'firefox-message';
+            message.innerHTML = `
+                <p>This game is not supported in Firefox. Please use a different browser like Chrome or Safari.</p>
+            `;
+            return message;
+        }
+
         // Initialize the content based on device type
         const container = document.getElementById('content-container');
-        if (isMobileDevice()) {
+        if (isFirefox()) {
+            container.appendChild(createFirefoxMessage());
+        } else if (isMobileDevice()) {
             container.appendChild(createSimpleIframe());
         } else {
             container.appendChild(createDeviceWrapper());
