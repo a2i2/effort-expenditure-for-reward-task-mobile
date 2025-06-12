@@ -37,7 +37,7 @@ struct ContentView: View {
             }
             .padding()
             .navigationDestination(isPresented: $navigateToEEFRT) {
-                EEFRTView(gameCache: viewModel.gameCache!)
+                EEFRTView(gameCache: viewModel.gameCache)
                     .ignoresSafeArea()
                     .navigationBarBackButtonHidden()
             }

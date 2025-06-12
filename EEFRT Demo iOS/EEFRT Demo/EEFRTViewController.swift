@@ -14,9 +14,9 @@ struct EEFRTView: UIViewControllerRepresentable {
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.modelContext) private var context
 
-    private var gameCache: GameCache
+    private var gameCache: GameCache?
 
-    init(gameCache: GameCache) {
+    init(gameCache: GameCache?) {
         self.gameCache = gameCache
     }
 
@@ -67,12 +67,12 @@ class EEFRTViewController: UIViewController {
     weak var delegate: EEFRTViewControllerDelegate?
 
     private var webView: WKWebView!
-    private var gameCache: GameCache
+    private var gameCache: GameCache?
 
     private let publicPath: String
     private let indexFileUrl: URL
 
-    init(gameCache: GameCache) {
+    init(gameCache: GameCache?) {
         guard let publicPath = Bundle.main.path(forResource: "assets", ofType: nil) else {
             fatalError("Unable to locate 'assets' folder in main bundle")
         }
@@ -127,7 +127,7 @@ class EEFRTViewController: UIViewController {
 
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
 
-        if let gameCache = try? gameCache.stringify() {
+        if let gameCache = try? gameCache?.stringify() {
             let gameCacheJsString = "window.setupGameWithCache(\(gameCache));"
             let gameCacheUserScript = WKUserScript(source: gameCacheJsString, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
             config.userContentController.addUserScript(gameCacheUserScript)
