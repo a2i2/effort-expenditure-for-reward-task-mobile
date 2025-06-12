@@ -38,7 +38,7 @@ const endbridgeX = 765;        // where the player must jump up to cross bridge 
 const playerVelocity = 1000;   // baseline player velocity (rightward)
 // initialize task vars
 var nTrials;
-var maxTrials = nTrials;
+var maxTrials;
 var trialNo = 0;
 var trialReward1;
 var trialEffort1; var trialEffortPropMax1;
@@ -81,7 +81,7 @@ if (debug_mode) {
 
     // Check if all numbers between 0 and 23 are included
     const includedNumbers = new Set(randTrialsIdx);
-    for (let i = 0; i <= 23; i++) {
+    for (let i = 0; i <= 43; i++) {
         if (!includedNumbers.has(i)) {
             console.error(`Number ${i} is missing in randTrialsIdx.`);
         }
@@ -171,6 +171,7 @@ export default class MainTask extends BaseScene {
         // load trial info (must be done within create())
         let trials = this.cache.json.get("trials");
         nTrials = trials.reward1.length;
+        maxTrials = nTrials;
         trialsPerBlock = nTrials / nBlocks;  // blocks divide trials
         let catchIdx = trials.catchIdx ?? defaultCatchIdx;
 
