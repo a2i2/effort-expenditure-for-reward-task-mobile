@@ -71,22 +71,8 @@ var coinsWonThisTrial = 0;
 var smallDeviceOffset = 0;
 var consecutiveMissedTrials = 0;
 var missedTrialDialogsShown = 0;
+var randTrialsIdx;
 
-// pre-shuffle the trials here with nTrials specified in ./versionInfo.js
-var randTrialsIdx
-// check
-if (debug_mode) {
-    console.log('random trial indices check: ' + randTrialsIdx)
-    console.log('number trials: ' + Object.keys(randTrialsIdx).length)
-
-    // Check if all numbers between 0 and 23 are included
-    const includedNumbers = new Set(randTrialsIdx);
-    for (let i = 0; i <= 43; i++) {
-        if (!includedNumbers.has(i)) {
-            console.error(`Number ${i} is missing in randTrialsIdx.`);
-        }
-    };
-};
 // this function extends Phaser.Scene and includes the core logic for the game
 export default class MainTask extends BaseScene {
     constructor() {
