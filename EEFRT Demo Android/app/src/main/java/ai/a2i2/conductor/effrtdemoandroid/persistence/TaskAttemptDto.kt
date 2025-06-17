@@ -32,6 +32,7 @@ data class TaskAttempt(
     @ColumnInfo(name = "effort_time_limit") val effortTimeLimit: Int,
     @ColumnInfo(name = "recalibration") val recalibration: Int,
     @ColumnInfo(name = "threshold_max") val thresholdMax: Int,
+    @ColumnInfo(name = "power_countdown") val powerCountdown: Int,
 ): EefrtTaskAttempt
 
 @Dao

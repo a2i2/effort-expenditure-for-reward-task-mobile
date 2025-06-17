@@ -11,8 +11,9 @@ class PracticeTaskResult: Codable {
     var pressTimes: [Int]
     var trialSuccess: Int
     var maxPressCount: Int
+    var powerCountdown: Int
 
-    init(pracTrialNo: Int, trialReward: Int, trialEffort: Int, pressCount: Int, pressTimes: [Int], trialSuccess: Int, maxPressCount: Int) {
+    init(pracTrialNo: Int, trialReward: Int, trialEffort: Int, pressCount: Int, pressTimes: [Int], trialSuccess: Int, maxPressCount: Int, powerCountdown: Int) {
         self.createdAt = Date()
         self.pracTrialNo = pracTrialNo
         self.trialReward = trialReward
@@ -21,6 +22,7 @@ class PracticeTaskResult: Codable {
         self.pressTimes = pressTimes
         self.trialSuccess = trialSuccess
         self.maxPressCount = maxPressCount
+        self.powerCountdown = powerCountdown
     }
 
     required init(from decoder: any Decoder) throws {
@@ -33,6 +35,7 @@ class PracticeTaskResult: Codable {
         self.pressTimes = try container.decode([Int].self, forKey: .pressTimes)
         self.trialSuccess = try container.decode(Int.self, forKey: .trialSuccess)
         self.maxPressCount = try container.decode(Int.self, forKey: .maxPressCount)
+        self.powerCountdown = try container.decode(Int.self, forKey: .powerCountdown)
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -45,9 +48,10 @@ class PracticeTaskResult: Codable {
         try container.encode(pressTimes, forKey: .pressTimes)
         try container.encode(trialSuccess, forKey: .trialSuccess)
         try container.encode(maxPressCount, forKey: .maxPressCount)
+        try container.encode(powerCountdown, forKey: .powerCountdown)
     }
 
     enum CodingKeys: String, CodingKey {
-        case createdAt, pracTrialNo, trialReward, trialEffort, pressCount, pressTimes, trialSuccess, maxPressCount
+        case createdAt, pracTrialNo, trialReward, trialEffort, pressCount, pressTimes, trialSuccess, maxPressCount, powerCountdown
     }
 }

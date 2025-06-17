@@ -60,7 +60,7 @@ npm run preview
 2. The game world was compiled using [Tiled](https://www.mapeditor.org/) using art assets by [kenney](https://kenney.nl/). Based on the [phaser3](https://phaser.io/phaser3) and [rexUI plugins](https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ui-overview/).
 
 ## Response Data Structure
-Note: When 'Game Time' is mentioned it refers to the Clock used by the Phaser Game Engine which counts in milliseconds from the time the scene is originally created. The scene is restarted whenever a new trial occurs but will retain the same Clock for the scene and thus the the will continue to increment without resetting untill a new scene is raeached.
+Note: When 'Game Time' is mentioned it refers to the Clock used by the Phaser Game Engine which counts in milliseconds from the time the scene is originally created. The scene is restarted whenever a new trial occurs but will retain the same Clock for the scene and thus the the will continue to increment without resetting untill a new scene is reached.
 
 ### PracticeTaskAttempt
 | Field | Type | Description |
@@ -73,6 +73,7 @@ Note: When 'Game Time' is mentioned it refers to the Clock used by the Phaser Ga
 | `trialSuccess` | Boolean | Whether or not the user reached the effort threshold current trial (0 or 1). |
 | `maxPressCount` | Number | The maximum number of times the power button was pressed during the power up animation. |
 | `createdAt` | Date | A timestamp measured in seconds since January 1, 1970 (UTC), of when each trial (practice and main) are saved to the local database. |
+| `powerCountdown` | Number | The Game Time at which the power-up countdown timer begins to tick down. |
 
 ### TaskAttempt
 | Field | Type | Description |
@@ -96,3 +97,4 @@ Note: When 'Game Time' is mentioned it refers to the Clock used by the Phaser Ga
 | `recalibration` | Boolean | Whether or not the `thresholdMax` was adjusted due to the user reaching a new maximum number of presses (0 or 1). |
 | `thresholdMax` | Number | The maximum number of taps the user has achieved so far across all completed trials, include the calibration trials. |
 | `createdAt` | Date | A timestamp measured in seconds since January 1, 1970 (UTC). |
+| `powerCountdown` | Number | The Game Time at which the power-up countdown timer begins to tick down. |

@@ -17,6 +17,7 @@ import { effortTime, pracTrialEfforts, pracTrialRewards, timeout } from "../vers
 import Message from "../elements/message.js";
 import GameCache from "../embedContext/GameCache.js";
 import PracticeTaskAttempt from "../embedContext/PracticeTaskAttempt.js";
+import { POWER_COUNTDOWN_KEY } from "../elements/CountdownPanel.js";
 
 // initialize some global vars
 var gameHeight;
@@ -60,6 +61,8 @@ const PRACTICE_CHOICE_KEY = 'practiceChoiceComplete';
 
 var routeSelectionTransitionTimer;
 var smallDeviceOffset = 0;
+
+var powerCountdown;
 
 // this function extends Phaser.Scene and includes the core logic for the game
 export default class PracticeTask extends BaseScene {
@@ -246,6 +249,8 @@ export default class PracticeTask extends BaseScene {
             function () { eventsCenter.emit('practiceTrialEndHit'); }, null, this); // once the player has collided with invisible trial end point, emit event
         // once this event us detected, perform the function trialEnd (only once)
         eventsCenter.once('practiceTrialEndHit', pracTrialEnd, this);
+
+        eventsCenter.once(POWER_COUNTDOWN_KEY, storeCountdownStarted, this);
 
         // // 3. if desired, add listener functions to pause game when focus taken away
         // // from game browser tab/window [necessary for mobile devices]
@@ -649,7 +654,8 @@ var pracTrialEnd = function () {
         pressCount,
         pressTimes,
         trialSuccess,
-        this.registry.get('maxPressCount')
+        this.registry.get('maxPressCount'),
+        powerCountdown
     );
     this.registry.set("pracTrial"+pracTrial, practiceTaskAttempt);
     // save data
@@ -681,3 +687,7 @@ var onejump = function () {
     let jumpAnimDuration = 1100;
     this.time.delayedCall(jumpAnimDuration, () => { this.player.sprite.setVelocityX(playerVelocity/5); }, null, this);
 };
+
+var storeCountdownStarted = function(startTime) {
+    powerCountdown = startTime;
+}
