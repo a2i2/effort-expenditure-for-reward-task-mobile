@@ -92,12 +92,11 @@ export default class RouteSelectorPanel {
             this.overlay.fillStyle(0x000000, 0.25);
         }
 
-        // React when the countdown timer has finished
+        // The CountdownPanel will trigger this event when the timer has finished, indicating that the user has not made a choice within the countdown period
         eventsCenter.once(ROUTE_TIMEOUT_KEY, () => {
-            setTimeout(() => {
-                this.onSelect?.('timeout');
-                this.destroy();
-            }, 100);
+            // Callback to the parent scene to handle the timeout animation
+            this.onSelect?.('timeout');
+            this.destroy();
         });
     }
 

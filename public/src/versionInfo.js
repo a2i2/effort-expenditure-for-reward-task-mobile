@@ -12,7 +12,6 @@ const runPractice = true; // run a practice i.e., a baseline version or without 
 // trials:
 const defaultTrialSequenceFile = "trial-seq-1.json" // name of the json file which includes trials
 const defaultCatchIdx = [13]; // a default catch idx to use if one is not provided
-const questionsFile = "questions.json" // json file storing the ema questions
 // End behaviour: 
 var complete_link = "https://app.prolific.co/submissions/complete?cc=8B6EC8FC";  // link offered by brain explorer
 var buttonText = "Go back"; // text to display on the final button
@@ -65,7 +64,7 @@ var taskRewardsPayoutThreshold = 0.8; // requires 80% of trials to be reached be
 export {
 	demo_mode, debug_mode, randomiseOrder, runPractice,
 	completionMin, completionBonus80, completionBonus100, taskName, version, gameType, approxTime, bonusRate, maxBonus,
-	defaultTrialSequenceFile, questionsFile, defaultCatchIdx, maxCoins, thresholdAutoSet,
+	defaultTrialSequenceFile, defaultCatchIdx, maxCoins, thresholdAutoSet,
 	effortTime, timeout, gemHeights, pracTrialRewards, pracTrialEfforts, pracTrialEffortProp, minPressMax, nCalibrates,
 	nBlocks, complete_link, buttonText, powerupDelay, missedTrialLimit, missedTrialDialogLimit, breakTime, taskRewardsPayoutThreshold
 };
