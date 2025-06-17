@@ -173,9 +173,7 @@ export default class PowerPanel {
                         this.powerButtonText.setColor('#FFFFFF');
                         this.state = powerPanelState.power;
                         eventsCenter.emit('powerStatePassed');
-                        setTimeout(() => { 
-                            this.countdownPanel.startCountdown();
-                        }, 500)
+                        this.countdownPanel.startCountdown();
                         break;
                     
                     case powerPanelState.power:
