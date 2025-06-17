@@ -237,7 +237,7 @@ export default class PowerPanel {
 
     onSuccess() {
         this.onComplete();
-        setTimeout(() => { this.destroy(); }, 200); // Keep the panel visible for a brief moment
+        this.destroy();
     }
 
     onComplete() {
