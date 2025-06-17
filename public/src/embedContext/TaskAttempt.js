@@ -1,5 +1,5 @@
 export default class TaskAttempt {
-    constructor(trialNo, trialStartTime, trialReward1, trialEffort1, trialEffortPropMax1, trialReward2, trialEffort2, trialEffortPropMax2, choice, choiceRT, pressCount, pressTimes, trialSuccess, coinsRunningTotal, trialEndTime, effortTimeLimit, recalibration, thresholdMax) {
+    constructor(trialNo, trialStartTime, trialReward1, trialEffort1, trialEffortPropMax1, trialReward2, trialEffort2, trialEffortPropMax2, choice, choiceRT, pressCount, pressTimes, trialSuccess, coinsRunningTotal, trialEndTime, effortTimeLimit, recalibration, thresholdMax, powerCountdown) {
         this.trialNo = trialNo;
         this.trialStartTime = trialStartTime;
         this.trialReward1 = trialReward1;
@@ -18,6 +18,7 @@ export default class TaskAttempt {
         this.effortTimeLimit = effortTimeLimit;
         this.recalibration = recalibration;
         this.thresholdMax = thresholdMax;
+        this.powerCountdown = powerCountdown;
     }
 
     stringify() {

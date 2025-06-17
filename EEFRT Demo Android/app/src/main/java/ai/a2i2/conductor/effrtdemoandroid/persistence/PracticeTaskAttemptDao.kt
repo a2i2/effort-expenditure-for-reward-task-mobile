@@ -21,6 +21,7 @@ data class PracticeTaskAttempt(
     @ColumnInfo(name = "press_times") val pressTimes: List<Int>,
     @ColumnInfo(name = "trial_success") val trialSuccess: Int,
     @ColumnInfo(name = "max_press_count") val maxPressCount: Int,
+    @ColumnInfo(name = "power_countdown") val powerCountdown: Int,
 ) : EefrtTaskAttempt
 
 @Dao

@@ -22,8 +22,9 @@ class TaskResult: Codable {
     var effortTimeLimit: Int
     var recalibration: Int
     var thresholdMax: Int
+    var powerCountdown: Int
 
-    init(trialNo: Int, trialStartTime: Int, trialReward1: Int, trialEffort1: Int, trialEffortPropMax1: Double, trialReward2: Int, trialEffort2: Int, trialEffortPropMax2: Double, choice: String, choiceRT: Int, pressCount: Int, pressTimes: [Int], trialSuccess: Int, coinsRunningTotal: Int, trialEndTime: Int, effortTimeLimit: Int, recalibration: Int, thresholdMax: Int) {
+    init(trialNo: Int, trialStartTime: Int, trialReward1: Int, trialEffort1: Int, trialEffortPropMax1: Double, trialReward2: Int, trialEffort2: Int, trialEffortPropMax2: Double, choice: String, choiceRT: Int, pressCount: Int, pressTimes: [Int], trialSuccess: Int, coinsRunningTotal: Int, trialEndTime: Int, effortTimeLimit: Int, recalibration: Int, thresholdMax: Int, powerCountdown: Int) {
         self.createdAt = Date()
         self.trialNo = trialNo
         self.trialStartTime = trialStartTime
@@ -43,6 +44,7 @@ class TaskResult: Codable {
         self.effortTimeLimit = effortTimeLimit
         self.recalibration = recalibration
         self.thresholdMax = thresholdMax
+        self.powerCountdown = powerCountdown
     }
 
     required init(from decoder: any Decoder) throws {
@@ -66,6 +68,7 @@ class TaskResult: Codable {
         self.effortTimeLimit = try container.decode(Int.self, forKey: .effortTimeLimit)
         self.recalibration = try container.decode(Int.self, forKey: .recalibration)
         self.thresholdMax = try container.decode(Int.self, forKey: .thresholdMax)
+        self.powerCountdown = try container.decode(Int.self, forKey: .powerCountdown)
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -89,9 +92,10 @@ class TaskResult: Codable {
         try container.encode(effortTimeLimit, forKey: .effortTimeLimit)
         try container.encode(recalibration, forKey: .recalibration)
         try container.encode(thresholdMax, forKey: .thresholdMax)
+        try container.encode(powerCountdown, forKey: .powerCountdown)
     }
 
     enum CodingKeys: CodingKey {
-        case createdAt, trialNo, trialStartTime, trialReward1, trialEffort1, trialEffortPropMax1, trialReward2, trialEffort2, trialEffortPropMax2, choice, choiceRT, pressCount, pressTimes, trialSuccess, coinsRunningTotal, trialEndTime, effortTimeLimit, recalibration, thresholdMax
+        case createdAt, trialNo, trialStartTime, trialReward1, trialEffort1, trialEffortPropMax1, trialReward2, trialEffort2, trialEffortPropMax2, choice, choiceRT, pressCount, pressTimes, trialSuccess, coinsRunningTotal, trialEndTime, effortTimeLimit, recalibration, thresholdMax, powerCountdown
     }
 }

@@ -24,6 +24,7 @@ import PowerPanel from "../elements/PowerPanel.js";
 import { POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
 import GameCache from "../embedContext/GameCache.js";
 import TaskAttempt from "../embedContext/TaskAttempt.js";
+import { POWER_COUNTDOWN_KEY } from "../elements/CountdownPanel.js";
 
 // initialize all the global vars (must be a better way of doing this...)
 var gameHeight; 
@@ -72,6 +73,7 @@ var smallDeviceOffset = 0;
 var consecutiveMissedTrials = 0;
 var missedTrialDialogsShown = 0;
 var randTrialsIdx;
+var powerCountdown;
 
 // this function extends Phaser.Scene and includes the core logic for the game
 export default class MainTask extends BaseScene {
@@ -328,6 +330,8 @@ export default class MainTask extends BaseScene {
                           function(){eventsCenter.emit('trialEndHit');}, null, this); // once the player has collided with invisible trial end point, emit event
         // once this event us detected, perform the function trialEnd (only once)
         eventsCenter.once('trialEndHit', trialEnd, this);
+
+        eventsCenter.once(POWER_COUNTDOWN_KEY, storeCountdownStarted, this);
         
         // // 3. if desired, add listener functions to pause game when focus taken away
         // // from game browser tab/window [necessary for mobile devices]
@@ -693,7 +697,8 @@ var trialEnd = function () {
         trialEndTime,
         effortTime,
         recalibration,
-        thresholdMax
+        thresholdMax,
+        powerCountdown
     );
 
     // save the data in a registry for later retrieval
@@ -912,4 +917,8 @@ var showBottomScreenPanel = function(context, titleText, subtitleText, bottomBut
         repeat: 0,      
         yoyo: false
     });    
+}
+
+var storeCountdownStarted = function(startTime) {
+    powerCountdown = startTime;
 }

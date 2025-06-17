@@ -1,6 +1,8 @@
 import eventsCenter from '../eventsCenter.js'
 import { timeout } from '../versionInfo.js';
 
+export const POWER_COUNTDOWN_KEY = 'powerCountdown';
+
 export default class CountdownPanel {
     constructor(scene, x, y, duration = timeout, timeoutKey, startImmediately = true) {
         this.scene = scene;
@@ -77,6 +79,8 @@ export default class CountdownPanel {
     
     startCountdown() {
         const updateInterval = 50; // Update every 50ms for smooth animation
+
+        eventsCenter.emit(POWER_COUNTDOWN_KEY, Math.round(this.scene.time.now));
         
         this.timer = this.scene.time.addEvent({
             delay: updateInterval,
