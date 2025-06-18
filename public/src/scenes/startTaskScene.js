@@ -13,8 +13,8 @@ export default class StartTaskScene extends BaseScene {
     }
     
     create() {
-        const width = this.game.config.width;
-        const height = this.game.config.height;
+        const width = this.sys.game.config.width;
+        const height = this.sys.game.config.height;
         const maxWidth = width - 50; // Width - padding 25px left and right
         const panelHeight = height - 100;
         const panelX = width / 2;
