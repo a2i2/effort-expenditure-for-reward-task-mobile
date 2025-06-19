@@ -679,11 +679,13 @@ var setUpMaxThreshold = function(context) {
         }
     }
     else {
-        // add a catch if thresholdMax is undefined
-        if (typeof thresholdMax === "undefined") {
+        // use the stored thresholdMax to set maxPressCount if present
+        let storedThresholdMax = context.registry.get('thresholdMax');
+        // add a catch if storedThresholdMax is undefined
+        if (typeof storedThresholdMax === "undefined") {
             maxPressCount = thresholdAutoSet;
         } else {
-            maxPressCount = thresholdMax; // fetch 
+            maxPressCount = storedThresholdMax; // fetch 
         }
     };
 }
@@ -923,4 +925,12 @@ var saveData = function(context) {
     let currentGameState = new GameCache(true, trialNo + 1, maxPressCount, nCoins, coinChoices, randTrialsIdx, context.trialSequenceFile);
     GameCache.cache = currentGameState;
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
+}
+
+var saveThresholdMax = function(context, currentThresholdMax) {
+    // campare the current thresholdMax to the one saved in the registry, save the biggest one
+    let storedThresholdMax = context.registry.get('thresholdMax') ?? 0;
+    if (storedThresholdMax < currentThresholdMax) {
+        context.registry.set('thresholdMax', currentThresholdMax);
+    }
 }
