@@ -911,11 +911,9 @@ var saveData = function(context) {
     // save the data in a registry for later retrieval
     context.registry.set("trial" + trialNo, taskAttempt);
 
-    // save data
+    // inform the native apps of the trial result
     EmbedContext.sendMessage("trialResult", taskAttempt.stringify());
     console.log(context.registry.get("trial" + trialNo));
-    // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
-    //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
 
     // save the current coin choice to the cache by adding on to the previous dictionary if present
     let coinChoices = GameCache.cache?.trialResults ?? {};
