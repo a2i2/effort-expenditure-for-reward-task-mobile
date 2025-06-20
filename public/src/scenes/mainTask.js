@@ -602,134 +602,13 @@ var effortOutcome = function() {
                             },                         
                             callbackScope: this});
     }
+
+    // save the data immediately after powerup/timeout in the event the walking animation gets interrupted before it completes
+    saveData(this);
 };
 
 // 4. When player hits end of scene, save trial data and move on to the next trial (reload the scene)
 var trialEnd = function () {
-    // get trial end time
-    trialEndTime = Math.round(this.time.now);
-
-    // n.b. nCalibrates now set in versionInfo.js
-    // we completed the practice, but might be loading back from a cached run so we've already calibrated
-
-    var updatedNumCalibrates = nCalibrates;
-    if (GameCache.cache?.practiceComplete == true && runPractice) {
-        updatedNumCalibrates = 0;
-    }
-
-    if (trialNo < updatedNumCalibrates) {
-        // get variables to use 
-        pressTimes = this.registry.get('pressTimes');
-        pressCount = this.registry.get('pressCount');
-        pressStartTime = pressTimes[0]; // pressStartTime is the first pressTime
-        pressEndTime = pressTimes[pressTimes.length - 1]; // pressEndTime is the last pressTime
-
-        // get level of effort chosen
-        if (choice == 'route 1') {
-            trialEffortPropChosen = trialEffortPropMax1;
-            trialEffort = trialEffort1;
-        }
-        else {
-            trialEffortPropChosen = trialEffortPropMax2; // else they chose route 2
-            trialEffort = trialEffort2;
-        }
-        // for success trials if pressTime was faster than expected given the effort level, recalibrate
-        if (pressCount >= trialEffort &&
-            ((pressEndTime - pressStartTime) < (effortTime * trialEffortPropChosen))) {
-            // calculate their new 100% threshold
-            var threshold = Math.round(((pressCount / ((pressEndTime - pressStartTime) / 1000)) * (effortTime / 1000)))
-            // if threshold is greater than the original maxPress: thresholdMax is updated 
-            if (threshold > maxPressCount) {
-                thresholdMax = threshold
-                var recalibration = 1;
-            }
-            else {
-                // continue with thresholdMax at maxPressCount 
-                var recalibration = 0;
-                thresholdMax = maxPressCount;
-            }
-        }
-        else {// the trial wasn't successful or did not need recalibration: 
-            var recalibration = 0; // record recalibration didn't occur
-            // also keep thresholdMax at maxPressCount
-            thresholdMax = maxPressCount
-
-        }
-        // save thresholdMax
-        this.registry.set("thresholdMax", { thresholdMax });
-        // save it in its own document for easy retrieval later 
-        // saveThresholdMax(this.registry.get("thresholdMax"));        // [for firebase]
-    }
-    else { // if we are past the first calibration trials 
-        var recalibration = 0; // record recalibration didn't occur
-        thresholdMax = maxPressCount // do not adjust thresholdMax 
-    };
-
-    if (choice == 'timeout') {
-        // if the choice was a timeout then reset all the relevant variables so the payload doesn't retain the previous trial's data
-        trialEffortPropChosen = 0;
-        trialEffort = 0;
-        choiceRT = 0;
-        pressCount = 0;
-        pressTimes = [];
-        trialSuccess = 0;
-        pressStartTime = 0;
-        pressEndTime = 0;
-        coinsWonThisTrial = 0;
-    }
-
-    // set data to be saved into registry
-    let taskAttempt = new TaskAttempt(
-        trialNo,
-        trialStartTime,
-        trialReward1,
-        trialEffort1,
-        trialEffortPropMax1,
-        trialReward2,
-        trialEffort2,
-        trialEffortPropMax2,
-        choice,
-        choiceRT,
-        pressCount,
-        pressTimes,
-        trialSuccess,
-        nCoins,
-        trialEndTime,
-        effortTime,
-        recalibration,
-        thresholdMax,
-        powerCountdown
-    );
-
-    // save the data in a registry for later retrieval
-    this.registry.set("trial" + trialNo, taskAttempt);
-
-    // save data
-    EmbedContext.sendMessage("trialResult", taskAttempt.stringify());
-    console.log(this.registry.get("trial" + trialNo));
-    // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
-    //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
-    
-    // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
-    if (trialSuccess && choice == 'route 1') {
-        coinsWonThisTrial = trialReward1;
-        nCoins += coinsWonThisTrial;
-    } else if (trialSuccess && choice == 'route 2') {
-        coinsWonThisTrial = trialReward2;
-        nCoins += coinsWonThisTrial;
-    } else {
-        coinsWonThisTrial = 0;
-    }
-
-    // save the current coin choice to the cache by adding on to the previous dictionary if present
-    let coinChoices = GameCache.cache?.trialResults ?? {};
-    coinChoices['trial' + trialNo] = trialSuccess ? coinsWonThisTrial : 0;
-
-    // notify the native apps of what the current game state is so they can cache it
-    let currentGameState = new GameCache(true, trialNo + 1, maxPressCount, nCoins, coinChoices, randTrialsIdx, this.trialSequenceFile);
-    GameCache.cache = currentGameState;
-    EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
-
     // if the user has been shown the 'Are you still there?' message and they trigger it again, kick them out of the task
     let isLastTrial = trialNo == nTrials - 1;
     let missedTrialDialogShownLimitReached = (missedTrialDialogsShown >= missedTrialDialogLimit) && missedTrialDialogLimit > 0; // ensure that a limit of 0 allows the dialog to be shown as many times as needed
@@ -921,4 +800,127 @@ var showBottomScreenPanel = function(context, titleText, subtitleText, bottomBut
 
 var storeCountdownStarted = function(startTime) {
     powerCountdown = startTime;
+}
+
+var saveData = function(context) {
+    // get trial end time
+    trialEndTime = Math.round(context.time.now);
+
+    // n.b. nCalibrates now set in versionInfo.js
+    // we completed the practice, but might be loading back from a cached run so we've already calibrated
+    var updatedNumCalibrates = nCalibrates;
+    if (GameCache.cache?.practiceComplete == true && runPractice) {
+        updatedNumCalibrates = 0;
+    }
+
+    if (trialNo < updatedNumCalibrates) {
+        // get variables to use 
+        pressTimes = context.registry.get('pressTimes');
+        pressCount = context.registry.get('pressCount');
+        pressStartTime = pressTimes[0]; // pressStartTime is the first pressTime
+        pressEndTime = pressTimes[pressTimes.length - 1]; // pressEndTime is the last pressTime
+
+        // get level of effort chosen
+        if (choice == 'route 1') {
+            trialEffortPropChosen = trialEffortPropMax1;
+            trialEffort = trialEffort1;
+        }
+        else {
+            trialEffortPropChosen = trialEffortPropMax2; // else they chose route 2
+            trialEffort = trialEffort2;
+        }
+        // for success trials if pressTime was faster than expected given the effort level, recalibrate
+        if (pressCount >= trialEffort &&
+            ((pressEndTime - pressStartTime) < (effortTime * trialEffortPropChosen))) {
+            // calculate their new 100% threshold
+            var threshold = Math.round(((pressCount / ((pressEndTime - pressStartTime) / 1000)) * (effortTime / 1000)))
+            // if threshold is greater than the original maxPress: thresholdMax is updated 
+            if (threshold > maxPressCount) {
+                thresholdMax = threshold
+                var recalibration = 1;
+            }
+            else {
+                // continue with thresholdMax at maxPressCount 
+                var recalibration = 0;
+                thresholdMax = maxPressCount;
+            }
+        }
+        else {// the trial wasn't successful or did not need recalibration: 
+            var recalibration = 0; // record recalibration didn't occur
+            // also keep thresholdMax at maxPressCount
+            thresholdMax = maxPressCount
+
+        }
+        // save thresholdMax
+        context.registry.set("thresholdMax", { thresholdMax });
+        // save it in its own document for easy retrieval later 
+        // saveThresholdMax(this.registry.get("thresholdMax"));        // [for firebase]
+    }
+    else { // if we are past the first calibration trials 
+        var recalibration = 0; // record recalibration didn't occur
+        thresholdMax = maxPressCount // do not adjust thresholdMax 
+    };
+
+    // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
+    if (trialSuccess && choice == 'route 1') {
+        coinsWonThisTrial = trialReward1;
+        nCoins += coinsWonThisTrial;
+    } else if (trialSuccess && choice == 'route 2') {
+        coinsWonThisTrial = trialReward2;
+        nCoins += coinsWonThisTrial;
+    } else {
+        coinsWonThisTrial = 0;
+    }
+
+    if (choice == 'timeout') {
+        // if the choice was a timeout then reset all the relevant variables so the payload doesn't retain the previous trial's data
+        trialEffortPropChosen = 0;
+        trialEffort = 0;
+        choiceRT = 0;
+        pressCount = 0;
+        pressTimes = [];
+        trialSuccess = 0;
+        pressStartTime = 0;
+        pressEndTime = 0;
+        coinsWonThisTrial = 0;
+    }
+
+    // set data to be saved into registry
+    let taskAttempt = new TaskAttempt(
+        trialNo,
+        trialStartTime,
+        trialReward1,
+        trialEffort1,
+        trialEffortPropMax1,
+        trialReward2,
+        trialEffort2,
+        trialEffortPropMax2,
+        choice,
+        choiceRT,
+        pressCount,
+        pressTimes,
+        trialSuccess,
+        nCoins,
+        trialEndTime,
+        effortTime,
+        recalibration,
+        thresholdMax,
+        powerCountdown
+    );
+
+    // save the data in a registry for later retrieval
+    context.registry.set("trial" + trialNo, taskAttempt);
+
+    // inform the native apps of the trial result
+    EmbedContext.sendMessage("trialResult", taskAttempt.stringify());
+    console.log(context.registry.get("trial" + trialNo));
+
+    // save the current coin choice to the cache by adding on to the previous dictionary if present
+    let coinChoices = GameCache.cache?.trialResults ?? {};
+    coinChoices['trial' + trialNo] = trialSuccess ? coinsWonThisTrial : 0;
+
+    // notify the native apps of what the current game state is so they can cache it
+    let currentGameState = new GameCache(true, trialNo + 1, maxPressCount, nCoins, coinChoices, randTrialsIdx, context.trialSequenceFile);
+    GameCache.cache = currentGameState;
+    EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
 }

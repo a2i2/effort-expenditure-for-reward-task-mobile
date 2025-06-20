@@ -92,7 +92,7 @@ Note: When 'Game Time' is mentioned it refers to the Clock used by the Phaser Ga
 | `pressTimes` | Array[Number] | An array containing each time the power button was pressed curing the power up animation. Individual press counts are derived from the current Game Time at which the tap occured. |
 | `trialSuccess` | Boolean | Whether or not the user reached the effort threshold current trial (0 or 1). |
 | `coinsRunningTotal` | Float | The total number of coins the user has earned so far in the task across all completed trials. |
-| `trialEndTime` | Number | The Game Time at which the current trial ended. the practice task ended. |
+| `trialEndTime` | Number | The Game Time at which the current trial is marked as completed, either that be at the end of the power-up animation or as soon as the route selector times out. |
 | `effortTimeLimit` | Number | The amount of time in milliseconds given to the user to reach the effort threshold for the current trial. |
 | `recalibration` | Boolean | Whether or not the `thresholdMax` was adjusted due to the user reaching a new maximum number of presses (0 or 1). |
 | `thresholdMax` | Number | The maximum number of taps the user has achieved so far across all completed trials, include the calibration trials. |
