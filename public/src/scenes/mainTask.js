@@ -904,7 +904,8 @@ var saveData = function(context) {
         trialEndTime,
         effortTime,
         recalibration,
-        thresholdMax
+        thresholdMax,
+        powerCountdown
     );
 
     // save the data in a registry for later retrieval
