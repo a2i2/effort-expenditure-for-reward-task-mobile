@@ -861,6 +861,17 @@ var saveData = function(context) {
         thresholdMax = maxPressCount // do not adjust thresholdMax 
     };
 
+    // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
+    if (trialSuccess && choice == 'route 1') {
+        coinsWonThisTrial = trialReward1;
+        nCoins += coinsWonThisTrial;
+    } else if (trialSuccess && choice == 'route 2') {
+        coinsWonThisTrial = trialReward2;
+        nCoins += coinsWonThisTrial;
+    } else {
+        coinsWonThisTrial = 0;
+    }
+
     if (choice == 'timeout') {
         // if the choice was a timeout then reset all the relevant variables so the payload doesn't retain the previous trial's data
         trialEffortPropChosen = 0;
@@ -904,17 +915,6 @@ var saveData = function(context) {
     console.log(context.registry.get("trial" + trialNo));
     // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
     //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
-
-    // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
-    if (trialSuccess && choice == 'route 1') {
-        coinsWonThisTrial = trialReward1;
-        nCoins += coinsWonThisTrial;
-    } else if (trialSuccess && choice == 'route 2') {
-        coinsWonThisTrial = trialReward2;
-        nCoins += coinsWonThisTrial;
-    } else {
-        coinsWonThisTrial = 0;
-    }
 
     // save the current coin choice to the cache by adding on to the previous dictionary if present
     let coinChoices = GameCache.cache?.trialResults ?? {};
