@@ -811,13 +811,13 @@ var storeCountdownStarted = function(startTime) {
 
 var saveData = function(context) {
     // get trial end time
-    trialEndTime = Math.round(this.time.now);
+    trialEndTime = Math.round(context.time.now);
 
     // perform recalibration if required and within the first nCalibrates trials
     if (trialNo < nCalibrates) {
         // get variables to use 
-        pressTimes = this.registry.get('pressTimes');
-        pressCount = this.registry.get('pressCount');
+        pressTimes = context.registry.get('pressTimes');
+        pressCount = context.registry.get('pressCount');
         pressStartTime = pressTimes[0]; // pressStartTime is the first pressTime
         pressEndTime = pressTimes[pressTimes.length - 1]; // pressEndTime is the last pressTime
 
@@ -853,7 +853,7 @@ var saveData = function(context) {
 
         }
         // save thresholdMax
-        saveThresholdMax(this, thresholdMax);
+        saveThresholdMax(context, thresholdMax);
 
         // save it in its own document for easy retrieval later 
         // saveThresholdMax(this.registry.get("thresholdMax"));        // [for firebase]
@@ -876,8 +876,19 @@ var saveData = function(context) {
         coinsWonThisTrial = 0;
     }
 
+    // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
+    if (trialSuccess && choice == 'route 1') {
+        coinsWonThisTrial = trialReward1;
+        nCoins += coinsWonThisTrial;
+    } else if (trialSuccess && choice == 'route 2') {
+        coinsWonThisTrial = trialReward2;
+        nCoins += coinsWonThisTrial;
+    } else {
+        coinsWonThisTrial = 0;
+    }
+
     // set data to be saved into registry
-    let maxTapRate = this.registry.get('thresholdMax');
+    let maxTapRate = context.registry.get('thresholdMax');
     let taskAttempt = new TaskAttempt(
         trialNo,
         trialStartTime,
@@ -901,24 +912,13 @@ var saveData = function(context) {
     );
 
     // save the data in a registry for later retrieval
-    this.registry.set("trial" + trialNo, taskAttempt);
+    context.registry.set("trial" + trialNo, taskAttempt);
 
     // save data
     EmbedContext.sendMessage("trialResult", taskAttempt.stringify());
-    console.log(this.registry.get("trial" + trialNo));
+    console.log(context.registry.get("trial" + trialNo));
     // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
     //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
-    
-    // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
-    if (trialSuccess && choice == 'route 1') {
-        coinsWonThisTrial = trialReward1;
-        nCoins += coinsWonThisTrial;
-    } else if (trialSuccess && choice == 'route 2') {
-        coinsWonThisTrial = trialReward2;
-        nCoins += coinsWonThisTrial;
-    } else {
-        coinsWonThisTrial = 0;
-    }
 
     // save the current coin choice to the cache by adding on to the previous dictionary if present
     let coinChoices = GameCache.cache?.trialResults ?? {};
@@ -928,7 +928,7 @@ var saveData = function(context) {
     var calibrationComplete = GameCache.cache?.calibrationComplete == true || trialNo + 1 >= nTrials * taskRewardsPayoutThreshold;
 
     // notify the native apps of what the current game state is so they can cache it
-    let currentGameState = new GameCache(true, trialNo + 1, maxTapRate, nCoins, coinChoices, randTrialsIdx, this.trialSequenceFile, calibrationComplete);
+    let currentGameState = new GameCache(true, trialNo + 1, maxTapRate, nCoins, coinChoices, randTrialsIdx, context.trialSequenceFile, calibrationComplete);
     GameCache.cache = currentGameState;
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
 }
