@@ -1,7 +1,7 @@
 export default class GameCache {
     static cache = null;
 
-    constructor(practiceComplete, trialNumber, maxPressCount, coinRunningTotal, trialResults, randTrialsIdx, trialSeqFilename) {
+    constructor(practiceComplete, trialNumber, maxPressCount, coinRunningTotal, trialResults, randTrialsIdx, trialSeqFilename, calibrationComplete) {
         this.practiceComplete = practiceComplete;
         this.trialNumber = trialNumber;
         this.maxPressCount = maxPressCount;
@@ -9,6 +9,7 @@ export default class GameCache {
         this.trialResults = trialResults;
         this.randTrialsIdx = randTrialsIdx;
         this.trialSeqFilename = trialSeqFilename;
+        this.calibrationComplete = calibrationComplete;
     }
 
     stringify() {

@@ -163,12 +163,12 @@ export default class MainTask extends BaseScene {
         trialsPerBlock = nTrials / nBlocks;  // blocks divide trials
         let catchIdx = trials.catchIdx ?? defaultCatchIdx;
 
+        // setup the game with the cached game state if present
+        loadGameFromCache();
+
         // determine the maxPresscount and generate the randTrialsIdx if required
         setUpMaxThreshold(this);
         setUpRandTrialsIdx(catchIdx, this.trialSequenceFile);
-
-        // setup the game with the cached game state if present
-        loadGameFromCache();
 
         if (window.innerHeight < 800) {
             smallDeviceOffset = -175;
@@ -661,14 +661,19 @@ var loadGameFromCache = function() {
 
     // set up the game based on the previous state
     trialNo = cache.trialNumber ?? 0;
-    maxPressCount = cache.maxPressCount ?? thresholdAutoSet;
     nCoins = cache.coinRunningTotal ?? 0;
-    randTrialsIdx = cache.randTrialsIdx ?? randTrialsIdx; // this was already set from the global scope so keep it if we dont have it in the cache
     blockNo = Math.floor(trialNo / trialsPerBlock);
 }
 
 // sets up the max presses count depending on if the user did the practice or not
 var setUpMaxThreshold = function(context) {
+    // if we have a stored maxPressCount then use it
+    if (GameCache.cache?.maxPressCount) {
+        maxPressCount = GameCache.cache.maxPressCount;
+        context.registry.set('thresholdMax', maxPressCount);
+        return;
+    }
+
     // if a practice is run, take the minPressMax from the practice task
     // otherwise assign maxPressCount as the fetched threshold max
     if (runPractice == true && trialNo == 0) {
@@ -701,7 +706,7 @@ var setUpRandTrialsIdx = function(catchIdx, trialSequenceFile) {
     } else {
         randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
     }
-    GameCache.cache = new GameCache(true, 0, maxPressCount, 0, {}, randTrialsIdx, trialSequenceFile);
+    GameCache.cache.randTrialsIdx = randTrialsIdx;
     EmbedContext.sendMessage('currentGameCache', JSON.stringify(GameCache.cache));
 }
 
@@ -806,19 +811,13 @@ var storeCountdownStarted = function(startTime) {
 
 var saveData = function(context) {
     // get trial end time
-    trialEndTime = Math.round(context.time.now);
+    trialEndTime = Math.round(this.time.now);
 
-    // n.b. nCalibrates now set in versionInfo.js
-    // we completed the practice, but might be loading back from a cached run so we've already calibrated
-    var updatedNumCalibrates = nCalibrates;
-    if (GameCache.cache?.practiceComplete == true && runPractice) {
-        updatedNumCalibrates = 0;
-    }
-
-    if (trialNo < updatedNumCalibrates) {
+    // perform recalibration if required and within the first nCalibrates trials
+    if (trialNo < nCalibrates) {
         // get variables to use 
-        pressTimes = context.registry.get('pressTimes');
-        pressCount = context.registry.get('pressCount');
+        pressTimes = this.registry.get('pressTimes');
+        pressCount = this.registry.get('pressCount');
         pressStartTime = pressTimes[0]; // pressStartTime is the first pressTime
         pressEndTime = pressTimes[pressTimes.length - 1]; // pressEndTime is the last pressTime
 
@@ -854,7 +853,8 @@ var saveData = function(context) {
 
         }
         // save thresholdMax
-        context.registry.set("thresholdMax", { thresholdMax });
+        saveThresholdMax(this, thresholdMax);
+
         // save it in its own document for easy retrieval later 
         // saveThresholdMax(this.registry.get("thresholdMax"));        // [for firebase]
     }
@@ -862,17 +862,6 @@ var saveData = function(context) {
         var recalibration = 0; // record recalibration didn't occur
         thresholdMax = maxPressCount // do not adjust thresholdMax 
     };
-
-    // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
-    if (trialSuccess && choice == 'route 1') {
-        coinsWonThisTrial = trialReward1;
-        nCoins += coinsWonThisTrial;
-    } else if (trialSuccess && choice == 'route 2') {
-        coinsWonThisTrial = trialReward2;
-        nCoins += coinsWonThisTrial;
-    } else {
-        coinsWonThisTrial = 0;
-    }
 
     if (choice == 'timeout') {
         // if the choice was a timeout then reset all the relevant variables so the payload doesn't retain the previous trial's data
@@ -888,6 +877,7 @@ var saveData = function(context) {
     }
 
     // set data to be saved into registry
+    let maxTapRate = this.registry.get('thresholdMax');
     let taskAttempt = new TaskAttempt(
         trialNo,
         trialStartTime,
@@ -906,29 +896,50 @@ var saveData = function(context) {
         trialEndTime,
         effortTime,
         recalibration,
-        thresholdMax,
+        maxTapRate,
         powerCountdown
     );
 
     // save the data in a registry for later retrieval
-    context.registry.set("trial" + trialNo, taskAttempt);
+    this.registry.set("trial" + trialNo, taskAttempt);
 
-    // inform the native apps of the trial result
+    // save data
     EmbedContext.sendMessage("trialResult", taskAttempt.stringify());
-    console.log(context.registry.get("trial" + trialNo));
+    console.log(this.registry.get("trial" + trialNo));
+    // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
+    //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
+    
+    // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
+    if (trialSuccess && choice == 'route 1') {
+        coinsWonThisTrial = trialReward1;
+        nCoins += coinsWonThisTrial;
+    } else if (trialSuccess && choice == 'route 2') {
+        coinsWonThisTrial = trialReward2;
+        nCoins += coinsWonThisTrial;
+    } else {
+        coinsWonThisTrial = 0;
+    }
 
     // save the current coin choice to the cache by adding on to the previous dictionary if present
     let coinChoices = GameCache.cache?.trialResults ?? {};
     coinChoices['trial' + trialNo] = trialSuccess ? coinsWonThisTrial : 0;
 
+    // if the user has reached at least 80% then we can mark the calibration as completed
+    var calibrationComplete = GameCache.cache?.calibrationComplete == true || trialNo + 1 >= nTrials * taskRewardsPayoutThreshold;
+
     // notify the native apps of what the current game state is so they can cache it
-    let currentGameState = new GameCache(true, trialNo + 1, maxPressCount, nCoins, coinChoices, randTrialsIdx, context.trialSequenceFile);
+    let currentGameState = new GameCache(true, trialNo + 1, maxTapRate, nCoins, coinChoices, randTrialsIdx, this.trialSequenceFile, calibrationComplete);
     GameCache.cache = currentGameState;
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
 }
 
 var saveThresholdMax = function(context, currentThresholdMax) {
-    // campare the current thresholdMax to the one saved in the registry, save the biggest one
+    // Only save the current threshold max if we haven't reached 80% of the first itteration of the eefrt task
+    if (GameCache.cache.calibrationComplete == true) {
+        return;
+    }
+
+    // compare the current thresholdMax to the one saved in the registry, save the biggest one
     let storedThresholdMax = context.registry.get('thresholdMax') ?? 0;
     if (storedThresholdMax < currentThresholdMax) {
         context.registry.set('thresholdMax', currentThresholdMax);

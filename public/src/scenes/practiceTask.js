@@ -281,8 +281,15 @@ export default class PracticeTask extends BaseScene {
         
         ////////////MOVE ON TO NEXT SCENE WHEN ALL TRIALS HAVE RUN////////////////
         if (pracTrial == nPracTrials) {
+            // dont update the maxPressCount if we've completed calibration
+            let calibrationComplete = false;
+            if (GameCache.cache.calibrationComplete == true) {
+                calibrationComplete = true;
+                maxPressCount = GameCache.cache.maxPressCount;
+            }
+
             // signal to the cache that the practice is complete
-            let cache = new GameCache(true, 0, maxPressCount, 0, {}, null, null)
+            let cache = new GameCache(true, 0, maxPressCount, 0, {}, null, null, calibrationComplete)
             EmbedContext.sendMessage('currentGameCache', cache.stringify());
 
             // progress to the next scene
@@ -638,14 +645,15 @@ var effortOutcome = function() {
 
 // 4. When player hits end of scene, save trial data and move on to the next trial (reload the scene)
 var pracTrialEnd = function () {
-    // determine if pressCount exceeded previous practice trials
-    if (pracTrial == 0) {
+    // determine if pressCount exceeded previous practice trials,
+    // we don't want to update the max press count if we've completed the calibration
+    if (GameCache.cache?.calibrationComplete == true) {
+        maxPressCount = GameCache.cache.maxPressCount;
+    } else if (pracTrial == 0 || pressCount > this.registry.get('maxPressCount')) {
         maxPressCount = pressCount;
-        this.registry.set('maxPressCount', maxPressCount);
-    } else if ( pressCount > this.registry.get('maxPressCount') ) {    
-       maxPressCount = pressCount;
-       this.registry.set('maxPressCount', maxPressCount);
     }
+    this.registry.set('maxPressCount', maxPressCount);
+
     // set data to be saved into registry
     let practiceTaskAttempt = new PracticeTaskAttempt(
         pracTrial,
@@ -654,7 +662,7 @@ var pracTrialEnd = function () {
         pressCount,
         pressTimes,
         trialSuccess,
-        this.registry.get('maxPressCount'),
+        maxPressCount,
         powerCountdown
     );
     this.registry.set("pracTrial"+pracTrial, practiceTaskAttempt);
