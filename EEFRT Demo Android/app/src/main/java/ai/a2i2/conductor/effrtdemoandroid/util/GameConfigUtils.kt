@@ -8,8 +8,8 @@ class GameConfigUtils {
         const val REWARD_PAYMENT_THRESHOLD = 0.8
 
         fun rewardThresholdReached(context: Context): Boolean {
-            val trialNumber = GameStorage(context).getCurrentGameState()?.trialNumber?.plus(1) ?: 0
-            val nTrials = GameStorage(context).getCurrentGameState()?.randTrialsIdx?.size ?: 0
+            val trialNumber = GameStorage(context).cachedGameState?.trialNumber?.plus(1) ?: 0
+            val nTrials = GameStorage(context).cachedGameState?.randTrialsIdx?.size ?: 0
             val minTrialsCompleted = (nTrials * REWARD_PAYMENT_THRESHOLD).toInt()
             return trialNumber >= minTrialsCompleted
         }

@@ -90,11 +90,17 @@ fun EefrtScreen(
                         override fun onPageFinished(view: WebView?, url: String?) {
                             super.onPageFinished(view, url)
 
-                            GameStorage(context).getCurrentGameState()?.let { state ->
-                                val cacheJson = Json.encodeToString(state)
-                                val jsString = "window.setupGameWithCache(${cacheJson});"
-                                evaluateJavascript(jsString, null)
+                            // inject the stored calibrationComplete and calibratedMaxPressCount values into the cache
+                            val gameStorage = GameStorage(context)
+                            var cache = gameStorage.cachedGameState ?: GameCache()
+                            if (gameStorage.calibrationComplete == true && gameStorage.calibratedMaxPressCount != null) {
+                                cache.calibrationComplete = true
+                                cache.maxPressCount = gameStorage.calibratedMaxPressCount!!
                             }
+
+                            val cacheJson = Json.encodeToString(cache)
+                            val jsString = "window.setupGameWithCache(${cacheJson});"
+                            evaluateJavascript(jsString, null)
                         }
                     }
                     settings.javaScriptEnabled = true
@@ -214,10 +220,24 @@ private fun handleMessage(
                 val gson = Gson()
                 val gameCache = gson.fromJson(body, GameCache::class.java)
                 viewModel.setCurrentGameState(context, gameCache)
+
+                viewModel.getCurrentGameState(context)?.let {
+                    // determine if calibration has been completed, if so then we dont need to set the calibratedMaxPressCount
+                    if (it.calibrationComplete) {
+                        viewModel.markCalibrationAsComplete(context)
+                        return
+                    }
+
+                    // save the highest calibrated max press
+                    val storedMaxPresses = GameStorage(context).calibratedMaxPressCount ?: 0
+                    if (storedMaxPresses < it.maxPressCount) {
+                        viewModel.setCalibratedMaxPressCount(context, it.maxPressCount)
+                    }
+                }
             }
 
             "gameComplete" -> {
-                viewModel.setCurrentGameState(context, null)
+                viewModel.clearEEFRTData(context)
                 dismiss(onBack)
             }
 

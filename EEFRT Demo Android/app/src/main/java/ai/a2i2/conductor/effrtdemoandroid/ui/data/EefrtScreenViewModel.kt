@@ -27,7 +27,7 @@ class EefrtScreenViewModel(
 
     init {
         refreshData()
-        val currentGameState = GameStorage(context).getCurrentGameState()
+        val currentGameState = GameStorage(context).cachedGameState
         resumeTrialAvailable = mutableStateOf((currentGameState?.trialNumber ?: 0) > 0)
     }
 
@@ -84,11 +84,28 @@ class EefrtScreenViewModel(
     }
 
     fun setCurrentGameState(context: Context, newGameState: GameCache?) {
-        GameStorage(context).setCurrentGameState(newGameState)
+        GameStorage(context).cachedGameState = newGameState
         resumeTrialAvailable.value = (newGameState?.trialNumber ?: 0) > 0
+    }
+
+    fun getCurrentGameState(context: Context): GameCache? {
+        return GameStorage(context).cachedGameState
     }
 
     fun rewardThresholdReached(context: Context): Boolean {
         return GameConfigUtils.rewardThresholdReached(context)
+    }
+
+    // we don't care for the business logic in this app, remember to add it into the main vibe up 2 apps
+    fun clearEEFRTData(context: Context) {
+        GameStorage(context).cachedGameState = null
+    }
+
+    fun markCalibrationAsComplete(context: Context) {
+        GameStorage(context).calibrationComplete = true
+    }
+
+    fun setCalibratedMaxPressCount(context: Context, pressCount: Int) {
+        GameStorage(context).calibratedMaxPressCount = pressCount
     }
 }
