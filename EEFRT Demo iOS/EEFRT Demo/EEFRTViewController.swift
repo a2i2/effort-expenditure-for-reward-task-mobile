@@ -21,7 +21,7 @@ struct EEFRTView: UIViewControllerRepresentable {
     }
 
     func makeUIViewController(context: Context) -> EEFRTViewController {
-        let controller = EEFRTViewController(gameCache: self.gameCache)
+        let controller = EEFRTViewController(gameCache: gameCache)
         controller.delegate = context.coordinator
         return controller
     }
@@ -127,8 +127,15 @@ class EEFRTViewController: UIViewController {
 
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
 
-        if let gameCache = try? gameCache?.stringify() {
-            let gameCacheJsString = "window.setupGameWithCache(\(gameCache));"
+        // inject the stored calibrationComplete and calibratedMaxPressCount values into the cache
+        var cache = gameCache ?? GameCache()
+        if let calibrationComplete = Defaults.calibrationComplete, calibrationComplete == true, let calibratedMaxPressCount = Defaults.calibratedMaxPressCount {
+            cache.calibrationComplete = calibrationComplete
+            cache.maxPressCount = calibratedMaxPressCount
+        }
+
+        if let stringifiedGameCache = try? cache.stringify() {
+            let gameCacheJsString = "window.setupGameWithCache(\(stringifiedGameCache));"
             let gameCacheUserScript = WKUserScript(source: gameCacheJsString, injectionTime: .atDocumentEnd, forMainFrameOnly: false)
             config.userContentController.addUserScript(gameCacheUserScript)
         } else {
@@ -253,9 +260,23 @@ extension EEFRTViewController: WKScriptMessageHandler {
                 os_log(.error, "Couldn't decode game cache from EEFRT task into a native object")
             }
 
+            guard let cache = Defaults.gameCache else { return }
+
+            // determine if calibration has been completed, if so then we dont need to set the calibratedMaxPressCount
+            if cache.calibrationComplete {
+                Defaults.calibrationComplete = true
+                return
+            }
+
+            // save the highest calibrated max presses
+            let storedMaxPresses = Defaults.calibratedMaxPressCount ?? 0
+            if cache.maxPressCount > storedMaxPresses {
+                Defaults.calibratedMaxPressCount = cache.maxPressCount
+            }
+
         case Self.gameCompleteKey:
             // clear the cache as the user has finished the task
-            Defaults.gameCache = nil
+            Defaults.clearEEFRTData()
             delegate?.eefrtViewControllerDidRequestClose(self)
 
         default:
@@ -266,6 +287,8 @@ extension EEFRTViewController: WKScriptMessageHandler {
 
 extension DefaultsKeys {
     var gameCache: DefaultsKey<GameCache?> { .init("gameCache", defaultValue: nil) }
+    var calibrationComplete: DefaultsKey<Bool?> { .init("calibrationComplete", defaultValue: nil) }
+    var calibratedMaxPressCount: DefaultsKey<Int?> { .init("calibratedMaxPressCount", defaultValue: nil) }
 }
 
 private extension OSLog {
