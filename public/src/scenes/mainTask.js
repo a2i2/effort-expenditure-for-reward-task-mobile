@@ -665,7 +665,17 @@ var loadGameFromCache = function() {
     blockNo = Math.floor(trialNo / trialsPerBlock);
 }
 
-// sets up the max presses count depending on if the user did the practice or not
+/*
+    In the main trials we use thresholdMax to store the calibrated maximum press rate the user can achieve and calculate the number of
+    presses required to complete each trial. This value is stored in the registry if a new higher value is achieved.
+    
+    If the user reaches 80% of the trials completed and then returns to the task again we want to use the maxPressCount from the cache
+    generated from the previous iteration of the task. 
+    
+    If this is the first iteration of the task we will use the maxPressCount generated from the practice task to set the thresholdMax.
+    There is a minimum number of 58 presses in 10 seconds that we enforce to guard against gaming from practice and the thresholdMax
+    is set to this value if a suitable value is not reached by this stage.
+*/
 var setUpMaxThreshold = function(context) {
     // if we have a stored maxPressCount then use it
     if (GameCache.cache?.maxPressCount) {

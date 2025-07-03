@@ -279,11 +279,16 @@ export default class PracticeTask extends BaseScene {
         // allow player to move
         this.player.update(); 
         
-        ////////////MOVE ON TO NEXT SCENE WHEN ALL TRIALS HAVE RUN////////////////
+        /*
+            In the practice trials we use the maxPressCount to determine the maximum effort the user can achieve and calculate
+            the required number of presses to complete each trial. In the event the user reaches 80% of the trials completed
+            and then returns to the task again we want to use the maxPressCount from the previous iteration of the task.
+
+            Once we complete all 4 practice trials we we want to save the maxPressCount to the cache and the registry so it can be used in the main trials.
+        */
         if (pracTrial == nPracTrials) {
-            // dont update the maxPressCount if we've completed calibration
             let calibrationComplete = false;
-            if (GameCache.cache.calibrationComplete == true) {
+            if (GameCache.cache?.calibrationComplete == true) {
                 calibrationComplete = true;
                 maxPressCount = GameCache.cache.maxPressCount;
             }
