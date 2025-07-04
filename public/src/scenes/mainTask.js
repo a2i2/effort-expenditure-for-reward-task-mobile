@@ -705,6 +705,9 @@ var setUpMaxThreshold = function(context) {
             maxPressCount = storedThresholdMax; // fetch 
         }
     };
+
+    // ensure the registry value is set before we begin the trials
+    context.registry.set('thresholdMax', maxPressCount);
 }
 
 var setUpRandTrialsIdx = function(catchIdx) {
@@ -849,19 +852,21 @@ var saveData = function(context) {
             ((pressEndTime - pressStartTime) < (effortTime * trialEffortPropChosen))) {
             // calculate their new 100% threshold
             var threshold = Math.round(((pressCount / ((pressEndTime - pressStartTime) / 1000)) * (effortTime / 1000)))
-            // if threshold is greater than the original maxPress: thresholdMax is updated 
+            var potentialThresholdMax = thresholdMax;
+            // if threshold is greater than the original maxPress: thresholdMax is updated if calibration isn't complete 
             if (threshold > maxPressCount) {
-                thresholdMax = threshold
+                potentialThresholdMax = threshold
+
                 // record recalibration occurred
                 recalibration = 1;
             }
         }
-        // save thresholdMax
-        saveThresholdMax(context, thresholdMax);
-    } else {
-        // do not adjust thresholdMax, use the maxPressCount from the practice task
-        thresholdMax = maxPressCount;
+        // save thresholdMax, this does the check for calibration complete and only updates the registry if required to
+        saveThresholdMax(context, potentialThresholdMax);
     }
+
+    // update the thresholdMax from the registry
+    thresholdMax = context.registry.get('thresholdMax');
 
     if (choice == 'timeout') {
         // if the choice was a timeout then reset all the relevant variables so the payload doesn't retain the previous trial's data
@@ -928,15 +933,15 @@ var saveData = function(context) {
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
 }
 
-var saveThresholdMax = function(context, currentThresholdMax) {
-    // Only save the current threshold max if we haven't reached 80% of the first itteration of the eefrt task
+var saveThresholdMax = function(context, potentialThresholdMax) {
+    // Save the current threshold max if we haven't reached 80% of the first itteration of the eefrt task
     if (GameCache.cache.calibrationComplete == true) {
         return;
     }
 
     // compare the current thresholdMax to the one saved in the registry, save the biggest one
     let storedThresholdMax = context.registry.get('thresholdMax') ?? 0;
-    if (storedThresholdMax < currentThresholdMax) {
-        context.registry.set('thresholdMax', currentThresholdMax);
+    if (storedThresholdMax < potentialThresholdMax) {
+        context.registry.set('thresholdMax', potentialThresholdMax);
     }
 }
