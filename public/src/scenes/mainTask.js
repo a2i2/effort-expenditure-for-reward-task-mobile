@@ -825,6 +825,8 @@ var storeCountdownStarted = function(startTime) {
 var saveData = function(context) {
     // get trial end time
     trialEndTime = Math.round(context.time.now);
+    // default value for recalibration is 0, meaning no recalibration occurred. If recalibration occurs it will be set to 1.
+    var recalibration = 0;
 
     // perform recalibration if required and within the first nCalibrates trials
     if (trialNo < nCalibrates) {
@@ -838,8 +840,7 @@ var saveData = function(context) {
         if (choice == 'route 1') {
             trialEffortPropChosen = trialEffortPropMax1;
             trialEffort = trialEffort1;
-        }
-        else {
+        } else {
             trialEffortPropChosen = trialEffortPropMax2; // else they chose route 2
             trialEffort = trialEffort2;
         }
@@ -851,30 +852,16 @@ var saveData = function(context) {
             // if threshold is greater than the original maxPress: thresholdMax is updated 
             if (threshold > maxPressCount) {
                 thresholdMax = threshold
-                var recalibration = 1;
+                // record recalibration occurred
+                recalibration = 1;
             }
-            else {
-                // continue with thresholdMax at maxPressCount 
-                var recalibration = 0;
-                thresholdMax = maxPressCount;
-            }
-        }
-        else {// the trial wasn't successful or did not need recalibration: 
-            var recalibration = 0; // record recalibration didn't occur
-            // also keep thresholdMax at maxPressCount
-            thresholdMax = maxPressCount
-
         }
         // save thresholdMax
         saveThresholdMax(context, thresholdMax);
-
-        // save it in its own document for easy retrieval later 
-        // saveThresholdMax(this.registry.get("thresholdMax"));        // [for firebase]
+    } else {
+        // do not adjust thresholdMax, use the maxPressCount from the practice task
+        thresholdMax = maxPressCount;
     }
-    else { // if we are past the first calibration trials 
-        var recalibration = 0; // record recalibration didn't occur
-        thresholdMax = maxPressCount // do not adjust thresholdMax 
-    };
 
     if (choice == 'timeout') {
         // if the choice was a timeout then reset all the relevant variables so the payload doesn't retain the previous trial's data
@@ -888,9 +875,8 @@ var saveData = function(context) {
         pressEndTime = 0;
         coinsWonThisTrial = 0;
     }
-
     // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
-    if (trialSuccess && choice == 'route 1') {
+    else if (trialSuccess && choice == 'route 1') {
         coinsWonThisTrial = trialReward1;
         nCoins += coinsWonThisTrial;
     } else if (trialSuccess && choice == 'route 2') {
@@ -900,8 +886,6 @@ var saveData = function(context) {
         coinsWonThisTrial = 0;
     }
 
-    // set data to be saved into registry
-    let maxTapRate = context.registry.get('thresholdMax');
     let taskAttempt = new TaskAttempt(
         trialNo,
         trialStartTime,
@@ -920,7 +904,7 @@ var saveData = function(context) {
         trialEndTime,
         effortTime,
         recalibration,
-        maxTapRate,
+        thresholdMax,
         powerCountdown
     );
 
@@ -929,9 +913,7 @@ var saveData = function(context) {
 
     // save data
     EmbedContext.sendMessage("trialResult", taskAttempt.stringify());
-    console.log(context.registry.get("trial" + trialNo));
-    // saveTaskData(trial, this.registry.get(`trial${trial}`));        // [for firebase]
-    //saveTrialDataPav(this.registry.get(`trial${trial}`));         // [for Pavlovia deployment only]
+    console.debug(context.registry.get("trial" + trialNo));
 
     // save the current coin choice to the cache by adding on to the previous dictionary if present
     let coinChoices = GameCache.cache?.trialResults ?? {};
@@ -941,7 +923,7 @@ var saveData = function(context) {
     var calibrationComplete = GameCache.cache?.calibrationComplete == true || trialNo + 1 >= nTrials * taskRewardsPayoutThreshold;
 
     // notify the native apps of what the current game state is so they can cache it
-    let currentGameState = new GameCache(true, trialNo + 1, maxTapRate, nCoins, coinChoices, randTrialsIdx, context.trialSequenceFile, calibrationComplete);
+    let currentGameState = new GameCache(true, trialNo + 1, thresholdMax, nCoins, coinChoices, randTrialsIdx, context.trialSequenceFile, calibrationComplete);
     GameCache.cache = currentGameState;
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
 }
