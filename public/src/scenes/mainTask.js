@@ -163,12 +163,12 @@ export default class MainTask extends BaseScene {
         trialsPerBlock = nTrials / nBlocks;  // blocks divide trials
         let catchIdx = trials.catchIdx ?? defaultCatchIdx;
 
+        // setup the game with the cached game state if present
+        loadGameFromCache(this);
+
         // determine the maxPresscount and generate the randTrialsIdx if required
         setUpMaxThreshold(this);
-        setUpRandTrialsIdx(catchIdx, this.trialSequenceFile);
-
-        // setup the game with the cached game state if present
-        loadGameFromCache();
+        setUpRandTrialsIdx(catchIdx);
 
         if (window.innerHeight < 800) {
             smallDeviceOffset = -175;
@@ -653,22 +653,39 @@ var collectCoins = function(player, coin, trial) {
 };
 
 // function which restores the game state based on the given cache state
-var loadGameFromCache = function() {
+var loadGameFromCache = function(context) {
     const cache = GameCache.cache;
     if (cache == null) {
-        return; // no cache to load from so just return
+        // if no cache to load from, create a new one with the default values
+        GameCache.cache = new GameCache(true, 0, undefined, 0, {}, [], context.trialSequenceFile);
+        return;
     }
 
     // set up the game based on the previous state
     trialNo = cache.trialNumber ?? 0;
-    maxPressCount = cache.maxPressCount ?? thresholdAutoSet;
     nCoins = cache.coinRunningTotal ?? 0;
-    randTrialsIdx = cache.randTrialsIdx ?? randTrialsIdx; // this was already set from the global scope so keep it if we dont have it in the cache
     blockNo = Math.floor(trialNo / trialsPerBlock);
 }
 
-// sets up the max presses count depending on if the user did the practice or not
+/*
+    In the main trials we use thresholdMax to store the calibrated maximum press rate the user can achieve and calculate the number of
+    presses required to complete each trial. This value is stored in the registry if a new higher value is achieved.
+    
+    If the user reaches 80% of the trials completed and then returns to the task again we want to use the maxPressCount from the cache
+    generated from the previous iteration of the task. 
+    
+    If this is the first iteration of the task we will use the maxPressCount generated from the practice task to set the thresholdMax.
+    There is a minimum number of 58 presses in 10 seconds that we enforce to guard against gaming from practice and the thresholdMax
+    is set to this value if a suitable value is not reached by this stage.
+*/
 var setUpMaxThreshold = function(context) {
+    // if we have a stored maxPressCount then use it
+    if (GameCache.cache?.maxPressCount) {
+        maxPressCount = GameCache.cache.maxPressCount;
+        context.registry.set('thresholdMax', maxPressCount);
+        return;
+    }
+
     // if a practice is run, take the minPressMax from the practice task
     // otherwise assign maxPressCount as the fetched threshold max
     if (runPractice == true && trialNo == 0) {
@@ -679,17 +696,23 @@ var setUpMaxThreshold = function(context) {
         }
     }
     else {
-        // add a catch if thresholdMax is undefined
-        if (typeof thresholdMax === "undefined") {
+        // use the stored thresholdMax to set maxPressCount if present
+        let storedThresholdMax = context.registry.get('thresholdMax');
+        // add a catch if storedThresholdMax is undefined
+        if (typeof storedThresholdMax === "undefined") {
             maxPressCount = thresholdAutoSet;
         } else {
-            maxPressCount = thresholdMax; // fetch 
+            maxPressCount = storedThresholdMax; // fetch 
         }
     };
+
+    // ensure the registry value is set before we begin the trials
+    context.registry.set('thresholdMax', maxPressCount);
 }
 
-var setUpRandTrialsIdx = function(catchIdx, trialSequenceFile) {
-    if (GameCache.cache?.randTrialsIdx) {
+var setUpRandTrialsIdx = function(catchIdx) {
+    // check that randTrialsIdx array length is greater than 0
+    if (GameCache.cache?.randTrialsIdx && GameCache.cache.randTrialsIdx.length > 0) {
         randTrialsIdx = GameCache.cache.randTrialsIdx;
         return;
     }
@@ -699,7 +722,7 @@ var setUpRandTrialsIdx = function(catchIdx, trialSequenceFile) {
     } else {
         randTrialsIdx = shuffleTrials(nTrials, catchIdx, nCalibrates);
     }
-    GameCache.cache = new GameCache(true, 0, maxPressCount, 0, {}, randTrialsIdx, trialSequenceFile);
+    GameCache.cache.randTrialsIdx = randTrialsIdx;
     EmbedContext.sendMessage('currentGameCache', JSON.stringify(GameCache.cache));
 }
 
@@ -805,15 +828,11 @@ var storeCountdownStarted = function(startTime) {
 var saveData = function(context) {
     // get trial end time
     trialEndTime = Math.round(context.time.now);
+    // default value for recalibration is 0, meaning no recalibration occurred. If recalibration occurs it will be set to 1.
+    var recalibration = 0;
 
-    // n.b. nCalibrates now set in versionInfo.js
-    // we completed the practice, but might be loading back from a cached run so we've already calibrated
-    var updatedNumCalibrates = nCalibrates;
-    if (GameCache.cache?.practiceComplete == true && runPractice) {
-        updatedNumCalibrates = 0;
-    }
-
-    if (trialNo < updatedNumCalibrates) {
+    // perform recalibration if required and within the first nCalibrates trials
+    if (trialNo < nCalibrates) {
         // get variables to use 
         pressTimes = context.registry.get('pressTimes');
         pressCount = context.registry.get('pressCount');
@@ -824,53 +843,31 @@ var saveData = function(context) {
         if (choice == 'route 1') {
             trialEffortPropChosen = trialEffortPropMax1;
             trialEffort = trialEffort1;
-        }
-        else {
+        } else {
             trialEffortPropChosen = trialEffortPropMax2; // else they chose route 2
             trialEffort = trialEffort2;
         }
+
         // for success trials if pressTime was faster than expected given the effort level, recalibrate
+        var potentialThresholdMax = maxPressCount;
         if (pressCount >= trialEffort &&
             ((pressEndTime - pressStartTime) < (effortTime * trialEffortPropChosen))) {
             // calculate their new 100% threshold
             var threshold = Math.round(((pressCount / ((pressEndTime - pressStartTime) / 1000)) * (effortTime / 1000)))
-            // if threshold is greater than the original maxPress: thresholdMax is updated 
+            // if threshold is greater than the original maxPress: thresholdMax is updated if calibration isn't complete 
             if (threshold > maxPressCount) {
-                thresholdMax = threshold
-                var recalibration = 1;
-            }
-            else {
-                // continue with thresholdMax at maxPressCount 
-                var recalibration = 0;
-                thresholdMax = maxPressCount;
+                potentialThresholdMax = threshold
+
+                // record recalibration occurred
+                recalibration = 1;
             }
         }
-        else {// the trial wasn't successful or did not need recalibration: 
-            var recalibration = 0; // record recalibration didn't occur
-            // also keep thresholdMax at maxPressCount
-            thresholdMax = maxPressCount
-
-        }
-        // save thresholdMax
-        context.registry.set("thresholdMax", { thresholdMax });
-        // save it in its own document for easy retrieval later 
-        // saveThresholdMax(this.registry.get("thresholdMax"));        // [for firebase]
+        // save thresholdMax, this does the check for calibration complete and only updates the registry if required to
+        saveThresholdMax(context, potentialThresholdMax);
     }
-    else { // if we are past the first calibration trials 
-        var recalibration = 0; // record recalibration didn't occur
-        thresholdMax = maxPressCount // do not adjust thresholdMax 
-    };
 
-    // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
-    if (trialSuccess && choice == 'route 1') {
-        coinsWonThisTrial = trialReward1;
-        nCoins += coinsWonThisTrial;
-    } else if (trialSuccess && choice == 'route 2') {
-        coinsWonThisTrial = trialReward2;
-        nCoins += coinsWonThisTrial;
-    } else {
-        coinsWonThisTrial = 0;
-    }
+    // update the thresholdMax from the registry
+    thresholdMax = context.registry.get('thresholdMax');
 
     if (choice == 'timeout') {
         // if the choice was a timeout then reset all the relevant variables so the payload doesn't retain the previous trial's data
@@ -884,8 +881,17 @@ var saveData = function(context) {
         pressEndTime = 0;
         coinsWonThisTrial = 0;
     }
+    // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
+    else if (trialSuccess && choice == 'route 1') {
+        coinsWonThisTrial = trialReward1;
+        nCoins += coinsWonThisTrial;
+    } else if (trialSuccess && choice == 'route 2') {
+        coinsWonThisTrial = trialReward2;
+        nCoins += coinsWonThisTrial;
+    } else {
+        coinsWonThisTrial = 0;
+    }
 
-    // set data to be saved into registry
     let taskAttempt = new TaskAttempt(
         trialNo,
         trialStartTime,
@@ -911,16 +917,32 @@ var saveData = function(context) {
     // save the data in a registry for later retrieval
     context.registry.set("trial" + trialNo, taskAttempt);
 
-    // inform the native apps of the trial result
+    // save data
     EmbedContext.sendMessage("trialResult", taskAttempt.stringify());
-    console.log(context.registry.get("trial" + trialNo));
+    console.debug(context.registry.get("trial" + trialNo));
 
     // save the current coin choice to the cache by adding on to the previous dictionary if present
     let coinChoices = GameCache.cache?.trialResults ?? {};
     coinChoices['trial' + trialNo] = trialSuccess ? coinsWonThisTrial : 0;
 
+    // if the user has reached at least 80% then we can mark the calibration as completed
+    var calibrationComplete = GameCache.cache?.calibrationComplete == true || trialNo + 1 >= nTrials * taskRewardsPayoutThreshold;
+
     // notify the native apps of what the current game state is so they can cache it
-    let currentGameState = new GameCache(true, trialNo + 1, maxPressCount, nCoins, coinChoices, randTrialsIdx, context.trialSequenceFile);
+    let currentGameState = new GameCache(true, trialNo + 1, thresholdMax, nCoins, coinChoices, randTrialsIdx, context.trialSequenceFile, calibrationComplete);
     GameCache.cache = currentGameState;
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
+}
+
+var saveThresholdMax = function(context, potentialThresholdMax) {
+    // Save the current threshold max if we haven't reached 80% of the first itteration of the eefrt task
+    if (GameCache.cache.calibrationComplete == true) {
+        return;
+    }
+
+    // compare the current thresholdMax to the one saved in the registry, save the biggest one
+    let storedThresholdMax = context.registry.get('thresholdMax') ?? 0;
+    if (storedThresholdMax < potentialThresholdMax && storedThresholdMax != undefined) {
+        context.registry.set('thresholdMax', potentialThresholdMax);
+    }
 }

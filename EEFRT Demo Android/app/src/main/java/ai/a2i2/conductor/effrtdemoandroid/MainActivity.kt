@@ -89,7 +89,8 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
                         coinRunningTotal = 0,
                         trialResults = emptyMap(),
                         randTrialsIdx = null,
-                        trialSeqFilename = selectedOption.value
+                        trialSeqFilename = selectedOption.value,
+                        calibrationComplete = false
                     )
                 )
                 showDialog.value = false

@@ -9,6 +9,7 @@ struct GameCache: Codable, DefaultsSerializable {
     var trialResults: [String: Int]
     var randTrialsIdx: [Int]?
     var trialSeqFilename: String?
+    var calibrationComplete: Bool
 
     // Default initializer with default values
     init(
@@ -18,7 +19,8 @@ struct GameCache: Codable, DefaultsSerializable {
         coinRunningTotal: Int = 0,
         trialResults: [String: Int] = [:],
         randTrialsIdx: [Int]? = nil,
-        trialSeqFilename: String? = nil
+        trialSeqFilename: String? = nil,
+        calibrationComplete: Bool = false
     ) {
         self.practiceComplete = practiceComplete
         self.trialNumber = trialNumber
@@ -27,6 +29,7 @@ struct GameCache: Codable, DefaultsSerializable {
         self.trialResults = trialResults
         self.randTrialsIdx = randTrialsIdx
         self.trialSeqFilename = trialSeqFilename
+        self.calibrationComplete = calibrationComplete
     }
 
     // Decoder initializer
@@ -39,6 +42,7 @@ struct GameCache: Codable, DefaultsSerializable {
         self.trialResults = try container.decode([String: Int].self, forKey: .trialResults)
         self.randTrialsIdx = try container.decodeIfPresent([Int].self, forKey: .randTrialsIdx)
         self.trialSeqFilename = try container.decodeIfPresent(String.self, forKey: .trialSeqFilename)
+        self.calibrationComplete = try container.decode(Bool.self, forKey: .calibrationComplete)
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -50,6 +54,7 @@ struct GameCache: Codable, DefaultsSerializable {
         try container.encode(trialResults, forKey: .trialResults)
         try container.encodeIfPresent(randTrialsIdx, forKey: .randTrialsIdx)
         try container.encodeIfPresent(trialSeqFilename, forKey: .trialSeqFilename)
+        try container.encodeIfPresent(calibrationComplete, forKey: .calibrationComplete)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -60,9 +65,10 @@ struct GameCache: Codable, DefaultsSerializable {
         case trialResults
         case randTrialsIdx
         case trialSeqFilename
+        case calibrationComplete
     }
 
-    public func stringify() throws -> String {
+    func stringify() throws -> String {
         let encoder = JSONEncoder()
         let data = try encoder.encode(self)
         return String(decoding: data, as: UTF8.self)
