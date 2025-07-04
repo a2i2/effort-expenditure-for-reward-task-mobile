@@ -164,11 +164,11 @@ export default class MainTask extends BaseScene {
         let catchIdx = trials.catchIdx ?? defaultCatchIdx;
 
         // setup the game with the cached game state if present
-        loadGameFromCache();
+        loadGameFromCache(this);
 
         // determine the maxPresscount and generate the randTrialsIdx if required
         setUpMaxThreshold(this);
-        setUpRandTrialsIdx(catchIdx, this.trialSequenceFile);
+        setUpRandTrialsIdx(catchIdx);
 
         if (window.innerHeight < 800) {
             smallDeviceOffset = -175;
@@ -653,10 +653,12 @@ var collectCoins = function(player, coin, trial) {
 };
 
 // function which restores the game state based on the given cache state
-var loadGameFromCache = function() {
+var loadGameFromCache = function(context) {
     const cache = GameCache.cache;
     if (cache == null) {
-        return; // no cache to load from so just return
+        // if no cache to load from, create a new one with the default values
+        GameCache.cache = new GameCache(true, 0, undefined, 0, {}, [], context.trialSequenceFile);
+        return;
     }
 
     // set up the game based on the previous state
@@ -705,8 +707,9 @@ var setUpMaxThreshold = function(context) {
     };
 }
 
-var setUpRandTrialsIdx = function(catchIdx, trialSequenceFile) {
-    if (GameCache.cache?.randTrialsIdx) {
+var setUpRandTrialsIdx = function(catchIdx) {
+    // check that randTrialsIdx array length is greater than 0
+    if (GameCache.cache?.randTrialsIdx && GameCache.cache.randTrialsIdx.length > 0) {
         randTrialsIdx = GameCache.cache.randTrialsIdx;
         return;
     }
