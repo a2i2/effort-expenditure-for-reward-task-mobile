@@ -847,12 +847,13 @@ var saveData = function(context) {
             trialEffortPropChosen = trialEffortPropMax2; // else they chose route 2
             trialEffort = trialEffort2;
         }
+
         // for success trials if pressTime was faster than expected given the effort level, recalibrate
+        var potentialThresholdMax = maxPressCount;
         if (pressCount >= trialEffort &&
             ((pressEndTime - pressStartTime) < (effortTime * trialEffortPropChosen))) {
             // calculate their new 100% threshold
             var threshold = Math.round(((pressCount / ((pressEndTime - pressStartTime) / 1000)) * (effortTime / 1000)))
-            var potentialThresholdMax = thresholdMax;
             // if threshold is greater than the original maxPress: thresholdMax is updated if calibration isn't complete 
             if (threshold > maxPressCount) {
                 potentialThresholdMax = threshold
@@ -941,7 +942,7 @@ var saveThresholdMax = function(context, potentialThresholdMax) {
 
     // compare the current thresholdMax to the one saved in the registry, save the biggest one
     let storedThresholdMax = context.registry.get('thresholdMax') ?? 0;
-    if (storedThresholdMax < potentialThresholdMax) {
+    if (storedThresholdMax < potentialThresholdMax && storedThresholdMax != undefined) {
         context.registry.set('thresholdMax', potentialThresholdMax);
     }
 }
