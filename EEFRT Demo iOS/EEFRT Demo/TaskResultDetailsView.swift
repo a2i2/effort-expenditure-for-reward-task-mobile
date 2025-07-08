@@ -3,7 +3,7 @@ import SwiftUI
 import UIKit
 
 struct TaskResultDetailsView: View {
-    @State private var showCopiedAlert = false
+    @State private var isSharePresented = false
     private var jsonString: String
 
     init(jsonString: String) {
@@ -27,17 +27,22 @@ struct TaskResultDetailsView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
-                    UIPasteboard.general.string = jsonString
-                    showCopiedAlert = true
+                    isSharePresented = true
                 }) {
-                    Image(systemName: "doc.on.doc")
+                    Image(systemName: "square.and.arrow.up")
                 }
             }
         }
-        .alert("Copied!", isPresented: $showCopiedAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text("Text copied to clipboard")
+        .sheet(isPresented: $isSharePresented) {
+            ActivityView(activityItems: [jsonString])
         }
     }
+}
+
+struct ActivityView: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
