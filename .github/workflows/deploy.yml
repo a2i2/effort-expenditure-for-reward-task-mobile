@@ -38,6 +38,11 @@ jobs:
         working-directory: ./public
         run: npm install
 
+      - name: Add base path to vite.config.js
+        working-directory: ./public
+        run: |
+          sed -i 's/base: ""/base: "\/effort-expenditure-for-reward-task-mobile\/"/' vite.config.js
+
       - name: Build
         working-directory: ./public
         run: npm run build

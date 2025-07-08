@@ -5,7 +5,7 @@ import fse from 'fs-extra';
 
 export default defineConfig({
   root: './',
-  base: '/effort-expenditure-for-reward-task-mobile/',
+  base: '',
   publicDir: false,
   build: {
     outDir: 'dist',
