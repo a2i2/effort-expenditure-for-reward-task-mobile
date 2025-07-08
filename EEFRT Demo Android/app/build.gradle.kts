@@ -11,7 +11,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "ai.a2i2.conductor.effrtdemoandroid"
+        applicationId = "au.org.blackdoginstitute.effrtdemo"
         minSdk = 28
         targetSdk = 35
         versionCode = 1
