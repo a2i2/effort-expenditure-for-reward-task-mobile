@@ -12,7 +12,7 @@ struct EventLogsView: View {
 
     var body: some View {
         List {
-            Section("Practice attempts") {
+            Section("Practice Rounds") {
                 ForEach(practiceTaskResults) { result in
                     VStack {
                         NavigationLink(
@@ -33,7 +33,7 @@ struct EventLogsView: View {
                 .onDelete(perform: deletePracticeTaskResult)
             }
 
-            Section("Actual attempts") {
+            Section("Main Rounds") {
                 ForEach(taskResults) { result in
                     VStack {
                         NavigationLink(
