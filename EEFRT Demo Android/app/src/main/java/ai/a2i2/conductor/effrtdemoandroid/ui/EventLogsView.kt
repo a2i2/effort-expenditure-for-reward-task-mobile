@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,7 +90,8 @@ fun EventLogsView(
                     .padding(horizontal = 4.dp)
             ) {
                 Text(
-                    "Practice Attempts",
+                    "Practice Rounds",
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(16.dp)
                 )
 
@@ -124,7 +126,8 @@ fun EventLogsView(
                 Spacer(Modifier.padding(vertical = 20f.dp))
 
                 Text(
-                    "Actual Attempts",
+                    "Main Rounds",
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(16.dp)
                 )
 
