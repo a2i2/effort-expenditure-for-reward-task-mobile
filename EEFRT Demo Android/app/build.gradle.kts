@@ -6,6 +6,59 @@ plugins {
     alias(libs.plugins.serialization)
 }
 
+// Task to run npm build in the public directory
+tasks.register("buildWebAssets") {
+    group = "build"
+    description = "Build web assets using npm"
+    
+    doLast {
+        val publicDir = File(project.rootDir.parentFile, "public")
+        if (!publicDir.exists()) {
+            throw GradleException("Public directory not found at: ${publicDir.absolutePath}")
+        }
+        
+        val packageJson = File(publicDir, "package.json")
+        if (!packageJson.exists()) {
+            throw GradleException("package.json not found in public directory")
+        }
+        
+        println("Running npm run build in ${publicDir.absolutePath}")
+        
+        // Try to find npm in common locations
+        val npmPaths = listOf(
+            "/opt/homebrew/bin/npm",
+            "/usr/local/bin/npm"
+        )
+        
+        val npmPath = npmPaths.find { File(it).exists() }
+        if (npmPath == null) {
+            throw GradleException("npm not found. Please ensure Node.js is installed.")
+        }
+        
+        println("Using npm at: $npmPath")
+        
+        val processBuilder = ProcessBuilder()
+        processBuilder.directory(publicDir)
+        
+        // Set up environment variables for NVM
+        val env = processBuilder.environment()
+        env["PATH"] = "${File(npmPath).parent}:${env["PATH"] ?: ""}"
+        env["NVM_DIR"] = System.getProperty("user.home") + "/.nvm"
+        
+        processBuilder.command(npmPath, "run", "build")
+        
+        val process = processBuilder.start()
+        val exitCode = process.waitFor()
+        
+        if (exitCode != 0) {
+            val errorOutput = process.errorStream.bufferedReader().readText()
+            throw GradleException("npm build failed with exit code $exitCode: $errorOutput")
+        }
+        
+        println("npm build completed successfully")
+    }
+}
+
 android {
     namespace = "ai.a2i2.conductor.effrtdemoandroid"
     compileSdk = 35
@@ -39,6 +92,15 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+}
+
+// Configure tasks to run web build before Android build
+afterEvaluate {
+    tasks.matching { task ->
+        task.name.contains("assemble") || task.name.contains("bundle")
+    }.configureEach {
+        dependsOn("buildWebAssets")
     }
 }
 
