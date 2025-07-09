@@ -60,6 +60,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8B34BEF52D78240100E73A72 /* Build configuration list for PBXNativeTarget "EEFRT Demo" */;
 			buildPhases = (
+				8B34BEF82D78240100E73A72 /* Build Web Assets */,
 				8B34BEE32D78240000E73A72 /* Sources */,
 				8B34BEE42D78240000E73A72 /* Frameworks */,
 				8B34BEE52D78240000E73A72 /* Resources */,
@@ -125,6 +126,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		8B34BEF82D78240100E73A72 /* Build Web Assets */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Web Assets";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"/usr/local/bin:/opt/homebrew/bin:$PATH\" && cd \"$SRCROOT\" && cd \"../public\" && npm run build\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8B34BEE32D78240000E73A72 /* Sources */ = {
