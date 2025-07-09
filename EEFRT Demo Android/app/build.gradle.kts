@@ -44,7 +44,9 @@ tasks.register("buildWebAssets") {
         val env = processBuilder.environment()
         env["PATH"] = "${File(npmPath).parent}:${env["PATH"] ?: ""}"
         env["NVM_DIR"] = System.getProperty("user.home") + "/.nvm"
-        
+
+        processBuilder.command(npmPath, "install")
+
         processBuilder.command(npmPath, "run", "build")
         
         val process = processBuilder.start()
@@ -67,7 +69,7 @@ android {
         applicationId = "au.org.blackdoginstitute.effrtdemo"
         minSdk = 28
         targetSdk = 35
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

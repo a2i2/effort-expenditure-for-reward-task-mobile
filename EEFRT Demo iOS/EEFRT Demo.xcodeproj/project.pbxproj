@@ -145,7 +145,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export PATH=\"/usr/local/bin:/opt/homebrew/bin:$PATH\" && cd \"$SRCROOT\" && cd \"../public\" && npm run build\n";
+			shellScript = "export PATH=\"/usr/local/bin:/opt/homebrew/bin:$PATH\" && cd \"$SRCROOT\" && cd \"../public\" && npm install && npm run build\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
