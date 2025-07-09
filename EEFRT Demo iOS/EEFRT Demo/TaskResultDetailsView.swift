@@ -2,23 +2,18 @@ import SwiftData
 import SwiftUI
 import UIKit
 
-struct TaskResultDetailsView: View {
+struct TaskResultDetailsView<T: Encodable>: View {
     @State private var isSharePresented = false
-    private var jsonString: String
+    private var formattedString: String
 
-    init(jsonString: String) {
-        let formattedString = jsonString
-            .replacingOccurrences(of: ",", with: ",\n")
-            .replacingOccurrences(of: "{", with: "")
-            .replacingOccurrences(of: "}", with: "")
-
-        self.jsonString = formattedString
+    init(taskResult: T) {
+        self.formattedString = EventLogsFormatter.formatTaskResult(taskResult)
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
-                Text(jsonString)
+                Text(formattedString)
                     .multilineTextAlignment(.leading)
                     .textSelection(.enabled)
                     .frame(width: UIScreen.main.bounds.width)
@@ -34,12 +29,12 @@ struct TaskResultDetailsView: View {
             }
         }
         .sheet(isPresented: $isSharePresented) {
-            ActivityView(activityItems: [jsonString])
+            ActivityView(activityItems: [formattedString])
         }
     }
 }
 
-struct ActivityView: UIViewControllerRepresentable {
+fileprivate struct ActivityView: UIViewControllerRepresentable {
     let activityItems: [Any]
     func makeUIViewController(context: Context) -> UIActivityViewController {
         UIActivityViewController(activityItems: activityItems, applicationActivities: nil)

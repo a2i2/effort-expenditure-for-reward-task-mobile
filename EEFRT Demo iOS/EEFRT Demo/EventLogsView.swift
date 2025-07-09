@@ -9,6 +9,7 @@ struct EventLogsView: View {
     @Environment(\.modelContext) private var modelContext
 
     @State private var shouldShowAlert = false
+    @State private var isSharePresented = false
 
     var body: some View {
         List {
@@ -17,12 +18,7 @@ struct EventLogsView: View {
                     VStack {
                         NavigationLink(
                             destination: {
-                                do {
-                                    let jsonString = try JsonHelpers.stringify(result)
-                                    return TaskResultDetailsView(jsonString: jsonString)
-                                } catch {
-                                    fatalError("Couldn't stringifiy event log we already stringified...")
-                                }
+                                TaskResultDetailsView(taskResult: result)
                             },
                             label: {
                                 Text(result.createdAt?.description ?? "Something went wrong")
@@ -38,12 +34,7 @@ struct EventLogsView: View {
                     VStack {
                         NavigationLink(
                             destination: {
-                                do {
-                                    let jsonString = try JsonHelpers.stringify(result)
-                                    return TaskResultDetailsView(jsonString: jsonString)
-                                } catch {
-                                    fatalError("Couldn't stringifiy event log we already stringified...")
-                                }
+                                TaskResultDetailsView(taskResult: result)
                             },
                             label: {
                                 Text(result.createdAt?.description ?? "Something went wrong")
@@ -56,10 +47,18 @@ struct EventLogsView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    shouldShowAlert = true
-                } label: {
-                    Image(systemName: "trash")
+                HStack {
+                    Button {
+                        isSharePresented = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                    
+                    Button {
+                        shouldShowAlert = true
+                    } label: {
+                        Image(systemName: "trash")
+                    }
                 }
             }
         }
@@ -72,6 +71,13 @@ struct EventLogsView: View {
                 },
                 secondaryButton: .cancel {}
             )
+        }
+        .sheet(isPresented: $isSharePresented) {
+            let shareText = EventLogsFormatter.formatAllEventLogs(
+                practiceTaskResults: practiceTaskResults,
+                taskResults: taskResults
+            )
+            ActivityView(activityItems: [shareText])
         }
     }
     
@@ -121,4 +127,12 @@ struct EventLogsView: View {
             os_log(.error, "Error saving modelContext after deletion: \(error)")
         }
     }
+}
+
+fileprivate struct ActivityView: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

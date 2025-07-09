@@ -20,11 +20,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import android.content.Intent
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,16 +32,6 @@ fun EefrtTrialDetailView(
     onBack: () -> Unit
 ) {
     val scrollViewState = rememberScrollState()
-
-    fun formatPracticeTrialString(): String {
-        var practiceTrialString = eefrtTaskAttempt.toString()
-        practiceTrialString = practiceTrialString
-            .replace("(", "(\n ")
-            .replace(",", "\n")
-            .replace(")", "\n)")
-
-        return practiceTrialString
-    }
 
     Scaffold(
         topBar = {
@@ -60,7 +48,7 @@ fun EefrtTrialDetailView(
                 actions = {
                     val context = LocalContext.current
                     IconButton(onClick = {
-                        val shareText = formatPracticeTrialString()
+                        val shareText = EventLogsFormatter.formatTaskAttempt(eefrtTaskAttempt)
                         val shareIntent = Intent().apply {
                             action = Intent.ACTION_SEND
                             putExtra(Intent.EXTRA_TEXT, shareText)
@@ -82,7 +70,7 @@ fun EefrtTrialDetailView(
             ) {
                 SelectionContainer {
                     Text(
-                        text = formatPracticeTrialString(),
+                        text = EventLogsFormatter.formatTaskAttempt(eefrtTaskAttempt),
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                     )

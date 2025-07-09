@@ -3,6 +3,7 @@ package ai.a2i2.conductor.effrtdemoandroid.ui
 import ai.a2i2.conductor.effrtdemoandroid.R
 import ai.a2i2.conductor.effrtdemoandroid.ui.data.EefrtScreenViewModel
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.foundation.Image
@@ -16,10 +17,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -29,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,6 +50,7 @@ fun EventLogsView(
     val actualTaskAttempts = remember { eefrtScreenViewModel.getActualTaskAttempts() }
     val shouldShowDialog = remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -66,6 +71,7 @@ fun EventLogsView(
                 actions = {
                     Spacer(modifier = Modifier.weight(1f))
 
+                    // Delete all button
                     IconButton(
                         onClick = {
                             shouldShowDialog.value = true
@@ -77,6 +83,27 @@ fun EventLogsView(
                             contentDescription = "Delete",
                             modifier = Modifier
                                 .background(Color.Transparent)
+                        )
+                    }
+
+                    // Share button
+                    IconButton(
+                        onClick = {
+                            val shareText = EventLogsFormatter.formatAllEventLogs(
+                                practiceTaskAttempts.value,
+                                actualTaskAttempts.value
+                            )
+                            val shareIntent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_TEXT, shareText)
+                                type = "text/plain"
+                            }
+                            context.startActivity(Intent.createChooser(shareIntent, "Share Event Logs"))
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Share,
+                            contentDescription = "Share Event Logs"
                         )
                     }
                 }
