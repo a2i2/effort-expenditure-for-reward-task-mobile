@@ -25,17 +25,17 @@ object EventLogsFormatter {
         val stringBuilder = StringBuilder()
         
         // Add practice trials section
-        stringBuilder.append("=== PRACTICE TRIALS ===\n\n")
-        practiceTaskAttempts.forEachIndexed { index, practiceTaskAttempt ->
-            stringBuilder.append("Practice Trial ${index + 1}:\n")
+        stringBuilder.append("=== PRACTICE ROUNDS ===\n\n")
+        practiceTaskAttempts.sortedBy { it.pracTrialNo }.forEachIndexed { index, practiceTaskAttempt ->
+            stringBuilder.append("Practice Trial Round ${index}:\n")
             stringBuilder.append(formatTaskAttempt(practiceTaskAttempt))
             stringBuilder.append("\n\n")
         }
         
         // Add actual trials section
-        stringBuilder.append("=== MAIN TRIALS ===\n\n")
-        actualTaskAttempts.forEachIndexed { index, taskAttempt ->
-            stringBuilder.append("Main Trial ${index + 1}:\n")
+        stringBuilder.append("=== MAIN ROUNDS ===\n\n")
+        actualTaskAttempts.sortedBy { it.trialNo }.forEachIndexed { index, taskAttempt ->
+            stringBuilder.append("Main Trial Round ${index}:\n")
             stringBuilder.append(formatTaskAttempt(taskAttempt))
             stringBuilder.append("\n\n")
         }
