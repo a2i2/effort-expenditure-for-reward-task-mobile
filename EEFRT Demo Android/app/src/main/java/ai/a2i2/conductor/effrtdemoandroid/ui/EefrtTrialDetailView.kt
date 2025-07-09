@@ -33,16 +33,6 @@ fun EefrtTrialDetailView(
 ) {
     val scrollViewState = rememberScrollState()
 
-    fun formatPracticeTrialString(): String {
-        var practiceTrialString = eefrtTaskAttempt.toString()
-        practiceTrialString = practiceTrialString
-            .replace("(", "(\n ")
-            .replace(",", "\n")
-            .replace(")", "\n)")
-
-        return practiceTrialString
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -58,7 +48,7 @@ fun EefrtTrialDetailView(
                 actions = {
                     val context = LocalContext.current
                     IconButton(onClick = {
-                        val shareText = formatPracticeTrialString()
+                        val shareText = EventLogsFormatter.formatTaskAttempt(eefrtTaskAttempt)
                         val shareIntent = Intent().apply {
                             action = Intent.ACTION_SEND
                             putExtra(Intent.EXTRA_TEXT, shareText)
@@ -80,7 +70,7 @@ fun EefrtTrialDetailView(
             ) {
                 SelectionContainer {
                     Text(
-                        text = formatPracticeTrialString(),
+                        text = EventLogsFormatter.formatTaskAttempt(eefrtTaskAttempt),
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                     )
