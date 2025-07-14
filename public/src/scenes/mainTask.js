@@ -355,8 +355,6 @@ export default class MainTask extends BaseScene {
         
         ////////////GAME COMPLETE WHEN ALL TRIALS HAVE RUN////////////////
         if (trialNo == maxTrials) {
-            // Save the total number of coins collected
-            this.registry.set('CoinsRunningTotal', nCoins);
             // Send message to the app to indicate that the game is complete
             EmbedContext.sendMessage('gameComplete', {});
             // Stop the scene so that all visuals are removed
