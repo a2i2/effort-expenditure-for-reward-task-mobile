@@ -1,13 +1,11 @@
 import PracticeTask from "./scenes/practiceTask.js";
 import StartTaskScene from "./scenes/startTaskScene.js";
 import MainTask from "./scenes/mainTask.js";
-import TaskEndScene from "./scenes/taskEndScene.js";
 import { runPractice } from "./versionInfo.js";
 
 const scenes = [
     new StartTaskScene(),
-    new MainTask(),
-    new TaskEndScene()
+    new MainTask()
 ];
 
 // Prepend PracticeTask if runPractice is true

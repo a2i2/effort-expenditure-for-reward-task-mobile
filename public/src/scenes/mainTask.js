@@ -353,15 +353,13 @@ export default class MainTask extends BaseScene {
         // allow player to move
         this.player.update(); 
         
-        ////////////MOVE ON TO NEXT SCENE WHEN ALL TRIALS HAVE RUN////////////////
+        ////////////GAME COMPLETE WHEN ALL TRIALS HAVE RUN////////////////
         if (trialNo == maxTrials) {
-            this.nextScene();
+            // Send message to the app to indicate that the game is complete
+            EmbedContext.sendMessage('gameComplete', {});
+            // Stop the scene so that all visuals are removed
+            this.scene.stop();
         }
-    }
-
-    nextScene() {
-        this.registry.set('CoinsRunningTotal', nCoins);
-        this.launchNextScene();
     }
 }
 
