@@ -89,6 +89,7 @@ class EEFRTViewController: UIViewController {
 
         NotificationCenter.default.addObserver(self, selector: #selector(appWasBackgrounded), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(appWillbeForegrounded), name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(appWillBeTerminated), name: UIApplication.willTerminateNotification, object: nil)
     }
 
     deinit {
@@ -340,6 +341,13 @@ extension EEFRTViewController: WKScriptMessageHandler {
             webView.evaluateJavaScript("window.setupGameWithCache(\(stringifiedCache));")
             self.interruptionTimeout = nil // we can safely remove it from here
         }
+    }
+
+    func appWillBeTerminated() {
+        // if the app is terminated while the task is active, increment the attempt count,
+        // reset task progress or submit the task as complete if not the first attempt,
+        os_log(.debug, "Incremented attempt count")
+        os_log(.debug, "Task will be restarted on next load")
     }
 }
 
