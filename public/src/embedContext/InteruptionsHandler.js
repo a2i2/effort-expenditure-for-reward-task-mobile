@@ -58,19 +58,19 @@ export default class InteruptionsHandler {
             if (context.bottomScreenPanel && context.bottomScreenPanel.tag == ARE_YOU_THERE_TAG && interuptionLengthMs < twoMinsMs) {
                 // let the user continue from where they are as the dialog would have been still active, no increment to attempt count
                 // the timer will continue to tick down when they return so if they dont continue within the reminaing time they will get the times up dialog.
-                console.log('3A');
+                console.log('3A-A');
                 return;
             } else if (context.bottomScreenPanel && context.bottomScreenPanel.tag == ARE_YOU_THERE_TAG && interuptionLengthMs >= twoMinsMs && interuptionLengthMs < fourMinsMs) {
                 // the user returned after the are you still there dialog would have timed out but before the time out dialogs 2 mins internal countdown has expired,
                 // increment attempt count but they can countinue from where they left off
-                console.log('3A');
+                console.log('3A-B');
                 let closeMessage = new CloseMessage(false, true, false);
                 EmbedContext.sendMessage('close', closeMessage.stringify());
                 return;
             } else if (context.bottomScreenPanel && context.bottomScreenPanel.tag == ARE_YOU_THERE_TAG && interuptionLengthMs >= fourMinsMs) {
                 // the user returned after both the are you still there and times up times up dialogs would have timed out,
                 // increment attempt count and restart from the beginning
-                console.log('3A');
+                console.log('3A-C');
                 let closeMessage = new CloseMessage(false, true, true);
                 EmbedContext.sendMessage('close', closeMessage.stringify());
                 return;

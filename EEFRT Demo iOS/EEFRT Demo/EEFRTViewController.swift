@@ -72,6 +72,8 @@ class EEFRTViewController: UIViewController {
     private let publicPath: String
     private let indexFileUrl: URL
 
+    private var interruptionTimeout: Int64?
+
     init(gameCache: GameCache?) {
         guard let publicPath = Bundle.main.path(forResource: "assets", ofType: nil) else {
             fatalError("Unable to locate 'assets' folder in main bundle")
@@ -250,7 +252,7 @@ extension EEFRTViewController: WKScriptMessageHandler {
                 if closeMessage.shouldShowExitDialog {
                     showDismissDialog(closeMessage: closeMessage)
                 }
-            } catch let (error) {
+            } catch {
                 os_log(.debug, "Unable to decode close message from JS side with error: \(error.localizedDescription)")
             }
 
@@ -322,18 +324,22 @@ extension EEFRTViewController: WKScriptMessageHandler {
 
 @objc private extension EEFRTViewController {
     func appWasBackgrounded() {
-        // update the cache with the time the app was backgrounded
-        guard var cache = Defaults.gameCache else { return }
-        cache.interruptionTimestamp = Int64(Date().timeIntervalSince1970 * 1000) // convert seconds to milliseconds
-        Defaults.gameCache = cache
+        // update the interruptionTimeout with the time the app was backgrounded
+        interruptionTimeout = Int64(Date().timeIntervalSince1970 * 1000) // convert seconds to milliseconds
     }
 
     func appWillbeForegrounded() {
-        guard let cache = Defaults.gameCache,
-              let stringifiedCache = try? cache.stringify() else { return }
+        guard var cache = Defaults.gameCache,
+              let interruptionTimeout else {
+            self.interruptionTimeout = nil // reset this value then return
+            return
+        }
+        cache.interruptionTimestamp = interruptionTimeout
 
-        webView.evaluateJavaScript("window.setupGameWithCache(\(stringifiedCache));")
-        Defaults.gameCache?.interruptionTimestamp = nil // we can safely remove it from here
+        if let stringifiedCache = try? cache.stringify() {
+            webView.evaluateJavaScript("window.setupGameWithCache(\(stringifiedCache));")
+            self.interruptionTimeout = nil // we can safely remove it from here
+        }
     }
 }
 
