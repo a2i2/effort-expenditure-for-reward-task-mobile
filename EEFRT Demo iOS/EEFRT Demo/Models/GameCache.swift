@@ -10,6 +10,7 @@ struct GameCache: Codable, DefaultsSerializable {
     var randTrialsIdx: [Int]?
     var trialSeqFilename: String?
     var calibrationComplete: Bool
+    var interruptionTimestamp: Int64?
 
     // Default initializer with default values
     init(
@@ -20,7 +21,8 @@ struct GameCache: Codable, DefaultsSerializable {
         trialResults: [String: Int] = [:],
         randTrialsIdx: [Int]? = nil,
         trialSeqFilename: String? = nil,
-        calibrationComplete: Bool = false
+        calibrationComplete: Bool = false,
+        interuptionTimestamp: Int64? = nil
     ) {
         self.practiceComplete = practiceComplete
         self.trialNumber = trialNumber
@@ -30,6 +32,7 @@ struct GameCache: Codable, DefaultsSerializable {
         self.randTrialsIdx = randTrialsIdx
         self.trialSeqFilename = trialSeqFilename
         self.calibrationComplete = calibrationComplete
+        self.interruptionTimestamp = interuptionTimestamp
     }
 
     // Decoder initializer
@@ -43,6 +46,7 @@ struct GameCache: Codable, DefaultsSerializable {
         self.randTrialsIdx = try container.decodeIfPresent([Int].self, forKey: .randTrialsIdx)
         self.trialSeqFilename = try container.decodeIfPresent(String.self, forKey: .trialSeqFilename)
         self.calibrationComplete = try container.decode(Bool.self, forKey: .calibrationComplete)
+        self.interruptionTimestamp = try container.decodeIfPresent(Int64.self, forKey: .interruptionTimestamp)
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -55,6 +59,7 @@ struct GameCache: Codable, DefaultsSerializable {
         try container.encodeIfPresent(randTrialsIdx, forKey: .randTrialsIdx)
         try container.encodeIfPresent(trialSeqFilename, forKey: .trialSeqFilename)
         try container.encodeIfPresent(calibrationComplete, forKey: .calibrationComplete)
+        try container.encodeIfPresent(interruptionTimestamp, forKey: .interruptionTimestamp)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -66,6 +71,7 @@ struct GameCache: Codable, DefaultsSerializable {
         case randTrialsIdx
         case trialSeqFilename
         case calibrationComplete
+        case interruptionTimestamp
     }
 
     func stringify() throws -> String {
