@@ -18,6 +18,7 @@ import Message from "../elements/message.js";
 import GameCache from "../embedContext/GameCache.js";
 import PracticeTaskAttempt from "../embedContext/PracticeTaskAttempt.js";
 import { POWER_COUNTDOWN_KEY } from "../elements/CountdownPanel.js";
+import CloseMessage from "../embedContext/CloseMessage.js";
 
 // initialize some global vars
 var gameHeight;
@@ -184,8 +185,8 @@ export default class PracticeTask extends BaseScene {
         this.closeButton.setScrollFactor(0);
         this.closeButton.setInteractive();
         this.closeButton.on('pointerdown', () => {
-            let shouldShowExitDialog = false
-            EmbedContext.sendMessage('close', shouldShowExitDialog);
+            let closeMessage = new CloseMessage(false, false, false);
+            EmbedContext.sendMessage('close', closeMessage.stringify());
         });
 
         //////////////ADD PLAYER SPRITE////////////////////
@@ -294,7 +295,7 @@ export default class PracticeTask extends BaseScene {
             }
 
             // signal to the cache that the practice is complete
-            let cache = new GameCache(true, 0, maxPressCount, 0, {}, null, null, calibrationComplete)
+            let cache = new GameCache(true, 0, maxPressCount, 0, {}, null, null, calibrationComplete, null)
             EmbedContext.sendMessage('currentGameCache', cache.stringify());
 
             // progress to the next scene

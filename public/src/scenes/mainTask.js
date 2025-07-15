@@ -25,6 +25,9 @@ import { POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
 import GameCache from "../embedContext/GameCache.js";
 import TaskAttempt from "../embedContext/TaskAttempt.js";
 import { POWER_COUNTDOWN_KEY } from "../elements/CountdownPanel.js";
+import { BREAK_TAG, TIMEOUT_TAG, ARE_YOU_THERE_TAG } from "../elements/BottomScreenPanel.js";
+import InteruptionsHandler from "../embedContext/InteruptionsHandler.js";
+import CloseMessage from "../embedContext/CloseMessage.js";
 
 // initialize all the global vars (must be a better way of doing this...)
 var gameHeight; 
@@ -71,9 +74,9 @@ var practiceorReal = 1; // use the main task instruction panels
 var coinsWonThisTrial = 0;
 var smallDeviceOffset = 0;
 var consecutiveMissedTrials = 0;
-var missedTrialDialogsShown = 0;
 var randTrialsIdx;
 var powerCountdown;
+var timeoutInterval; 
 
 // this function extends Phaser.Scene and includes the core logic for the game
 export default class MainTask extends BaseScene {
@@ -162,6 +165,11 @@ export default class MainTask extends BaseScene {
         maxTrials = nTrials;
         trialsPerBlock = nTrials / nBlocks;  // blocks divide trials
         let catchIdx = trials.catchIdx ?? defaultCatchIdx;
+        
+        this.missedTrialDialogsShown = this.registry.get('missedTrialDialogsShown') ?? 0;
+        this.interruptionShowAreYouThereDialog = false;
+        this.interruptionShowTimesUpDialog = false;
+        this.taskRequiresRestart = false;
 
         // setup the game with the cached game state if present
         loadGameFromCache(this);
@@ -236,7 +244,14 @@ export default class MainTask extends BaseScene {
         this.closeButton.setInteractive();
         this.closeButton.on('pointerdown', () => {
             let shouldShowExitDialog = true
-            exitGame(shouldShowExitDialog);
+            let incrementAttemptCount = false;
+
+            // if there user leave the task for any reason after passing the calibration trials, increment the attempt count
+            if (GameCache.cache && GameCache.cache.trialNumber >= nCalibrates) {
+                incrementAttemptCount = true
+            }
+
+            exitGame(this, shouldShowExitDialog, incrementAttemptCount);
         });
 
         //////////////ADD PLAYER SPRITE////////////////////
@@ -352,6 +367,24 @@ export default class MainTask extends BaseScene {
         ///////////SPRITES THAT REQUIRE TIME-STEP UPDATING FOR ANIMATION//////////
         // allow player to move
         this.player.update(); 
+
+        // TODO: Fix random issue where the interruption handler isn't called after an interruption
+        let cache = GameCache.cache;
+        if (cache && cache.interruptionTimestamp) {
+            InteruptionsHandler.handleInteruption(this, cache);
+            GameCache.cache.interruptionTimestamp = null; // prevent this from being evaluated in subsequent updates
+        }
+
+        // Check for interruption timestamp from the GameCache
+        // Compare with current timestamp
+        // if less than 3 mins
+        // var interruptionTimestamp = GameCache.cache.interruptionTimestamp;
+        // if (interruptionTimestamp && interruptionTimestamp < Date.now() - 5000) {
+        //     // Send message to the app to indicate that the game is complete
+        //     EmbedContext.sendMessage('gameComplete', {});
+        //     // Stop the scene so that all visuals are removed
+        //     this.scene.stop();
+        // }
         
         ////////////GAME COMPLETE WHEN ALL TRIALS HAVE RUN////////////////
         if (trialNo == maxTrials) {
@@ -607,10 +640,23 @@ var effortOutcome = function() {
 
 // 4. When player hits end of scene, save trial data and move on to the next trial (reload the scene)
 var trialEnd = function () {
-    // if the user has been shown the 'Are you still there?' message and they trigger it again, kick them out of the task
     let isLastTrial = trialNo == nTrials - 1;
-    let missedTrialDialogShownLimitReached = (missedTrialDialogsShown >= missedTrialDialogLimit) && missedTrialDialogLimit > 0; // ensure that a limit of 0 allows the dialog to be shown as many times as needed
-    if (consecutiveMissedTrials >= missedTrialLimit && !isLastTrial && missedTrialDialogShownLimitReached) {
+    let missedTrialDialogShownLimitReached = (this.missedTrialDialogsShown >= missedTrialDialogLimit) && missedTrialDialogLimit > 0; // ensure that a limit of 0 allows the dialog to be shown as many times as needed
+
+    // if an interruption occured and we need to show the are you still there dialog, show it
+    if (this.interruptionShowAreYouThereDialog == true && !isLastTrial) {
+        stopPlayer(this);
+        showMissedTrialDialog(this);
+        this.interruptionShowAreYouThereDialog = false;
+    }
+    // if an interruption occured and we need to show the times up dialog, show it
+    else if (this.interruptionShowTimesUpDialog == true && !isLastTrial) {
+        stopPlayer(this);
+        showTimeUpDialog(this);
+        this.interruptionShowTimesUpDialog = false;
+    }
+    // if the user has been shown the 'Are you still there?' message and they trigger it again, kick them out of the task
+    else if (consecutiveMissedTrials >= missedTrialLimit && !isLastTrial && missedTrialDialogShownLimitReached) {
         stopPlayer(this);
         showTimeUpDialog(this);
     }
@@ -655,7 +701,7 @@ var loadGameFromCache = function(context) {
     const cache = GameCache.cache;
     if (cache == null) {
         // if no cache to load from, create a new one with the default values
-        GameCache.cache = new GameCache(true, 0, undefined, 0, {}, [], context.trialSequenceFile);
+        GameCache.cache = new GameCache(true, 0, undefined, 0, {}, [], context.trialSequenceFile, null);
         return;
     }
 
@@ -734,11 +780,13 @@ var continueGameAfterBreak = function(context) {
     }
 
     // move to next trial
+    context.bottomScreenPanel = null;
     context.scene.restart();
 }
 
-var exitGame = function(shouldShowExitDialog) {
-    EmbedContext.sendMessage('close', shouldShowExitDialog);
+var exitGame = function(context, shouldShowExitDialog, shouldIncrementAttemptCount) {
+    let closeMessage = new CloseMessage(shouldShowExitDialog, shouldIncrementAttemptCount, context.taskRequiresRestart);
+    EmbedContext.sendMessage('close', closeMessage.stringify());
 }
 
 var stopPlayer = function(context) {
@@ -747,8 +795,11 @@ var stopPlayer = function(context) {
 }
 
 var showMissedTrialDialog = function(context) {
+    let storedMissedTrialDialogsShown = context.registry.get('missedTrialDialogsShown') ?? 0;
+    context.registry.set('missedTrialDialogsShown', storedMissedTrialDialogsShown + 1);
+    context.missedTrialDialogShown += storedMissedTrialDialogsShown + 1;
+
     let missedTrialsDialogText = "Continue within the next 2 minutes to keep collecting coins.";
-    missedTrialDialogsShown += 1;
     consecutiveMissedTrials = 0;
 
     showBottomScreenPanel(
@@ -757,6 +808,7 @@ var showMissedTrialDialog = function(context) {
         missedTrialsDialogText,
         "CONTINUE",
         breakTime,
+        ARE_YOU_THERE_TAG,
         () => { continueGameAfterBreak(context); },
         () => { showTimeUpDialog(context); }
     );
@@ -770,14 +822,27 @@ var showTimeUpDialog = function(context) {
         timeoutMessage = "Unfortunately you've run out of time to continue the this task. Try again to recieve a bonus payment.";
     }
 
+    let showExitDialog = false;
+    let incrementAttemptCount = true;
+
+    // Once we see the timeout message, we have 2 mins to return to the task otherwise we need to restart
+    timeoutInterval = setInterval(
+        () => {
+            context.taskRequiresRestart = true;
+            clearInterval(timeoutInterval);
+        },
+        1000 * 60 * 2 // 2 mins
+    );
+
     showBottomScreenPanel(
         context,
         "Times up!",
         timeoutMessage,
         "EXIT",
         null,
-        () => { exitGame(false); }, // no need to show the exit dialog as we're already showing the time up dialog
-        () => { exitGame(false); } // no need to show the exit dialog as we're already showing the time up dialog
+        TIMEOUT_TAG,
+        () => { exitGame(context, showExitDialog, incrementAttemptCount); },
+        () => { exitGame(context, showExitDialog, incrementAttemptCount); }
     );
 }
 
@@ -789,12 +854,13 @@ var showBreakDialog = function(context) {
         breakTextContent,
         "CONTINUE",
         breakTime,
+        BREAK_TAG,
         () => { continueGameAfterBreak(context); }, // continue the game regardless after the break is automatically or manually stopped
         () => { continueGameAfterBreak(context); }
     );
 }
 
-var showBottomScreenPanel = function(context, titleText, subtitleText, bottomButtonText, countdownTimerMS, onContinuePressed, onTimeout) {
+var showBottomScreenPanel = function(context, titleText, subtitleText, bottomButtonText, countdownTimerMS, tag, onContinuePressed, onTimeout) {
     let camera = context.cameras.main;
 
     context.bottomScreenPanel = new BottomScreenPanel(
@@ -804,6 +870,7 @@ var showBottomScreenPanel = function(context, titleText, subtitleText, bottomBut
         subtitleText,
         bottomButtonText,
         countdownTimerMS,
+        tag,
         onContinuePressed,
         onTimeout
     );
