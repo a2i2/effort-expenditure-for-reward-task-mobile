@@ -129,7 +129,7 @@ export default class InteruptionsHandler {
                 return; // let the user continue without incrementing the attempt count, the task is considered done at this point.
             } else { // 4B
                 console.log('4B');
-                EmbedContext.sendMessage('gameComplete');
+                EmbedContext.sendMessage('gameComplete', {});
                 return; // game is complete, exit immediately
             }
         }
