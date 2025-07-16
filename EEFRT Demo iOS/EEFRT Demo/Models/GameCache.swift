@@ -79,4 +79,8 @@ struct GameCache: Codable, DefaultsSerializable {
         let data = try encoder.encode(self)
         return String(decoding: data, as: UTF8.self)
     }
+    
+    func isResumeTrialAvailable() -> Bool {
+        practiceComplete || trialNumber > 0
+    }
 }

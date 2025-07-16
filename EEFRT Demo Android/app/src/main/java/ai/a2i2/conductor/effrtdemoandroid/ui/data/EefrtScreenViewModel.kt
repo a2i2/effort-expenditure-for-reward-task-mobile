@@ -28,7 +28,7 @@ class EefrtScreenViewModel(
     init {
         refreshData()
         val currentGameState = GameStorage(context).cachedGameState
-        resumeTrialAvailable = mutableStateOf((currentGameState?.trialNumber ?: 0) > 0)
+        resumeTrialAvailable = mutableStateOf(currentGameState?.isResumeTrialAvailable() ?: false)
     }
 
     private fun refreshData() {
@@ -85,7 +85,7 @@ class EefrtScreenViewModel(
 
     fun setCurrentGameState(context: Context, newGameState: GameCache?) {
         GameStorage(context).cachedGameState = newGameState
-        resumeTrialAvailable.value = (newGameState?.trialNumber ?: 0) > 0
+        resumeTrialAvailable.value = newGameState?.isResumeTrialAvailable() ?: false
     }
 
     fun getCurrentGameState(context: Context): GameCache? {

@@ -19,6 +19,11 @@ data class GameCache(
     val trialSeqFilename: String? = null,
     var calibrationComplete: Boolean = false
 )
+) {
+    fun isResumeTrialAvailable(): Boolean {
+        return practiceComplete || trialNumber > 0
+    }
+}
 
 class GameStorage(context: Context) : SimpleKrate(context) {
     var cachedGameState: GameCache? by kotlinxPref<GameCache>("cachedGameState").withDefault(
