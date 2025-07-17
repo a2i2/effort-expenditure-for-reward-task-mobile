@@ -99,6 +99,7 @@ class EefrtScreenViewModel(
     // we don't care for the business logic in this app, remember to add it into the main vibe up 2 apps
     fun clearEEFRTData(context: Context) {
         GameStorage(context).cachedGameState = null
+        resumeTrialAvailable.value = false
     }
 
     fun markCalibrationAsComplete(context: Context) {
