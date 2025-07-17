@@ -63,8 +63,8 @@ var choice;
 var choiceCompleteTime;
 var choiceRT;
 var pressCount;
-var pressStartTime
-var pressEndTime
+var pressStartTime = 0;
+var pressEndTime = 0;
 var pressTimes;
 var trialSuccess;
 var trialEndTime;
@@ -898,10 +898,12 @@ var saveData = function(context) {
     // perform recalibration if required and within the first nCalibrates trials
     if (trialNo < nCalibrates) {
         // get variables to use 
-        pressTimes = context.registry.get('pressTimes');
-        pressCount = context.registry.get('pressCount');
-        pressStartTime = pressTimes[0]; // pressStartTime is the first pressTime
-        pressEndTime = pressTimes[pressTimes.length - 1]; // pressEndTime is the last pressTime
+        pressTimes = context.registry.get('pressTimes') ?? [];
+        pressCount = context.registry.get('pressCount') ?? 0;
+        if (pressTimes, pressTimes.length > 0) {
+            pressStartTime = pressTimes[0]; // pressStartTime is the first pressTime
+            pressEndTime = pressTimes[pressTimes.length - 1]; // pressEndTime is the last pressTime
+        }
 
         // get level of effort chosen
         if (choice == 'route 1') {
