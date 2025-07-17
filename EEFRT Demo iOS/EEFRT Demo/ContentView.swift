@@ -23,7 +23,7 @@ struct ContentView: View {
                     Button("Cancel", role: .cancel) {}
                 }
 
-                if viewModel.gameCache?.isResumeTrialAvailable() ?? false, let cache = viewModel.gameCache {
+                if let cache = viewModel.gameCache, cache.isResumeTrialAvailable()  {
                     NavigationLink(destination: EEFRTView(gameCache: cache)
                         .ignoresSafeArea()
                         .navigationBarBackButtonHidden()) {

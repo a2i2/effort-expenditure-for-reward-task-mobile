@@ -302,7 +302,9 @@ export default class PracticeTask extends BaseScene {
             }
 
             // signal to the cache that the practice is complete
-            let cache = new GameCache(true, 0, maxPressCount, 0, {}, null, null, calibrationComplete, null)
+            let trialSeqFilename = GameCache.cache?.trialSeqFilename || null;
+            let cache = new GameCache(true, 0, maxPressCount, 0, {}, null, trialSeqFilename, calibrationComplete, null)
+            GameCache.cache = cache;
             EmbedContext.sendMessage('currentGameCache', cache.stringify());
 
             // progress to the next scene
