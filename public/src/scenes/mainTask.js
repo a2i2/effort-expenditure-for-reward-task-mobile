@@ -900,7 +900,7 @@ var saveData = function(context) {
         // get variables to use 
         pressTimes = context.registry.get('pressTimes') ?? [];
         pressCount = context.registry.get('pressCount') ?? 0;
-        if (pressTimes, pressTimes.length > 0) {
+        if (pressTimes.length > 0) {
             pressStartTime = pressTimes[0]; // pressStartTime is the first pressTime
             pressEndTime = pressTimes[pressTimes.length - 1]; // pressEndTime is the last pressTime
         }
