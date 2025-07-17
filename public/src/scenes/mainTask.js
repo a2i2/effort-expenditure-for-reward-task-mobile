@@ -368,7 +368,6 @@ export default class MainTask extends BaseScene {
         // allow player to move
         this.player.update(); 
 
-        // TODO: Fix random issue where the interruption handler isn't called after an interruption
         let cache = GameCache.cache;
         if (cache && cache.interruptionTimestamp) {
             InteruptionsHandler.handleInteruption(this, cache);

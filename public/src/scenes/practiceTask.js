@@ -18,6 +18,7 @@ import Message from "../elements/message.js";
 import GameCache from "../embedContext/GameCache.js";
 import PracticeTaskAttempt from "../embedContext/PracticeTaskAttempt.js";
 import { POWER_COUNTDOWN_KEY } from "../elements/CountdownPanel.js";
+import InteruptionsHandler from "../embedContext/InteruptionsHandler.js";
 import CloseMessage from "../embedContext/CloseMessage.js";
 
 // initialize some global vars
@@ -274,6 +275,12 @@ export default class PracticeTask extends BaseScene {
             console.log("practice task passed");
             this.launchNextScene();
             return;
+        }
+
+        let cache = GameCache.cache;
+        if (cache && cache.interruptionTimestamp) {
+            InteruptionsHandler.handleInteruption(this, cache);
+            GameCache.cache.interruptionTimestamp = null; // prevent this from being evaluated in subsequent updates
         }
 
         ///////////SPRITES THAT REQUIRE TIME-STEP UPDATING FOR ANIMATION//////////

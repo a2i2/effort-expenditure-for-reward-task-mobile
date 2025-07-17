@@ -5,7 +5,6 @@ import CloseMessage from "./CloseMessage";
 
 export default class InteruptionsHandler {
     static handleInteruption(context, cache) {
-        console.log('cache: ' + cache);
         if (cache == null || !cache.interruptionTimestamp) {
             return;
         }
@@ -21,6 +20,7 @@ export default class InteruptionsHandler {
 
         // scenario 1 - interupted during practice rounds before main trials - restart from practice with no increment to attempt count
         if (cache.practiceComplete == false && cache.trialNumber == 0) {
+            console.log('1A');
             let closeMessage = new CloseMessage(false, false, false);
             EmbedContext.sendMessage('close', closeMessage.stringify());
             return;
@@ -97,11 +97,12 @@ export default class InteruptionsHandler {
             // 3D
             if (!context.bottomScreenPanel && interuptionLengthMs >= threeMinsMs && interuptionLengthMs < fiveMinsMs) {
                 let numAreYouThereDialogsShown = context.missedTrialDialogsShown ?? 0;
-                console.log('3D');
                 // if havent been shown the are you still there dialog, show it
                 if (numAreYouThereDialogsShown < missedTrialDialogLimit) {
+                    console.log('3D-A');
                     context.interruptionShowAreYouThereDialog = true;
                 } else {
+                    console.log('3D-B');
                     // we've been shown the are you still there dialog too many times, show the times up dialog instead
                     context.interruptionShowTimesUpDialog = true;
                 }
