@@ -124,7 +124,6 @@ export default class InteruptionsHandler {
 
             // 3F
             if (!context.bottomScreenPanel && interuptionLengthMs < threeMinsMs) {
-                console.log('3F');
                 context.continueAfterInterruption();
                 return;
             }

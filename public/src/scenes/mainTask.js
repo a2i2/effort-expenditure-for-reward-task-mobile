@@ -407,10 +407,14 @@ export default class MainTask extends BaseScene {
         */
     
         if (this.player.sprite.x <= decisionPointX && this.player.sprite.anims.currentAnim.key == 'run') {
+            console.log('3F-A');
+
             // signal that the route selector panel shouldn't be shown
             this.interruptionOccured = true;
             return;
         } else if (this.routeSelectorPanel != null && this.player.sprite.body.velocity.x == 0 && this.player.sprite.anims.currentAnim.key == 'wait') {
+            console.log('3F-B');
+
             // ensure the choice is set in the registry
             this.registry.set('choice', 'interruption');
 
@@ -424,6 +428,8 @@ export default class MainTask extends BaseScene {
 
             return;
         } else if (this.powerPanel != null && this.player.sprite.anims.currentAnim.key == 'powerup') {
+            console.log('3F-C');
+
             // ensure the choice is set in the registry
             this.registry.set('choice', 'interruption');
 
@@ -435,6 +441,7 @@ export default class MainTask extends BaseScene {
             eventsCenter.emit(POWER_UP_COMPLETE_KEY);    
         } else {
             // do nothing, player will be walking across the bridge
+            console.log('3F-D');
         }
     }
 }
