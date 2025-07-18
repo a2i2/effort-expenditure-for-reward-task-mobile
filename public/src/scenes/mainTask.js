@@ -51,7 +51,6 @@ var trialEffort2;
 var trialEffortPropChosen
 var trialEffort;
 var nCoins = 0; 
-var feedbackMessage;
 var feedbackTime = 1000;
 var animationTime = 400;
 var blockNo = 0;
@@ -170,6 +169,8 @@ export default class MainTask extends BaseScene {
         this.interruptionShowAreYouThereDialog = false;
         this.interruptionShowTimesUpDialog = false;
         this.taskRequiresRestart = false;
+        this.interruptionOccured = false;
+        this.routeSelectorPanel = null;
 
         // setup the game with the cached game state if present
         loadGameFromCache(this);
@@ -393,6 +394,49 @@ export default class MainTask extends BaseScene {
             this.scene.stop();
         }
     }
+
+    continueAfterInterruption() {
+        // a user was interrupted whilst in the middle of an individual trial, in this scenario we won't allow them to
+        // interract with that individual trial and will instead start from the beginning of the next trial.
+    
+        /*
+            1. If current animation playing is the walking animation before the route selector apears - prevent the power panel from appearing but still show the interruption message
+            2. If the route selector panel is visible, close it, show the interruption message and walk across the bridge
+            3. If the power up scene is active, cancel it, show an interruption message and walk across the bridge
+            4. If the user has already completed the trial, do nothing, the player will be walking across the bridge anyway
+        */
+    
+        if (this.player.sprite.x <= decisionPointX && this.player.sprite.anims.currentAnim.key == 'run') {
+            // signal that the route selector panel shouldn't be shown
+            this.interruptionOccured = true;
+            return;
+        } else if (this.routeSelectorPanel != null && this.player.sprite.body.velocity.x == 0 && this.player.sprite.anims.currentAnim.key == 'wait') {
+            // ensure the choice is set in the registry
+            this.registry.set('choice', 'interruption');
+
+            // destroy the RouteSelectorPanel and proceed to the trial outcome
+            this.routeSelectorPanel.destroy();
+            this.routeSelectorPanel = null;
+
+            // manually trigger the power up complete event so we can skip the current trial
+            eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this);
+            eventsCenter.emit(POWER_UP_COMPLETE_KEY);
+
+            return;
+        } else if (this.powerPanel != null && this.player.sprite.anims.currentAnim.key == 'powerup') {
+            // ensure the choice is set in the registry
+            this.registry.set('choice', 'interruption');
+
+            this.powerPanel.destroy();
+            this.powerPanel = null;
+
+            // manually trigger the power up complete event so we can skip the current trial
+            // listen was already set up when the power panel was created
+            eventsCenter.emit(POWER_UP_COMPLETE_KEY);    
+        } else {
+            // do nothing, player will be walking across the bridge
+        }
+    }
 }
 
 ///////////////////////////////FUNCTIONS FOR CONTROLLING TRIAL SEQUENCE/////////////////////////////////////
@@ -409,10 +453,18 @@ var displayChoicePanel = function () {
     this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 235 + smallDeviceOffset, trialReward1); // coins in sky
     this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 360 + smallDeviceOffset, trialReward2); // coins on bridge
 
+    // if an interruption occured before we display the choice panel, 
+    if (this.interruptionOccured) {
+        this.registry.set('choice', 'interruption');
+        eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this);
+        eventsCenter.emit(POWER_UP_COMPLETE_KEY);
+        return;
+    }
+
     const camera = this.cameras.main;
     const centerX = camera.scrollX + camera.width / 2;
 
-    const panel = new RouteSelectorPanel(
+    this.routeSelectorPanel = new RouteSelectorPanel(
         this,
         centerX,
         trialReward1,
@@ -425,7 +477,7 @@ var displayChoicePanel = function () {
         },
         timeout
     );
-    this.add.existing(panel.container);
+    this.add.existing(this.routeSelectorPanel.container);
     
     // once choice is entered, get choice info and route to relevant next step
     eventsCenter.once('choiceComplete', doChoice, this);
@@ -448,15 +500,14 @@ var doChoice = function () {
         this.player.sprite.anims.play('powerup', true);
         // until time limit reached:
         eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this)
-        }
-    else if (choice == 'route 2') {  // if participant chooses the low effort option
+    } else if (choice == 'route 2') {  // if participant chooses the low effort option
         // timer panel pops up  
         this.powerPanel = new PowerPanel(this, centerX, effortTime, trialReward2, trialEffortPropMax2, trialEffort2);
         // and play player 'power-up' animation
         this.player.sprite.anims.play('powerup', true);
         // until time limit reached:
         eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this)
-    } else { // user failed to make a choice before timeout
+    } else if (choice == 'timeout') { // user failed to make a choice before timeout
         // No TimerPanel to emit the timesup event, so we emit it manually so the 'this' context can be passed through
         eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this);
         eventsCenter.emit(POWER_UP_COMPLETE_KEY);
@@ -467,8 +518,8 @@ var doChoice = function () {
 var effortOutcome = function() {
     choice = this.registry.get('choice');
     // get number of achieved button presses 
-    pressCount = this.registry.get('pressCount');
-    pressTimes = this.registry.get('pressTimes');  // [?we want this - might make code run slow...]
+    pressCount = this.registry.get('pressCount') ?? 0;
+    pressTimes = this.registry.get('pressTimes') ?? [];  // [?we want this - might make code run slow...]
     
     // if ppt chooses high effort and clears trial effort threshold, fly across sky and collect coins!
     if (choice == 'route 1' && pressCount >= trialEffort1) {
@@ -591,6 +642,46 @@ var effortOutcome = function() {
                             },                         
                             callbackScope: this});
 
+    } else if (choice == 'interruption') {
+        trialSuccess = 0;
+        consecutiveMissedTrials += 1; // reset this value? increment it?
+        powerCountdown = 0;
+        choiceCompleteTime = 0;
+
+        // display interruption message for a couple of seconds
+        this.feedbackMessage = new Message(
+            this,
+            gameWidth,
+            0xFFDBDB,
+            0xFF9696,
+            "Task was interrupted,\nskipping ahead to the next trial.",
+            "#9B0000",
+            80
+        );
+        this.tweens.add({        
+            targets: this.feedbackMessage,
+            scaleX: { start: 0, to: 1 },
+            scaleY: { start: 0, to: 1 },
+            ease: 'Linear',    
+            duration: animationTime * 3, // 1.2 seconds 
+            repeat: 0,      
+            yoyo: false
+        });
+        // then play powerup fail anim and progress via slow route
+        this.time.addEvent({delay: feedbackTime * 3 + 250, 
+                            callback: function() {
+                                this.feedbackMessage.destroy();  // Add this line to destroy the background
+                                // then play short 'powerup fail' anim:
+                                // this.player.sprite.anims.play('powerupfail', true);
+                                // and progress via bridge route (with sad face)
+                                    // player progresses via bridge and earns no extra reward
+                                this.player.sprite.setVelocityX(playerVelocity/5);   // 5,6
+                                this.player.sprite.anims.play('sadrun', true);
+                                this.physics.add.collider(this.player.sprite, this.bridgeEndPoint, 
+                                                            function(){eventsCenter.emit('bumpme');}, null, this); 
+                                eventsCenter.once('bumpme', onejump, this);
+                            },                         
+                            callbackScope: this});
     } else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
         consecutiveMissedTrials = 0;
@@ -672,7 +763,11 @@ var trialEnd = function () {
     }
     else {
         // iterate trial number
-        trialNo++;     
+        trialNo++;
+
+        // clear any event listners still active so they aren't leaked
+        eventsCenter.removeAllListeners();
+
         // move to next trial
         this.scene.restart();        // [?wrap in delay function to ensure saving works]
     }
@@ -780,6 +875,7 @@ var continueGameAfterBreak = function(context) {
 
     // move to next trial
     context.bottomScreenPanel = null;
+    eventsCenter.removeAllListeners();
     context.scene.restart();
 }
 
@@ -935,7 +1031,7 @@ var saveData = function(context) {
     // update the thresholdMax from the registry
     thresholdMax = context.registry.get('thresholdMax');
 
-    if (choice == 'timeout') {
+    if (choice == 'timeout' || choice == 'interruption') {
         // if the choice was a timeout then reset all the relevant variables so the payload doesn't retain the previous trial's data
         trialEffortPropChosen = 0;
         trialEffort = 0;

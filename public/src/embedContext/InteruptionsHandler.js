@@ -41,6 +41,7 @@ export default class InteruptionsHandler {
                 return;
             } else { // 2B
                 console.log('2B');
+                context.continueAfterInterruption();
                 return; // let the user continue from where they are, no increment to attempt count
             }
         }
@@ -52,6 +53,7 @@ export default class InteruptionsHandler {
             3C: User returns after the times out internal timer finishes (1 min for 3 timeouts, 2 mins for are you still there, 2 mins for times up dialog) - Restart the task from the beginning (if first attempt) or submit as complete if not first attempt
             3D: User is gone for 3-5 mins and there is no active dialog - show the are you still there dialog (or the times up dialog if shown before)
             3E: User is gone for over 5 mins and theres no active dialog - Show the Times up dialog and restart the task from the beginning (if first attempt) or submit as complete if not.
+            3F: User is gone for less than 3 mins and theres no active dialog - dont let the user interract with the current trial and skip ahead to the next trial.
         */
         if (cache.trialNumber >= 2 && cache.trialNumber < completionThresholdTrialNo) {
             // 3A
@@ -101,10 +103,12 @@ export default class InteruptionsHandler {
                 if (numAreYouThereDialogsShown < missedTrialDialogLimit) {
                     console.log('3D-A');
                     context.interruptionShowAreYouThereDialog = true;
+                    context.continueAfterInterruption();
                 } else {
                     console.log('3D-B');
                     // we've been shown the are you still there dialog too many times, show the times up dialog instead
                     context.interruptionShowTimesUpDialog = true;
+                    context.continueAfterInterruption();
                 }
                 return;
             }
@@ -114,6 +118,14 @@ export default class InteruptionsHandler {
                 console.log('3E');
                 context.interruptionShowTimesUpDialog = true;
                 context.taskRequiresRestart = true;
+                context.continueAfterInterruption();
+                return;
+            }
+
+            // 3F
+            if (!context.bottomScreenPanel && interuptionLengthMs < threeMinsMs) {
+                console.log('3F');
+                context.continueAfterInterruption();
                 return;
             }
         }
@@ -127,6 +139,7 @@ export default class InteruptionsHandler {
             // 4A
             if (interuptionLengthMs < fiveMinsMs) {
                 console.log('4A');
+                context.continueAfterInterruption();
                 return; // let the user continue without incrementing the attempt count, the task is considered done at this point.
             } else { // 4B
                 console.log('4B');
