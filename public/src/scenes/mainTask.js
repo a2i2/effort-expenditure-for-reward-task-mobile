@@ -827,6 +827,11 @@ var setUpMaxThreshold = function(context) {
     // if we have a stored maxPressCount then use it
     if (GameCache.cache?.maxPressCount) {
         maxPressCount = GameCache.cache.maxPressCount;
+
+        // if the current maxPressCount is less than the minimum presses then enforce the minimum
+        if (maxPressCount < minPressMax) {
+            maxPressCount = minPressMax;
+        }
         context.registry.set('thresholdMax', maxPressCount);
         return;
     }
