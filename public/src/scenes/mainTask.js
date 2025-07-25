@@ -25,7 +25,7 @@ import { POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
 import GameCache from "../embedContext/GameCache.js";
 import TaskAttempt from "../embedContext/TaskAttempt.js";
 import { POWER_COUNTDOWN_KEY } from "../elements/CountdownPanel.js";
-import { BREAK_TAG, TIMEOUT_TAG, ARE_YOU_THERE_TAG } from "../elements/BottomScreenPanel.js";
+import { BREAK_TAG, TIMEOUT_TAG, ARE_YOU_THERE_TAG, EXIT_TASK_TAG, GAME_COMPLETE_TAG } from "../elements/BottomScreenPanel.js";
 import InteruptionsHandler from "../embedContext/InteruptionsHandler.js";
 import CloseMessage from "../embedContext/CloseMessage.js";
 
@@ -168,6 +168,8 @@ export default class MainTask extends BaseScene {
         this.missedTrialDialogsShown = this.registry.get('missedTrialDialogsShown') ?? 0;
         this.interruptionShowAreYouThereDialog = false;
         this.interruptionShowTimesUpDialog = false;
+        this.interruptionExitTaskDialog = false;
+        this.interruptionGameCompleteDialog = false;
         this.taskRequiresRestart = false;
         this.interruptionOccured = false;
         this.routeSelectorPanel = null;
@@ -443,6 +445,16 @@ export default class MainTask extends BaseScene {
             // do nothing, player will be walking across the bridge
             console.log('3F-D');
         }
+    }
+
+    switchToTimesUpDialog() {
+        // ensure the are you still there dialog is there
+        if (this.bottomScreenPanel != null && this.bottomScreenPanel.tag != ARE_YOU_THERE_TAG) {
+            return;
+        }
+
+        // show the times up dialog
+        showTimeUpDialog(this);
     }
 }
 
@@ -740,8 +752,20 @@ var trialEnd = function () {
     let isLastTrial = trialNo == nTrials - 1;
     let missedTrialDialogShownLimitReached = (this.missedTrialDialogsShown >= missedTrialDialogLimit) && missedTrialDialogLimit > 0; // ensure that a limit of 0 allows the dialog to be shown as many times as needed
 
+    // should an significant interruption occur after reaching 80% of the trials, show the task complete dialog to inform them the task is done
+    if (this.interruptionGameCompleteDialog == true && !isLastTrial) {
+        stopPlayer(this);
+        showTaskCompleteDialog(this);
+        this.interruptionGameCompleteDialog = false;
+    }
+    // if an interruption occurs and we need to close the task to restart it, show a message beforehand to explain they they need to re-enter the task
+    else if (this.interruptionExitTaskDialog == true && !isLastTrial) {
+        stopPlayer(this);
+        showExitTaskDialog(this);
+        this.interruptionExitTaskDialog = false;
+    }
     // if an interruption occured and we need to show the are you still there dialog, show it
-    if (this.interruptionShowAreYouThereDialog == true && !isLastTrial) {
+    else if (this.interruptionShowAreYouThereDialog == true && !isLastTrial) {
         stopPlayer(this);
         showMissedTrialDialog(this);
         this.interruptionShowAreYouThereDialog = false;
@@ -967,6 +991,39 @@ var showBreakDialog = function(context) {
     );
 }
 
+var showExitTaskDialog = function(context) {
+    let retryTaskText = "You've been away too long, and may need to try again.";
+    let showExitDialog = false;
+    let incrementAttemptCount = false;
+    context.taskRequiresRestart = false;
+
+    showBottomScreenPanel(
+        context,
+        "Retry task",
+        retryTaskText,
+        "EXIT",
+        null,
+        EXIT_TASK_TAG,
+        () => { exitGame(context, showExitDialog, incrementAttemptCount); }, // just exit the task, don't worry about incrementing the attempt count or restarting the game progress
+        () => { exitGame(context, showExitDialog, incrementAttemptCount); }
+    );
+}
+
+var showTaskCompleteDialog = function(context) {
+    let taskCompleteText = "You've reached the minimum required number of completed trials but due to an interruption you cannot progress through the rest of the trials. You will still recieve your bonus payment.";
+
+    showBottomScreenPanel(
+        context,
+        "Task complete!",
+        taskCompleteText,
+        "EXIT",
+        null,
+        GAME_COMPLETE_TAG,
+        () => { gameCompleted(); }, // game is complete, exit the task
+        () => { gameCompleted(); }
+    );
+}
+
 var showBottomScreenPanel = function(context, titleText, subtitleText, bottomButtonText, countdownTimerMS, tag, onContinuePressed, onTimeout) {
     let camera = context.cameras.main;
 
@@ -991,6 +1048,10 @@ var showBottomScreenPanel = function(context, titleText, subtitleText, bottomBut
         repeat: 0,      
         yoyo: false
     });    
+}
+
+var gameCompleted = function() {
+    EmbedContext.sendMessage('gameComplete', {});
 }
 
 var storeCountdownStarted = function(startTime) {

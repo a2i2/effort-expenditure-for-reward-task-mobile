@@ -5,6 +5,8 @@ export const TIMER_EXPIRED_KEY = 'bottomPanelTimerExpired';
 export const BREAK_TAG = 'bottomScreenBreak';
 export const TIMEOUT_TAG = 'bottomScreenTimeout';
 export const ARE_YOU_THERE_TAG = 'bottomScreenAreYouThere';
+export const EXIT_TASK_TAG = 'bottomScreenExitTask';
+export const GAME_COMPLETE_TAG = 'bottomScreenGameComplete';
 
 export default class BottomScreenPanel {
     constructor(scene, x, titleString, subtitleString, bottomButtonString, breakTimeMS, tag, onContinuePressed = () => {}, onTimeout = () => {}) {

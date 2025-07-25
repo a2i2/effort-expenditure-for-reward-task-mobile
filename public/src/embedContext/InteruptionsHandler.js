@@ -1,7 +1,5 @@
-import GameCache from "./GameCache";
 import { ARE_YOU_THERE_TAG, TIMEOUT_TAG } from "../elements/BottomScreenPanel";
 import { taskRewardsPayoutThreshold, missedTrialDialogLimit } from "../versionInfo";
-import CloseMessage from "./CloseMessage";
 
 export default class InteruptionsHandler {
     static handleInteruption(context, cache) {
@@ -34,10 +32,11 @@ export default class InteruptionsHandler {
         if (cache.practiceComplete == true && cache.trialNumber <= 1) {
             // 2A
             if (interuptionLengthMs > threeMinsMs) {
-                // dont increment attempt count? Exit the task and let them return
+                // show exit task dialog to let the user know they need to exit and return to the task from where they left off
                 console.log('2A');
-                let closeMessage = new CloseMessage(false, false, false);
-                EmbedContext.sendMessage('close', closeMessage.stringify());
+                context.taskRequiresRestart = false;
+                context.interruptionExitTaskDialog = true;
+
                 return;
             } else { // 2B
                 console.log('2B');
@@ -64,35 +63,35 @@ export default class InteruptionsHandler {
                 return;
             } else if (context.bottomScreenPanel && context.bottomScreenPanel.tag == ARE_YOU_THERE_TAG && interuptionLengthMs >= twoMinsMs && interuptionLengthMs < fourMinsMs) {
                 // the user returned after the are you still there dialog would have timed out but before the time out dialogs 2 mins internal countdown has expired,
-                // increment attempt count but they can countinue from where they left off
+                // show the times up dialog andincrement attempt count. If they return before the 2 mins timeout occurs then they can countinue from where they left off
                 console.log('3A-B');
-                let closeMessage = new CloseMessage(false, true, false);
-                EmbedContext.sendMessage('close', closeMessage.stringify());
+                context.taskRequiresRestart = false;
+                context.switchToTimesUpDialog();
                 return;
             } else if (context.bottomScreenPanel && context.bottomScreenPanel.tag == ARE_YOU_THERE_TAG && interuptionLengthMs >= fourMinsMs) {
                 // the user returned after both the are you still there and times up times up dialogs would have timed out,
-                // increment attempt count and restart from the beginning
+                // show the times up dialog in its place and then increment attempt count and restart from the beginning
                 console.log('3A-C');
-                let closeMessage = new CloseMessage(false, true, true);
-                EmbedContext.sendMessage('close', closeMessage.stringify());
+                context.taskRequiresRestart = true;
+                context.switchToTimesUpDialog();
                 return;
             }
 
             // 3B
             if (context.bottomScreenPanel && context.bottomScreenPanel.tag == TIMEOUT_TAG && interuptionLengthMs < twoMinsMs) {
-                // Increment attempt count. Exit the task and let them return where they left off if its their first attempt
+                // Increment attempt count. Keep the times up dialog active and let them manually exit via the dialog, if they trigger
+                // the extra 2 min timeout then they will need to restart the task, otherwise let them continue from where they left off.
                 console.log('3B');
-                let closeMessage = new CloseMessage(false, true, false);
-                EmbedContext.sendMessage('close', closeMessage.stringify());
+                context.taskRequiresRestart = false;
                 return;
             }
 
             // 3C
             if (context.bottomScreenPanel && context.bottomScreenPanel.tag == TIMEOUT_TAG && interuptionLengthMs >= twoMinsMs) {
-                // The times out dialog internal timer would have timed out, restart the task from the beginning
+                // The times out dialog internal timer would have timed out,
+                // let the user manually exit via the dialog and restart the task from the beginning
                 console.log('3C');
-                let closeMessage = new CloseMessage(false, true, true);
-                EmbedContext.sendMessage('close', closeMessage.stringify());
+                context.taskRequiresRestart = true;
                 return;
             }
 
@@ -140,10 +139,14 @@ export default class InteruptionsHandler {
                 console.log('4A');
                 context.continueAfterInterruption();
                 return; // let the user continue without incrementing the attempt count, the task is considered done at this point.
-            } else { // 4B
+            } else {
+                // 4B
+                // Note: While this scenario covers 4B there might be overlaps between this and scenario 3F-A -> 3F-D given the animations are allowed to continue
+                // so here might be a double up in the logs here. Once they reach the end of the bridge the completion dialog is then shown and they can exit the game from there.
                 console.log('4B');
-                EmbedContext.sendMessage('gameComplete', {});
-                return; // game is complete, exit immediately
+                context.interruptionGameCompleteDialog = true;
+                context.continueAfterInterruption();
+                return;
             }
         }
 
