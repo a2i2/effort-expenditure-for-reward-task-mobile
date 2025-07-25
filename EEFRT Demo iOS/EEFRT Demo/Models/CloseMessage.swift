@@ -8,30 +8,27 @@ struct CloseMessage: Codable {
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        // swift sometimes struggles decoding boolean values from the JS side so provide fallback to decode the string value instead
-        if let decodedBoolValue = try? container.decode(Bool.self, forKey: .shouldShowExitDialog) {
-            self.shouldShowExitDialog = decodedBoolValue
-        } else if let decodedStringValue = try? container.decode(String.self, forKey: .shouldShowExitDialog) {
-            self.shouldShowExitDialog = decodedStringValue.lowercased() == "true"
-        } else {
-            throw DecodingError.valueNotFound(Bool.self, .init(codingPath: [CodingKeys.shouldShowExitDialog], debugDescription: "Required field 'shouldShowExitDialog' not found"))
-        }
+        self.shouldShowExitDialog = try CloseMessage.decodeBoolOrString(forKey: .shouldShowExitDialog, from: container)
+        self.incrementAttemptCount = try CloseMessage.decodeBoolOrString(forKey: .incrementAttemptCount, from: container)
+        self.taskRequiresRestart = try CloseMessage.decodeBoolOrString(forKey: .taskRequiresRestart, from: container)
+    }
 
-        if let decodedBoolValue = try? container.decode(Bool.self, forKey: .incrementAttemptCount) {
-            self.incrementAttemptCount = decodedBoolValue
-        } else if let decodedStringValue = try? container.decode(String.self, forKey: .incrementAttemptCount) {
-            self.incrementAttemptCount = decodedStringValue.lowercased() == "true"
-        } else {
-            throw DecodingError.valueNotFound(Bool.self, .init(codingPath: [CodingKeys.incrementAttemptCount], debugDescription: "Required field 'incrementAttemptCount' not found"))
+    /// Attempts to decode a boolean value for the given key, falling back to decoding a string (e.g., "true"/"false") if needed.
+    /// This is necessary because sometimes values sent from the JS side are encoded as strings instead of booleans.
+    private static func decodeBoolOrString(forKey key: CodingKeys, from container: KeyedDecodingContainer<CodingKeys>) throws -> Bool {
+        if let boolValue = try? container.decode(Bool.self, forKey: key) {
+            return boolValue
         }
-
-        if let decodedBoolValue = try? container.decode(Bool.self, forKey: .taskRequiresRestart) {
-            self.taskRequiresRestart = decodedBoolValue
-        } else if let decodedStringValue = try? container.decode(String.self, forKey: .taskRequiresRestart) {
-            self.taskRequiresRestart = decodedStringValue.lowercased() == "true"
-        } else {
-            throw DecodingError.valueNotFound(Bool.self, .init(codingPath: [CodingKeys.taskRequiresRestart], debugDescription: "Required field 'taskRequiresRestart' not found"))
+        if let stringValue = try? container.decode(String.self, forKey: key) {
+            return stringValue.lowercased() == "true"
         }
+        throw DecodingError.valueNotFound(
+            Bool.self,
+            .init(
+                codingPath: [key],
+                debugDescription: "Required field '\(key.stringValue)' not found or not convertible to Bool"
+            )
+        )
     }
 
     private enum CodingKeys: String, CodingKey {
