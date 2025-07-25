@@ -377,17 +377,6 @@ export default class MainTask extends BaseScene {
             GameCache.cache.interruptionTimestamp = null; // prevent this from being evaluated in subsequent updates
         }
 
-        // Check for interruption timestamp from the GameCache
-        // Compare with current timestamp
-        // if less than 3 mins
-        // var interruptionTimestamp = GameCache.cache.interruptionTimestamp;
-        // if (interruptionTimestamp && interruptionTimestamp < Date.now() - 5000) {
-        //     // Send message to the app to indicate that the game is complete
-        //     EmbedContext.sendMessage('gameComplete', {});
-        //     // Stop the scene so that all visuals are removed
-        //     this.scene.stop();
-        // }
-        
         ////////////GAME COMPLETE WHEN ALL TRIALS HAVE RUN////////////////
         if (trialNo == maxTrials) {
             // Send message to the app to indicate that the game is complete
