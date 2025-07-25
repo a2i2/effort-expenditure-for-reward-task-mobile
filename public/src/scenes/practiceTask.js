@@ -20,6 +20,8 @@ import PracticeTaskAttempt from "../embedContext/PracticeTaskAttempt.js";
 import { POWER_COUNTDOWN_KEY } from "../elements/CountdownPanel.js";
 import InteruptionsHandler from "../embedContext/InteruptionsHandler.js";
 import CloseMessage from "../embedContext/CloseMessage.js";
+import BottomScreenPanel from "../elements/BottomScreenPanel.js";
+import { EXIT_TASK_TAG } from "../elements/BottomScreenPanel.js"
 
 // initialize some global vars
 var gameHeight;
@@ -135,6 +137,9 @@ export default class PracticeTask extends BaseScene {
         if (window.innerHeight < 800) {
             smallDeviceOffset = -175;
         }
+
+        this.interruptionExitTaskDialog = false;
+        this.bottomScreenPanel = null;
 
         ////////////////////////CREATE WORLD//////////////////////////////////////
         // game world created in Tiled (https://www.mapeditor.org/)
@@ -687,10 +692,19 @@ var pracTrialEnd = function () {
     // savePracTaskData(pracTrial, this.registry.get(`pracTrial${pracTrial}`));    // [for firebase]
     //saveTrialDataPav(this.registry.get(`pracTrial${pracTrial}`));             // [for Pavlovia deployment]
     
-    // iterate trial number
-    pracTrial++; 
-    // move to next trial
-    this.scene.restart();        // [?wrap in delay function to ensure saving works] 
+    let isLastPracticeTrial = pracTrial == nPracTrials - 1;
+    // if we encountered an interruption, show the exit dialog but dont increment atempt count.
+    // theres no need to reset progress since since the game state isn't updated untill we complete all the practice rounds
+    if (this.interruptionExitTaskDialog == true && !isLastPracticeTrial) {
+        stopPlayer(this);
+        showExitTaskDialog(this);
+        this.interruptionExitTaskDialog = false;
+    } else {
+        // iterate trial number
+        pracTrial++; 
+        // move to next trial
+        this.scene.restart();
+    }
 };
 
 
@@ -713,4 +727,55 @@ var onejump = function () {
 
 var storeCountdownStarted = function(startTime) {
     powerCountdown = startTime;
+}
+
+var stopPlayer = function(context) {
+    context.player.sprite.setVelocityX(0);
+    context.player.sprite.anims.play('wait', true);
+}
+
+var showExitTaskDialog = function(context) {
+    let retryTaskText = "The tutorial rounds were interrupted. Please exit and try again.";
+
+    showBottomScreenPanel(
+        context,
+        "Retry task",
+        retryTaskText,
+        "EXIT",
+        null,
+        EXIT_TASK_TAG,
+        () => { exitGame(); }, // just exit the task, don't worry about incrementing the attempt count or restarting the game progress
+        () => { exitGame(); }
+    );
+}
+
+var showBottomScreenPanel = function(context, titleText, subtitleText, bottomButtonText, countdownTimerMS, tag, onContinuePressed, onTimeout) {
+    let camera = context.cameras.main;
+
+    context.bottomScreenPanel = new BottomScreenPanel(
+        context,
+        camera.scrollX + camera.width / 2,
+        titleText,
+        subtitleText,
+        bottomButtonText,
+        countdownTimerMS,
+        tag,
+        onContinuePressed,
+        onTimeout
+    );
+
+    context.tweens.add({        
+        targets: context.bottomScreenPanel,
+        scaleX: { start: 0, to: 1 },
+        scaleY: { start: 0, to: 1 },
+        ease: 'Linear',    
+        duration: pracAnimationTime,
+        repeat: 0,      
+        yoyo: false
+    });    
+}
+
+var exitGame = function() {
+    let closeMessage = new CloseMessage(false, false, false);
+    EmbedContext.sendMessage('close', closeMessage.stringify());
 }
