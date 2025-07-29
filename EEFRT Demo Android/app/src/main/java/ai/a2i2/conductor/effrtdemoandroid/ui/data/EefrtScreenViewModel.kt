@@ -5,8 +5,10 @@ import ai.a2i2.conductor.effrtdemoandroid.persistence.GameCache
 import ai.a2i2.conductor.effrtdemoandroid.persistence.GameStorage
 import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
+import ai.a2i2.conductor.effrtdemoandroid.ui.EefrtScreen
 import ai.a2i2.conductor.effrtdemoandroid.util.GameConfigUtils
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 class EefrtScreenViewModel(
     private val appDatabase: AppDatabase,
@@ -22,13 +25,16 @@ class EefrtScreenViewModel(
 
     private val _practiceTrialData = mutableStateOf<List<PracticeTaskAttempt>>(emptyList())
     private val _actualTrialData = mutableStateOf<List<TaskAttempt>>(emptyList())
+
     val resumeTrialAvailable: MutableState<Boolean>
     var showExitDialog: MutableState<Boolean> = mutableStateOf(false)
+    var interruptionTimestamp = mutableStateOf<Long?>(null)
+    var closeMessage = mutableStateOf<CloseMessage?>(null)
 
     init {
         refreshData()
         val currentGameState = GameStorage(context).cachedGameState
-        resumeTrialAvailable = mutableStateOf((currentGameState?.trialNumber ?: 0) > 0)
+        resumeTrialAvailable = mutableStateOf(currentGameState?.isResumeTrialAvailable() ?: false)
     }
 
     private fun refreshData() {
@@ -85,7 +91,7 @@ class EefrtScreenViewModel(
 
     fun setCurrentGameState(context: Context, newGameState: GameCache?) {
         GameStorage(context).cachedGameState = newGameState
-        resumeTrialAvailable.value = (newGameState?.trialNumber ?: 0) > 0
+        resumeTrialAvailable.value = newGameState?.isResumeTrialAvailable() ?: false
     }
 
     fun getCurrentGameState(context: Context): GameCache? {
@@ -99,6 +105,7 @@ class EefrtScreenViewModel(
     // we don't care for the business logic in this app, remember to add it into the main vibe up 2 apps
     fun clearEEFRTData(context: Context) {
         GameStorage(context).cachedGameState = null
+        resumeTrialAvailable.value = false
     }
 
     fun markCalibrationAsComplete(context: Context) {
@@ -107,5 +114,37 @@ class EefrtScreenViewModel(
 
     fun setCalibratedMaxPressCount(context: Context, pressCount: Int) {
         GameStorage(context).calibratedMaxPressCount = pressCount
+    }
+
+    fun showCloseDialog(closeMessage: CloseMessage) {
+        this.closeMessage.value = closeMessage
+        showExitDialog.value = true
+    }
+
+    fun dismissCloseDialog() {
+        closeMessage.value = null
+        showExitDialog.value = false
+    }
+
+    fun onConfirmCloseDialog(loggingTag: String) {
+        // No business logic for this app but a placeholder for the main apps
+        closeMessage.value?.let {
+            if (it.incrementAttemptCount) {
+                Log.d(
+                    loggingTag,
+                    "Incremented attempt count"
+                )
+            }
+
+            if (it.taskRequiresRestart) {
+                Log.d(
+                    loggingTag,
+                    "Task will be restarted on next load"
+                )
+            }
+        }
+
+        // dismiss the dialog
+        dismissCloseDialog()
     }
 }

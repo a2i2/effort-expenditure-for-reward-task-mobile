@@ -18,6 +18,10 @@ import Message from "../elements/message.js";
 import GameCache from "../embedContext/GameCache.js";
 import PracticeTaskAttempt from "../embedContext/PracticeTaskAttempt.js";
 import { POWER_COUNTDOWN_KEY } from "../elements/CountdownPanel.js";
+import InteruptionsHandler from "../embedContext/InteruptionsHandler.js";
+import CloseMessage from "../embedContext/CloseMessage.js";
+import BottomScreenPanel from "../elements/BottomScreenPanel.js";
+import { EXIT_TASK_TAG } from "../elements/BottomScreenPanel.js"
 
 // initialize some global vars
 var gameHeight;
@@ -134,6 +138,11 @@ export default class PracticeTask extends BaseScene {
             smallDeviceOffset = -175;
         }
 
+        this.interruptionExitTaskDialog = false;
+        this.bottomScreenPanel = null;
+        this.powerPanel = null;
+        this.interruptionOccured = false;
+
         ////////////////////////CREATE WORLD//////////////////////////////////////
         // game world created in Tiled (https://www.mapeditor.org/)
         // import practice world tilemap
@@ -184,8 +193,8 @@ export default class PracticeTask extends BaseScene {
         this.closeButton.setScrollFactor(0);
         this.closeButton.setInteractive();
         this.closeButton.on('pointerdown', () => {
-            let shouldShowExitDialog = false
-            EmbedContext.sendMessage('close', shouldShowExitDialog);
+            let closeMessage = new CloseMessage(false, false, false);
+            EmbedContext.sendMessage('close', closeMessage.stringify());
         });
 
         //////////////ADD PLAYER SPRITE////////////////////
@@ -275,6 +284,12 @@ export default class PracticeTask extends BaseScene {
             return;
         }
 
+        let cache = GameCache.cache;
+        if (cache && cache.interruptionTimestamp) {
+            InteruptionsHandler.handleInteruption(this, cache);
+            GameCache.cache.interruptionTimestamp = null; // prevent this from being evaluated in subsequent updates
+        }
+
         ///////////SPRITES THAT REQUIRE TIME-STEP UPDATING FOR ANIMATION//////////
         // allow player to move
         this.player.update(); 
@@ -294,12 +309,77 @@ export default class PracticeTask extends BaseScene {
             }
 
             // signal to the cache that the practice is complete
-            let cache = new GameCache(true, 0, maxPressCount, 0, {}, null, null, calibrationComplete)
+            let trialSeqFilename = GameCache.cache?.trialSeqFilename || null;
+            let cache = new GameCache(true, 0, maxPressCount, 0, {}, null, trialSeqFilename, calibrationComplete, null)
+            GameCache.cache = cache;
             EmbedContext.sendMessage('currentGameCache', cache.stringify());
 
             // progress to the next scene
             this.registry.set('maxPressCount', maxPressCount);
             this.launchNextScene();
+        }
+    }
+
+    showExitDialogAfterInterruption() {
+        // a user was interrupted whilst in the middle of an individual trial, in this scenario we won't allow them to
+        // continue to the next practice trial.
+        // In all scenarios we will show the exit dialog and the user will need to restart from the beginning of the practice task.
+    
+        /*
+            1. If current animation playing is the walking animation before the route selector apears
+            2. If the route selector panel is visible,
+            3. If the power up scene is active
+            4. If the user has already completed the trial and is crossing the bridge, show the dialog once pickle reaches the end of the bridge
+        */
+            let isLastPracticeTrial = pracTrial == nPracTrials - 1;
+
+            if (this.player.sprite.x <= decisionPointX && this.player.sprite.anims.currentAnim.key == 'run' && !isLastPracticeTrial) {
+            console.log('1A-A');
+
+            // no active panel, stop the player and show the dialog
+            stopPlayer(this);
+            showExitTaskDialog(this);
+        } else if (this.instructionsPanel != null && this.player.sprite.body.velocity.x == 0 && this.player.sprite.anims.currentAnim.key == 'wait' && !isLastPracticeTrial) {
+            console.log('1A-B');
+
+            // remove any active feedback message
+            if (feedbackMessage) {
+                clearTimeout(routeSelectionTransitionTimer);
+                feedbackMessage.destroy();
+                feedbackMessage = null;
+            }
+
+            // remove the route selector panel
+            this.instructionsPanel.destroy();
+            this.instructionsPanel = null;
+
+            // show the exit task dialog in its place
+            stopPlayer(this);
+            showExitTaskDialog(this);
+        } else if (this.powerPanel != null && ['powerup', 'wait'].includes(this.player.sprite.anims.currentAnim.key) && !isLastPracticeTrial) {
+            console.log('1A-C');
+
+            // mark that an interruption occured so the feedback message dismiss handler doesn't run
+            this.interruptionOccured = true;
+
+            // remove any active feedback message
+            if (feedbackMessage) {
+                clearTimeout(routeSelectionTransitionTimer);
+                feedbackMessage.destroy();
+                feedbackMessage = null;
+            }
+
+            // remove the power panel
+            this.powerPanel.destroy();
+            this.powerPanel = null;
+            
+            // show the exit task dialog in its place
+            stopPlayer(this);
+            showExitTaskDialog(this);  
+        } else {
+            // do nothing, player will be walking across the bridge, the exit dialog will be shown at the end of the bridge
+            console.log('1A-D');
+            this.interruptionExitTaskDialog = true;
         }
     }
 }
@@ -515,7 +595,9 @@ var effortOutcome = function() {
         // then play powerup fail anim and progress via slow route
         this.time.addEvent({delay: pracFeedbackTime + 250, 
                             callback: function(){
-                                feedbackMessage.destroy();
+                                if (this.interruptionOccured) { return; }
+
+                                feedbackMessage?.destroy();
                                 // then play short 'powerup fail' anim:
                                 this.player.sprite.anims.play('powerupfail', true);
                                 // and progress via bridge route (with sad face)
@@ -572,6 +654,8 @@ var effortOutcome = function() {
             // then player floats across 'high route' and collects coins
             this.time.addEvent({delay: pracFeedbackTime + 250, 
                 callback: function(){
+                    if (this.interruptionOccured) { return; }
+
                     let playerSpeedAdjustment = window.innerHeight < 800 ? 4 : 3; // slow down the player a bit more on the smaller screens so they dont miss the coins
                     feedbackMessage?.destroy();
                     this.player.sprite.anims.play('float', true);    
@@ -586,6 +670,8 @@ var effortOutcome = function() {
             // then player floats across 'low route' and collects coins
             this.time.addEvent({delay: pracFeedbackTime + 250, 
                 callback: function() {
+                    if (this.interruptionOccured) { return; }
+
                     feedbackMessage?.destroy();
                     this.player.sprite.anims.play('float', true);    
                     this.player.sprite.setVelocityX(playerVelocity/3);
@@ -629,7 +715,9 @@ var effortOutcome = function() {
         // then play powerup fail anim and progress via slow route
         this.time.addEvent({delay: pracFeedbackTime + 250, 
                             callback: function(){
-                                feedbackMessage.destroy();
+                                if (this.interruptionOccured) { return; }
+
+                                feedbackMessage?.destroy();
                                 // then play short 'powerup fail' anim:
                                 this.player.sprite.anims.play('powerupfail', true);
                                 // and progress via bridge route (with sad face)
@@ -650,6 +738,20 @@ var effortOutcome = function() {
 
 // 4. When player hits end of scene, save trial data and move on to the next trial (reload the scene)
 var pracTrialEnd = function () {
+    // if the interruption needs to be shown, just show that, no practice trial data will be sent off,
+    // no maxPressCount update, etc. The user will have to return to the start of the practice trials so
+    // they will go through the calibration rounds eventually
+
+    let isLastPracticeTrial = pracTrial == nPracTrials - 1;
+    // if we encountered an interruption, show the exit dialog but dont increment attempt count.
+    // theres no need to reset progress since since the game state isn't updated untill we complete all the practice rounds
+    if (this.interruptionExitTaskDialog == true && !isLastPracticeTrial) {
+        stopPlayer(this);
+        showExitTaskDialog(this);
+        this.interruptionExitTaskDialog = false;
+        return;
+    }
+
     // determine if pressCount exceeded previous practice trials,
     // we don't want to update the max press count if we've completed the calibration
     if (GameCache.cache?.calibrationComplete == true) {
@@ -679,8 +781,12 @@ var pracTrialEnd = function () {
     
     // iterate trial number
     pracTrial++; 
+
+    // clear any event listners still active so they aren't leaked
+    eventsCenter.removeAllListeners();
+
     // move to next trial
-    this.scene.restart();        // [?wrap in delay function to ensure saving works] 
+    this.scene.restart();
 };
 
 
@@ -703,4 +809,55 @@ var onejump = function () {
 
 var storeCountdownStarted = function(startTime) {
     powerCountdown = startTime;
+}
+
+var stopPlayer = function(context) {
+    context.player.sprite.setVelocityX(0);
+    context.player.sprite.anims.play('wait', true);
+}
+
+var showExitTaskDialog = function(context) {
+    let retryTaskText = "The tutorial rounds were interrupted. Please exit and try again.";
+
+    showBottomScreenPanel(
+        context,
+        "Retry task",
+        retryTaskText,
+        "EXIT",
+        null,
+        EXIT_TASK_TAG,
+        () => { exitGame(); }, // just exit the task, don't worry about incrementing the attempt count or restarting the game progress
+        () => { exitGame(); }
+    );
+}
+
+var showBottomScreenPanel = function(context, titleText, subtitleText, bottomButtonText, countdownTimerMS, tag, onContinuePressed, onTimeout) {
+    let camera = context.cameras.main;
+
+    context.bottomScreenPanel = new BottomScreenPanel(
+        context,
+        camera.scrollX + camera.width / 2,
+        titleText,
+        subtitleText,
+        bottomButtonText,
+        countdownTimerMS,
+        tag,
+        onContinuePressed,
+        onTimeout
+    );
+
+    context.tweens.add({        
+        targets: context.bottomScreenPanel,
+        scaleX: { start: 0, to: 1 },
+        scaleY: { start: 0, to: 1 },
+        ease: 'Linear',    
+        duration: pracAnimationTime,
+        repeat: 0,      
+        yoyo: false
+    });    
+}
+
+var exitGame = function() {
+    let closeMessage = new CloseMessage(false, false, false);
+    EmbedContext.sendMessage('close', closeMessage.stringify());
 }

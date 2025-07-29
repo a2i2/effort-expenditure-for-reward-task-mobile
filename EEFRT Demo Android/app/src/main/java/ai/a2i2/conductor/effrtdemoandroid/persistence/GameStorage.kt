@@ -6,6 +6,7 @@ import hu.autsoft.krate.booleanPref
 import hu.autsoft.krate.default.withDefault
 import hu.autsoft.krate.intPref
 import hu.autsoft.krate.kotlinx.kotlinxPref
+import hu.autsoft.krate.longPref
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -14,11 +15,16 @@ data class GameCache(
     val trialNumber: Int = 0,
     var maxPressCount: Int = 0,
     val coinRunningTotal: Int = 0,
-    val trialResults: Map<String, Int> = emptyMap<String, Int>(),
+    val trialResults: Map<String, Int> = emptyMap(),
     val randTrialsIdx: List<Int>? = null,
     val trialSeqFilename: String? = null,
-    var calibrationComplete: Boolean = false
-)
+    var calibrationComplete: Boolean = false,
+    var interruptionTimestamp: Long? = null
+) {
+    fun isResumeTrialAvailable(): Boolean {
+        return practiceComplete || trialNumber > 0
+    }
+}
 
 class GameStorage(context: Context) : SimpleKrate(context) {
     var cachedGameState: GameCache? by kotlinxPref<GameCache>("cachedGameState").withDefault(

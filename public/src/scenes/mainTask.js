@@ -25,6 +25,9 @@ import { POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
 import GameCache from "../embedContext/GameCache.js";
 import TaskAttempt from "../embedContext/TaskAttempt.js";
 import { POWER_COUNTDOWN_KEY } from "../elements/CountdownPanel.js";
+import { BREAK_TAG, TIMEOUT_TAG, ARE_YOU_THERE_TAG, EXIT_TASK_TAG, GAME_COMPLETE_TAG } from "../elements/BottomScreenPanel.js";
+import InteruptionsHandler from "../embedContext/InteruptionsHandler.js";
+import CloseMessage from "../embedContext/CloseMessage.js";
 
 // initialize all the global vars (must be a better way of doing this...)
 var gameHeight; 
@@ -48,7 +51,6 @@ var trialEffort2;
 var trialEffortPropChosen
 var trialEffort;
 var nCoins = 0; 
-var feedbackMessage;
 var feedbackTime = 1000;
 var animationTime = 400;
 var blockNo = 0;
@@ -60,8 +62,8 @@ var choice;
 var choiceCompleteTime;
 var choiceRT;
 var pressCount;
-var pressStartTime
-var pressEndTime
+var pressStartTime = 0;
+var pressEndTime = 0;
 var pressTimes;
 var trialSuccess;
 var trialEndTime;
@@ -71,9 +73,9 @@ var practiceorReal = 1; // use the main task instruction panels
 var coinsWonThisTrial = 0;
 var smallDeviceOffset = 0;
 var consecutiveMissedTrials = 0;
-var missedTrialDialogsShown = 0;
 var randTrialsIdx;
 var powerCountdown;
+var timeoutInterval; 
 
 // this function extends Phaser.Scene and includes the core logic for the game
 export default class MainTask extends BaseScene {
@@ -162,6 +164,15 @@ export default class MainTask extends BaseScene {
         maxTrials = nTrials;
         trialsPerBlock = nTrials / nBlocks;  // blocks divide trials
         let catchIdx = trials.catchIdx ?? defaultCatchIdx;
+        
+        this.missedTrialDialogsShown = this.registry.get('missedTrialDialogsShown') ?? 0;
+        this.interruptionShowAreYouThereDialog = false;
+        this.interruptionShowTimesUpDialog = false;
+        this.interruptionExitTaskDialog = false;
+        this.interruptionGameCompleteDialog = false;
+        this.taskRequiresRestart = false;
+        this.interruptionOccured = false;
+        this.routeSelectorPanel = null;
 
         // setup the game with the cached game state if present
         loadGameFromCache(this);
@@ -236,7 +247,14 @@ export default class MainTask extends BaseScene {
         this.closeButton.setInteractive();
         this.closeButton.on('pointerdown', () => {
             let shouldShowExitDialog = true
-            exitGame(shouldShowExitDialog);
+            let incrementAttemptCount = false;
+
+            // if there user leave the task for any reason after passing the calibration trials, increment the attempt count
+            if (GameCache.cache && GameCache.cache.trialNumber >= nCalibrates) {
+                incrementAttemptCount = true
+            }
+
+            exitGame(this, shouldShowExitDialog, incrementAttemptCount);
         });
 
         //////////////ADD PLAYER SPRITE////////////////////
@@ -352,7 +370,13 @@ export default class MainTask extends BaseScene {
         ///////////SPRITES THAT REQUIRE TIME-STEP UPDATING FOR ANIMATION//////////
         // allow player to move
         this.player.update(); 
-        
+
+        let cache = GameCache.cache;
+        if (cache && cache.interruptionTimestamp) {
+            InteruptionsHandler.handleInteruption(this, cache);
+            GameCache.cache.interruptionTimestamp = null; // prevent this from being evaluated in subsequent updates
+        }
+
         ////////////GAME COMPLETE WHEN ALL TRIALS HAVE RUN////////////////
         if (trialNo == maxTrials) {
             // Send message to the app to indicate that the game is complete
@@ -360,6 +384,66 @@ export default class MainTask extends BaseScene {
             // Stop the scene so that all visuals are removed
             this.scene.stop();
         }
+    }
+
+    continueAfterInterruption() {
+        // a user was interrupted whilst in the middle of an individual trial, in this scenario we won't allow them to
+        // interract with that individual trial and will instead start from the beginning of the next trial.
+    
+        /*
+            1. If current animation playing is the walking animation before the route selector apears - prevent the power panel from appearing but still show the interruption message
+            2. If the route selector panel is visible, close it, show the interruption message and walk across the bridge
+            3. If the power up scene is active, cancel it, show an interruption message and walk across the bridge
+            4. If the user has already completed the trial, do nothing, the player will be walking across the bridge anyway
+        */
+    
+        if (this.player.sprite.x <= decisionPointX && this.player.sprite.anims.currentAnim.key == 'run') {
+            console.log('3F-A');
+
+            // signal that the route selector panel shouldn't be shown
+            this.interruptionOccured = true;
+            return;
+        } else if (this.routeSelectorPanel != null && this.player.sprite.body.velocity.x == 0 && this.player.sprite.anims.currentAnim.key == 'wait') {
+            console.log('3F-B');
+
+            // ensure the choice is set in the registry
+            this.registry.set('choice', 'interruption');
+
+            // destroy the RouteSelectorPanel and proceed to the trial outcome
+            this.routeSelectorPanel.destroy();
+            this.routeSelectorPanel = null;
+
+            // manually trigger the power up complete event so we can skip the current trial
+            eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this);
+            eventsCenter.emit(POWER_UP_COMPLETE_KEY);
+
+            return;
+        } else if (this.powerPanel != null && this.player.sprite.anims.currentAnim.key == 'powerup') {
+            console.log('3F-C');
+
+            // ensure the choice is set in the registry
+            this.registry.set('choice', 'interruption');
+
+            this.powerPanel.destroy();
+            this.powerPanel = null;
+
+            // manually trigger the power up complete event so we can skip the current trial
+            // listen was already set up when the power panel was created
+            eventsCenter.emit(POWER_UP_COMPLETE_KEY);    
+        } else {
+            // do nothing, player will be walking across the bridge
+            console.log('3F-D');
+        }
+    }
+
+    switchToTimesUpDialog() {
+        // ensure the are you still there dialog is there
+        if (this.bottomScreenPanel != null && this.bottomScreenPanel.tag != ARE_YOU_THERE_TAG) {
+            return;
+        }
+
+        // show the times up dialog
+        showTimeUpDialog(this);
     }
 }
 
@@ -377,10 +461,18 @@ var displayChoicePanel = function () {
     this.coins1 = new Coins(this, midbridgeX-(trialReward1*30)/2, 235 + smallDeviceOffset, trialReward1); // coins in sky
     this.coins2 = new Coins(this, midbridgeX-(trialReward2*30)/2, 360 + smallDeviceOffset, trialReward2); // coins on bridge
 
+    // if an interruption occured before we display the choice panel, 
+    if (this.interruptionOccured) {
+        this.registry.set('choice', 'interruption');
+        eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this);
+        eventsCenter.emit(POWER_UP_COMPLETE_KEY);
+        return;
+    }
+
     const camera = this.cameras.main;
     const centerX = camera.scrollX + camera.width / 2;
 
-    const panel = new RouteSelectorPanel(
+    this.routeSelectorPanel = new RouteSelectorPanel(
         this,
         centerX,
         trialReward1,
@@ -393,7 +485,7 @@ var displayChoicePanel = function () {
         },
         timeout
     );
-    this.add.existing(panel.container);
+    this.add.existing(this.routeSelectorPanel.container);
     
     // once choice is entered, get choice info and route to relevant next step
     eventsCenter.once('choiceComplete', doChoice, this);
@@ -416,15 +508,14 @@ var doChoice = function () {
         this.player.sprite.anims.play('powerup', true);
         // until time limit reached:
         eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this)
-        }
-    else if (choice == 'route 2') {  // if participant chooses the low effort option
+    } else if (choice == 'route 2') {  // if participant chooses the low effort option
         // timer panel pops up  
         this.powerPanel = new PowerPanel(this, centerX, effortTime, trialReward2, trialEffortPropMax2, trialEffort2);
         // and play player 'power-up' animation
         this.player.sprite.anims.play('powerup', true);
         // until time limit reached:
         eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this)
-    } else { // user failed to make a choice before timeout
+    } else if (choice == 'timeout') { // user failed to make a choice before timeout
         // No TimerPanel to emit the timesup event, so we emit it manually so the 'this' context can be passed through
         eventsCenter.once(POWER_UP_COMPLETE_KEY, effortOutcome, this);
         eventsCenter.emit(POWER_UP_COMPLETE_KEY);
@@ -435,8 +526,8 @@ var doChoice = function () {
 var effortOutcome = function() {
     choice = this.registry.get('choice');
     // get number of achieved button presses 
-    pressCount = this.registry.get('pressCount');
-    pressTimes = this.registry.get('pressTimes');  // [?we want this - might make code run slow...]
+    pressCount = this.registry.get('pressCount') ?? 0;
+    pressTimes = this.registry.get('pressTimes') ?? [];  // [?we want this - might make code run slow...]
     
     // if ppt chooses high effort and clears trial effort threshold, fly across sky and collect coins!
     if (choice == 'route 1' && pressCount >= trialEffort1) {
@@ -559,6 +650,46 @@ var effortOutcome = function() {
                             },                         
                             callbackScope: this});
 
+    } else if (choice == 'interruption') {
+        trialSuccess = 0;
+        consecutiveMissedTrials += 1; // reset this value? increment it?
+        powerCountdown = 0;
+        choiceCompleteTime = 0;
+
+        // display interruption message for a couple of seconds
+        this.feedbackMessage = new Message(
+            this,
+            gameWidth,
+            0xFFDBDB,
+            0xFF9696,
+            "Task was interrupted,\nskipping ahead to the next trial.",
+            "#9B0000",
+            80
+        );
+        this.tweens.add({        
+            targets: this.feedbackMessage,
+            scaleX: { start: 0, to: 1 },
+            scaleY: { start: 0, to: 1 },
+            ease: 'Linear',    
+            duration: animationTime * 3, // 1.2 seconds 
+            repeat: 0,      
+            yoyo: false
+        });
+        // then play powerup fail anim and progress via slow route
+        this.time.addEvent({delay: feedbackTime * 3 + 250, 
+                            callback: function() {
+                                this.feedbackMessage.destroy();  // Add this line to destroy the background
+                                // then play short 'powerup fail' anim:
+                                // this.player.sprite.anims.play('powerupfail', true);
+                                // and progress via bridge route (with sad face)
+                                    // player progresses via bridge and earns no extra reward
+                                this.player.sprite.setVelocityX(playerVelocity/5);   // 5,6
+                                this.player.sprite.anims.play('sadrun', true);
+                                this.physics.add.collider(this.player.sprite, this.bridgeEndPoint, 
+                                                            function(){eventsCenter.emit('bumpme');}, null, this); 
+                                eventsCenter.once('bumpme', onejump, this);
+                            },                         
+                            callbackScope: this});
     } else {  // else if fail to reach trial effort threshold
         trialSuccess = 0;
         consecutiveMissedTrials = 0;
@@ -607,10 +738,35 @@ var effortOutcome = function() {
 
 // 4. When player hits end of scene, save trial data and move on to the next trial (reload the scene)
 var trialEnd = function () {
-    // if the user has been shown the 'Are you still there?' message and they trigger it again, kick them out of the task
     let isLastTrial = trialNo == nTrials - 1;
-    let missedTrialDialogShownLimitReached = (missedTrialDialogsShown >= missedTrialDialogLimit) && missedTrialDialogLimit > 0; // ensure that a limit of 0 allows the dialog to be shown as many times as needed
-    if (consecutiveMissedTrials >= missedTrialLimit && !isLastTrial && missedTrialDialogShownLimitReached) {
+    let missedTrialDialogShownLimitReached = (this.missedTrialDialogsShown >= missedTrialDialogLimit) && missedTrialDialogLimit > 0; // ensure that a limit of 0 allows the dialog to be shown as many times as needed
+
+    // should an significant interruption occur after reaching 80% of the trials, show the task complete dialog to inform them the task is done
+    if (this.interruptionGameCompleteDialog == true && !isLastTrial) {
+        stopPlayer(this);
+        showTaskCompleteDialog(this);
+        this.interruptionGameCompleteDialog = false;
+    }
+    // if an interruption occurs and we need to close the task to restart it, show a message beforehand to explain they they need to re-enter the task
+    else if (this.interruptionExitTaskDialog == true && !isLastTrial) {
+        stopPlayer(this);
+        showExitTaskDialog(this);
+        this.interruptionExitTaskDialog = false;
+    }
+    // if an interruption occured and we need to show the are you still there dialog, show it
+    else if (this.interruptionShowAreYouThereDialog == true && !isLastTrial) {
+        stopPlayer(this);
+        showMissedTrialDialog(this);
+        this.interruptionShowAreYouThereDialog = false;
+    }
+    // if an interruption occured and we need to show the times up dialog, show it
+    else if (this.interruptionShowTimesUpDialog == true && !isLastTrial) {
+        stopPlayer(this);
+        showTimeUpDialog(this);
+        this.interruptionShowTimesUpDialog = false;
+    }
+    // if the user has been shown the 'Are you still there?' message and they trigger it again, kick them out of the task
+    else if (consecutiveMissedTrials >= missedTrialLimit && !isLastTrial && missedTrialDialogShownLimitReached) {
         stopPlayer(this);
         showTimeUpDialog(this);
     }
@@ -627,7 +783,11 @@ var trialEnd = function () {
     }
     else {
         // iterate trial number
-        trialNo++;     
+        trialNo++;
+
+        // clear any event listners still active so they aren't leaked
+        eventsCenter.removeAllListeners();
+
         // move to next trial
         this.scene.restart();        // [?wrap in delay function to ensure saving works]
     }
@@ -655,7 +815,7 @@ var loadGameFromCache = function(context) {
     const cache = GameCache.cache;
     if (cache == null) {
         // if no cache to load from, create a new one with the default values
-        GameCache.cache = new GameCache(true, 0, undefined, 0, {}, [], context.trialSequenceFile);
+        GameCache.cache = new GameCache(true, 0, undefined, 0, {}, [], context.trialSequenceFile, null);
         return;
     }
 
@@ -680,6 +840,11 @@ var setUpMaxThreshold = function(context) {
     // if we have a stored maxPressCount then use it
     if (GameCache.cache?.maxPressCount) {
         maxPressCount = GameCache.cache.maxPressCount;
+
+        // if the current maxPressCount is less than the minimum presses then enforce the minimum
+        if (maxPressCount < minPressMax) {
+            maxPressCount = minPressMax;
+        }
         context.registry.set('thresholdMax', maxPressCount);
         return;
     }
@@ -734,11 +899,14 @@ var continueGameAfterBreak = function(context) {
     }
 
     // move to next trial
+    context.bottomScreenPanel = null;
+    eventsCenter.removeAllListeners();
     context.scene.restart();
 }
 
-var exitGame = function(shouldShowExitDialog) {
-    EmbedContext.sendMessage('close', shouldShowExitDialog);
+var exitGame = function(context, shouldShowExitDialog, shouldIncrementAttemptCount) {
+    let closeMessage = new CloseMessage(shouldShowExitDialog, shouldIncrementAttemptCount, context.taskRequiresRestart);
+    EmbedContext.sendMessage('close', closeMessage.stringify());
 }
 
 var stopPlayer = function(context) {
@@ -747,8 +915,11 @@ var stopPlayer = function(context) {
 }
 
 var showMissedTrialDialog = function(context) {
+    let storedMissedTrialDialogsShown = context.registry.get('missedTrialDialogsShown') ?? 0;
+    context.registry.set('missedTrialDialogsShown', storedMissedTrialDialogsShown + 1);
+    context.missedTrialDialogShown += storedMissedTrialDialogsShown + 1;
+
     let missedTrialsDialogText = "Continue within the next 2 minutes to keep collecting coins.";
-    missedTrialDialogsShown += 1;
     consecutiveMissedTrials = 0;
 
     showBottomScreenPanel(
@@ -757,6 +928,7 @@ var showMissedTrialDialog = function(context) {
         missedTrialsDialogText,
         "CONTINUE",
         breakTime,
+        ARE_YOU_THERE_TAG,
         () => { continueGameAfterBreak(context); },
         () => { showTimeUpDialog(context); }
     );
@@ -770,14 +942,27 @@ var showTimeUpDialog = function(context) {
         timeoutMessage = "Unfortunately you've run out of time to continue the this task. Try again to recieve a bonus payment.";
     }
 
+    let showExitDialog = false;
+    let incrementAttemptCount = true;
+
+    // Once we see the timeout message, we have 2 mins to return to the task otherwise we need to restart
+    timeoutInterval = setInterval(
+        () => {
+            context.taskRequiresRestart = true;
+            clearInterval(timeoutInterval);
+        },
+        1000 * 60 * 2 // 2 mins
+    );
+
     showBottomScreenPanel(
         context,
         "Times up!",
         timeoutMessage,
         "EXIT",
         null,
-        () => { exitGame(false); }, // no need to show the exit dialog as we're already showing the time up dialog
-        () => { exitGame(false); } // no need to show the exit dialog as we're already showing the time up dialog
+        TIMEOUT_TAG,
+        () => { exitGame(context, showExitDialog, incrementAttemptCount); },
+        () => { exitGame(context, showExitDialog, incrementAttemptCount); }
     );
 }
 
@@ -789,12 +974,46 @@ var showBreakDialog = function(context) {
         breakTextContent,
         "CONTINUE",
         breakTime,
+        BREAK_TAG,
         () => { continueGameAfterBreak(context); }, // continue the game regardless after the break is automatically or manually stopped
         () => { continueGameAfterBreak(context); }
     );
 }
 
-var showBottomScreenPanel = function(context, titleText, subtitleText, bottomButtonText, countdownTimerMS, onContinuePressed, onTimeout) {
+var showExitTaskDialog = function(context) {
+    let retryTaskText = "You've been away too long, and may need to try again.";
+    let showExitDialog = false;
+    let incrementAttemptCount = false;
+    context.taskRequiresRestart = false;
+
+    showBottomScreenPanel(
+        context,
+        "Retry task",
+        retryTaskText,
+        "EXIT",
+        null,
+        EXIT_TASK_TAG,
+        () => { exitGame(context, showExitDialog, incrementAttemptCount); }, // just exit the task, don't worry about incrementing the attempt count or restarting the game progress
+        () => { exitGame(context, showExitDialog, incrementAttemptCount); }
+    );
+}
+
+var showTaskCompleteDialog = function(context) {
+    let taskCompleteText = "You've reached the minimum required number of completed trials but due to an interruption you cannot progress through the rest of the trials. You will still recieve your bonus payment.";
+
+    showBottomScreenPanel(
+        context,
+        "Task complete!",
+        taskCompleteText,
+        "EXIT",
+        null,
+        GAME_COMPLETE_TAG,
+        () => { gameCompleted(); }, // game is complete, exit the task
+        () => { gameCompleted(); }
+    );
+}
+
+var showBottomScreenPanel = function(context, titleText, subtitleText, bottomButtonText, countdownTimerMS, tag, onContinuePressed, onTimeout) {
     let camera = context.cameras.main;
 
     context.bottomScreenPanel = new BottomScreenPanel(
@@ -804,6 +1023,7 @@ var showBottomScreenPanel = function(context, titleText, subtitleText, bottomBut
         subtitleText,
         bottomButtonText,
         countdownTimerMS,
+        tag,
         onContinuePressed,
         onTimeout
     );
@@ -819,6 +1039,10 @@ var showBottomScreenPanel = function(context, titleText, subtitleText, bottomBut
     });    
 }
 
+var gameCompleted = function() {
+    EmbedContext.sendMessage('gameComplete', {});
+}
+
 var storeCountdownStarted = function(startTime) {
     powerCountdown = startTime;
 }
@@ -832,10 +1056,12 @@ var saveData = function(context) {
     // perform recalibration if required and within the first nCalibrates trials
     if (trialNo < nCalibrates) {
         // get variables to use 
-        pressTimes = context.registry.get('pressTimes');
-        pressCount = context.registry.get('pressCount');
-        pressStartTime = pressTimes[0]; // pressStartTime is the first pressTime
-        pressEndTime = pressTimes[pressTimes.length - 1]; // pressEndTime is the last pressTime
+        pressTimes = context.registry.get('pressTimes') ?? [];
+        pressCount = context.registry.get('pressCount') ?? 0;
+        if (pressTimes.length > 0) {
+            pressStartTime = pressTimes[0]; // pressStartTime is the first pressTime
+            pressEndTime = pressTimes[pressTimes.length - 1]; // pressEndTime is the last pressTime
+        }
 
         // get level of effort chosen
         if (choice == 'route 1') {
@@ -867,7 +1093,7 @@ var saveData = function(context) {
     // update the thresholdMax from the registry
     thresholdMax = context.registry.get('thresholdMax');
 
-    if (choice == 'timeout') {
+    if (choice == 'timeout' || choice == 'interruption') {
         // if the choice was a timeout then reset all the relevant variables so the payload doesn't retain the previous trial's data
         trialEffortPropChosen = 0;
         trialEffort = 0;

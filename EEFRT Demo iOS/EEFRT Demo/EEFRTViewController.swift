@@ -72,6 +72,8 @@ class EEFRTViewController: UIViewController {
     private let publicPath: String
     private let indexFileUrl: URL
 
+    private var interruptionTimeout: Int64?
+
     init(gameCache: GameCache?) {
         guard let publicPath = Bundle.main.path(forResource: "assets", ofType: nil) else {
             fatalError("Unable to locate 'assets' folder in main bundle")
@@ -84,11 +86,16 @@ class EEFRTViewController: UIViewController {
         self.publicPath = publicPath
         self.indexFileUrl = indexFileURL
         super.init(nibName: nil, bundle: nil)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(appWasBackgrounded), name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(appWillbeForegrounded), name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(appWillBeTerminated), name: UIApplication.willTerminateNotification, object: nil)
     }
 
     deinit {
         NotificationCenter.default.removeObserver(self)
         webView.configuration.userContentController.removeAllScriptMessageHandlers()
+        webView.configuration.userContentController.removeAllUserScripts()
     }
 
     @available(*, unavailable)
@@ -166,7 +173,7 @@ class EEFRTViewController: UIViewController {
         webView.loadFileURL(indexFileUrl, allowingReadAccessTo: URL(fileURLWithPath: publicPath))
     }
 
-    private func showDismissDialog() {
+    private func showDismissDialog(closeMessage: CloseMessage) {
         let message = GameConfigUtils.rewardThresholdReached()
             ? "You'll still receive a bonus but won't be able to return to the task and add to your bonus payment."
             : "You have not completed enough rounds to earn the bonus payment and will lose your progress."
@@ -188,6 +195,16 @@ class EEFRTViewController: UIViewController {
                 style: .default
             ) { [weak self] _ in
                 guard let self else { return }
+                if closeMessage.incrementAttemptCount {
+                    // increment attempt count in the main app
+                    os_log(.debug, "Incremented attempt count")
+                }
+
+                if closeMessage.taskRequiresRestart {
+                    // the task needs to be restarted
+                    os_log(.debug, "Task will be restarted on next load")
+                }
+
                 delegate?.eefrtViewControllerDidRequestClose(self)
             }
         )
@@ -208,19 +225,40 @@ extension EEFRTViewController: WKScriptMessageHandler {
                 If they are still in the practice trials, just exit the task.
                 We also want to not show the exit dialog if they are shown the Times Up message.
 
-                Messages from this key will contain an Boolean value which determines if we show the exit dialog or not
+                We may also be requested to exit the task if a significant interruption has occured and will need to determine if the
+                task attempt count should be incremented or not as well.
              */
-            guard let shouldShowExitDialogFromJs = message.body as? String,
-                  let shouldShowExitDialog = Bool(shouldShowExitDialogFromJs) else {
+            guard let stringifiedDataFromJS = (message.body as? String)?.data(using: .utf8) else {
                 delegate?.eefrtViewControllerDidRequestClose(self)
                 return
             }
+            do {
+                // decode the message from the JS side
+                let decoder = JSONDecoder()
+                let decodedCloseMessageString = try decoder.decode(String.self, from: stringifiedDataFromJS)
+                let closeMessage = try decoder.decode(CloseMessage.self, from: Data(decodedCloseMessageString.utf8))
 
-            if shouldShowExitDialog {
-                showDismissDialog()
-            } else {
-                delegate?.eefrtViewControllerDidRequestClose(self)
+                // ensure its only incremented if the game is closed, the user has the option to cancel closing the task via the dialog
+                if !closeMessage.shouldShowExitDialog, closeMessage.incrementAttemptCount {
+                    // increment attempt count - in main app
+                    os_log(.debug, "Incremented attempt count")
+                }
+
+                // ensure the game data is reset if we've actually closed the task, similar scenario to the shouldShowExitDialog
+                if !closeMessage.shouldShowExitDialog, closeMessage.taskRequiresRestart {
+                    // the task needs to be restarted
+                    os_log(.debug, "Task will be restarted on next load")
+                }
+
+                if closeMessage.shouldShowExitDialog {
+                    showDismissDialog(closeMessage: closeMessage)
+                }
+            } catch {
+                os_log(.debug, "Unable to decode close message from JS side with error: \(error.localizedDescription)")
             }
+
+            // fallback for if we are unable to decode message or there was no message, just close the view
+            delegate?.eefrtViewControllerDidRequestClose(self)
 
         case Self.practiceTrialResultMessageKey:
             guard let stringifiedData = (message.body as? String)?.data(using: .utf8) else { return }
@@ -282,6 +320,34 @@ extension EEFRTViewController: WKScriptMessageHandler {
         default:
             os_log(.error, "Message type %s not implemented yet!", message.name)
         }
+    }
+}
+
+@objc private extension EEFRTViewController {
+    func appWasBackgrounded() {
+        // update the interruptionTimeout with the time the app was backgrounded
+        interruptionTimeout = Int64(Date().timeIntervalSince1970 * 1000) // convert seconds to milliseconds
+    }
+
+    func appWillbeForegrounded() {
+        guard var cache = Defaults.gameCache,
+              let interruptionTimeout else {
+            self.interruptionTimeout = nil // reset this value then return
+            return
+        }
+        cache.interruptionTimestamp = interruptionTimeout
+
+        if let stringifiedCache = try? cache.stringify() {
+            webView.evaluateJavaScript("window.setupGameWithCache(\(stringifiedCache));")
+            self.interruptionTimeout = nil // we can safely remove it from here
+        }
+    }
+
+    func appWillBeTerminated() {
+        // if the app is terminated while the task is active, increment the attempt count,
+        // reset task progress or submit the task as complete if not the first attempt,
+        os_log(.debug, "Incremented attempt count")
+        os_log(.debug, "Task will be restarted on next load")
     }
 }
 

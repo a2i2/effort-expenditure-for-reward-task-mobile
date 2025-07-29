@@ -4,32 +4,41 @@ import ai.a2i2.conductor.effrtdemoandroid.persistence.GameCache
 import ai.a2i2.conductor.effrtdemoandroid.persistence.GameStorage
 import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
+import ai.a2i2.conductor.effrtdemoandroid.ui.data.CloseMessage
 import ai.a2i2.conductor.effrtdemoandroid.ui.data.EefrtScreenViewModel
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.Window
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewAssetLoader.AssetsPathHandler
 import androidx.webkit.WebViewAssetLoader.DEFAULT_DOMAIN
@@ -39,6 +48,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.json.JSONException
 import org.json.JSONObject
+import java.time.Instant
 import java.util.Date
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -50,12 +60,30 @@ fun EefrtScreen(
     val exitRequested = remember { mutableStateOf(false) }
     val webView = remember { mutableStateOf<WebView?>(null) }
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     val insets = WindowInsets.statusBars.asPaddingValues()
     val topPaddingDp = insets.calculateTopPadding().value.toInt()
     // On first composition the value is 0, so we need to wait for the second composition to get
     // the actual value before we continue to render the WebView.
     if (topPaddingDp <= 0) return
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> onTaskResume(viewModel, context, webView.value)
+                Lifecycle.Event.ON_PAUSE -> onTaskPause(viewModel)
+                else -> Unit
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            viewModel.interruptionTimestamp.value = null
+        }
+    }
 
     Box(contentAlignment = Alignment.Center) {
         AndroidView(
@@ -92,13 +120,16 @@ fun EefrtScreen(
 
                             // inject the stored calibrationComplete and calibratedMaxPressCount values into the cache
                             val gameStorage = GameStorage(context)
-                            var cache = gameStorage.cachedGameState ?: GameCache()
+                            val cache = gameStorage.cachedGameState ?: GameCache()
                             if (gameStorage.calibrationComplete == true && gameStorage.calibratedMaxPressCount != null) {
                                 cache.calibrationComplete = true
                                 cache.maxPressCount = gameStorage.calibratedMaxPressCount!!
                             }
 
-                            val cacheJson = Json.encodeToString(cache)
+                            val json = Json {
+                                encodeDefaults = true
+                            }
+                            val cacheJson = json.encodeToString(cache)
                             val jsString = "window.setupGameWithCache(${cacheJson});"
                             evaluateJavascript(jsString, null)
                         }
@@ -129,14 +160,14 @@ fun EefrtScreen(
                 "You have not completed enough rounds to earn the bonus payment and will lose your progress."
 
             AlertDialog(
-                onDismissRequest = { viewModel.showExitDialog.value = false },
+                onDismissRequest = { viewModel.dismissCloseDialog() },
                 title = { Text("Quit task?") },
                 text = { Text(message) },
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            viewModel.showExitDialog.value = false
-
+                            viewModel.onConfirmCloseDialog(TAG)
+                            exitRequested.value = true
                             dismiss(onBack)
                         }
                     ) {
@@ -144,7 +175,7 @@ fun EefrtScreen(
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { viewModel.showExitDialog.value = false }) {
+                    TextButton(onClick = { viewModel.dismissCloseDialog() }) {
                         Text("Cancel")
                     }
                 }
@@ -155,12 +186,43 @@ fun EefrtScreen(
 
 private const val TAG = "EefrtScreen"
 
+private fun onTaskPause(viewModel: EefrtScreenViewModel) {
+    // ensure this value is only updated once, while we are actively using the app
+    if (viewModel.interruptionTimestamp.value == null) {
+        viewModel.interruptionTimestamp.value = Instant.now().toEpochMilli()
+    }
+}
+
+private fun onTaskResume(viewModel: EefrtScreenViewModel, context: Context, webView: WebView?) {
+    val cache = viewModel.getCurrentGameState(context)
+        ?.copy() // ensure we get a copy of the game state so the changes we make to the timestamp arent persisted
+    val interruptionTimestamp = viewModel.interruptionTimestamp.value
+
+    if (cache == null || interruptionTimestamp == null || webView == null) {
+        return
+    }
+    // append the interruption timestamp to the cache
+    cache.interruptionTimestamp = interruptionTimestamp
+
+    // encode the cache and pass it along to the game
+    val json = Json  {
+        encodeDefaults = true
+    }
+    val cacheJson = json.encodeToString(cache)
+    val jsString = "window.setupGameWithCache(${cacheJson});"
+    webView.evaluateJavascript(jsString, null)
+
+    // reset the interruptionTimestamp value
+    cache.interruptionTimestamp = null
+    viewModel.interruptionTimestamp.value = null
+}
+
 private fun handleMessage(
     message: String,
     onBack: () -> Unit,
     exitRequested: MutableState<Boolean>,
     viewModel: EefrtScreenViewModel,
-    context: Context
+    context: Context,
 ) {
     try {
         val obj = JSONObject(message)
@@ -177,7 +239,8 @@ private fun handleMessage(
                     If they are still in the practice trials, just exit the task.
                     We also want to not show the exit dialog if they are shown the Times Up message.
 
-                    Messages from this key will contain an Boolean value which determines if we show the exit dialog or not
+                    We may also be requested to exit the task if a significant interruption has occurred and will need to determine if the
+                    task attempt count should be incremented or not as well.
                  */
 
                 if (obj.isNull("message")) {
@@ -190,9 +253,29 @@ private fun handleMessage(
                     return
                 }
 
-                val shouldShowDialog = obj.getBoolean("message")
-                if (shouldShowDialog) {
-                    showDialogMessage(viewModel)
+                // decode the message from the JS side
+                val body = obj.getString("message")
+                val gson = Gson()
+                val closeMessage = gson.fromJson(body, CloseMessage::class.java)
+
+                // ensure its only incremented if the game is closed, the user has the option to cancel closing the task via the dialog
+                if (!closeMessage.shouldShowExitDialog && closeMessage.incrementAttemptCount) {
+                    Log.d(
+                        TAG,
+                        "Incremented attempt count"
+                    )
+                }
+
+                // ensure the game data is reset if we've actually closed the task, similar scenario to the shouldShowExitDialog
+                if (!closeMessage.shouldShowExitDialog && closeMessage.taskRequiresRestart) {
+                    Log.d(
+                        TAG,
+                        "Task will be restarted on next load"
+                    )
+                }
+
+                if (closeMessage.shouldShowExitDialog) {
+                    viewModel.showCloseDialog(closeMessage)
                 } else {
                     exitRequested.value = true
                     dismiss(onBack)
@@ -238,6 +321,7 @@ private fun handleMessage(
 
             "gameComplete" -> {
                 viewModel.clearEEFRTData(context)
+                exitRequested.value = true
                 dismiss(onBack)
             }
 
@@ -253,8 +337,4 @@ private fun handleMessage(
 
 private fun dismiss(onBack: () -> Unit) {
     Handler(Looper.getMainLooper()).post { onBack() }
-}
-
-private fun showDialogMessage(eefrtViewModel: EefrtScreenViewModel) {
-    eefrtViewModel.showExitDialog.value = true
 }

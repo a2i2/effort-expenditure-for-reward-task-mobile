@@ -1,4 +1,5 @@
 import { BaseScene } from "./baseScene.js";
+import CloseMessage from "../embedContext/CloseMessage.js";
 
 export default class StartTaskScene extends BaseScene {
     constructor() {
@@ -36,8 +37,8 @@ export default class StartTaskScene extends BaseScene {
         this.closeButton.setScrollFactor(0);
         this.closeButton.setInteractive();
         this.closeButton.on('pointerup', () => {
-            let shouldShowExitDialog = false
-            EmbedContext.sendMessage('close', shouldShowExitDialog);
+            let closeMessage = new CloseMessage(false, false, false);
+            EmbedContext.sendMessage('close', closeMessage.stringify());
         });
 
         const container = this.rexUI.add.sizer({
