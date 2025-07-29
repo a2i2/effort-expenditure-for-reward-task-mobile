@@ -18,9 +18,8 @@ export default class InteruptionsHandler {
 
         // scenario 1 - interupted during practice rounds before main trials - restart from practice with no increment to attempt count
         if (cache.practiceComplete == false && cache.trialNumber == 0) {
-            console.log('1A');
-            // show exit task dialog to let the user know they need to exit and return to the task from the beginning of the practice rounds
-            context.interruptionExitTaskDialog = true;
+            // show the exit dialog immedately after an interruption
+            context.showExitDialogAfterInterruption();
             return;
         }
 
