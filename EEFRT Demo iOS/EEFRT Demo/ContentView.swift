@@ -23,10 +23,12 @@ struct ContentView: View {
                     Button("Cancel", role: .cancel) {}
                 }
 
-                if let cache = viewModel.gameCache, cache.isResumeTrialAvailable()  {
-                    NavigationLink(destination: EEFRTView(gameCache: cache)
-                        .ignoresSafeArea()
-                        .navigationBarBackButtonHidden()) {
+                if let cache = viewModel.gameCache, cache.isResumeTrialAvailable() {
+                    NavigationLink(
+                        destination: EEFRTView(gameCache: cache)
+                            .ignoresSafeArea()
+                            .navigationBarBackButtonHidden()
+                    ) {
                         Text("Resume current EEFRT Task")
                     }
                 }
@@ -46,7 +48,7 @@ struct ContentView: View {
 
     private func startTrial(number: Int) {
         var newGameCache = GameCache()
-        switch(number) {
+        switch number {
         case 2:
             newGameCache.trialSeqFilename = "trial-seq-2.json"
         case 3:
@@ -55,6 +57,8 @@ struct ContentView: View {
             newGameCache.trialSeqFilename = "trial-seq-1.json"
         }
         Defaults.gameCache = newGameCache
+        Defaults.gameMarkedAsComplete = false
+        Defaults.eefrtAttemptCount = 1
         navigateToEEFRT = true
     }
 }

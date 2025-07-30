@@ -3,6 +3,7 @@ import SwiftyUserDefaults
 
 struct GameConfigUtils {
     private static let rewardPaymentThreshold = 0.8
+    static let maxEefrtAttempts = 2
 
     static func rewardThresholdReached() -> Bool {
         guard let cache = Defaults.gameCache,
