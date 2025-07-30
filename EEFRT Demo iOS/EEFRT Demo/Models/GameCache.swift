@@ -81,6 +81,6 @@ struct GameCache: Codable, DefaultsSerializable {
     }
     
     func isResumeTrialAvailable() -> Bool {
-        practiceComplete || trialNumber > 0
+        (practiceComplete || trialNumber > 0) && !Defaults.gameMarkedAsComplete
     }
 }

@@ -36,6 +36,18 @@ struct ContentView: View {
                 NavigationLink(destination: EventLogsView()) {
                     Text("View Event Logs")
                 }
+
+                if let eefrtAttemptCount = viewModel.eefrtAttemptCount {
+                    Text("Current EEFRT attempt number: \(eefrtAttemptCount)")
+                }
+
+                if let gameMarkedAsComplete = viewModel.gameMarkedAsComplete {
+                    Text("Current game marked as complete: \(gameMarkedAsComplete)")
+                }
+                
+                if let cache = Defaults.gameCache, cache.isResumeTrialAvailable() {
+                    Text("Can resume from: \(viewModel.determineTrialNumberStringFromCache())")
+                }
             }
             .padding()
             .navigationDestination(isPresented: $navigateToEEFRT) {
