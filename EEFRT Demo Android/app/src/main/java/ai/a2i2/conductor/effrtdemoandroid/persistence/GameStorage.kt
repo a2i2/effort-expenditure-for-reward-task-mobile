@@ -32,4 +32,6 @@ class GameStorage(context: Context) : SimpleKrate(context) {
     )
     var calibrationComplete: Boolean? by booleanPref("calibrationComplete").withDefault(null)
     var calibratedMaxPressCount: Int? by intPref("calibratedMaxPressCount").withDefault(null)
+    var eefrtAttemptCount: Int by intPref("eefrtAttemptCount").withDefault(1)
+    var gameMarkedAsComplete: Boolean by booleanPref("gameMarkedAsComplete").withDefault(false)
 }

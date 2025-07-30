@@ -13,16 +13,13 @@ import android.os.Looper
 import android.util.Log
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.Window
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,12 +29,10 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewAssetLoader.AssetsPathHandler
@@ -166,7 +161,7 @@ fun EefrtScreen(
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            viewModel.onConfirmCloseDialog(TAG)
+                            viewModel.onConfirmCloseDialog(context, TAG)
                             exitRequested.value = true
                             dismiss(onBack)
                         }
@@ -205,7 +200,7 @@ private fun onTaskResume(viewModel: EefrtScreenViewModel, context: Context, webV
     cache.interruptionTimestamp = interruptionTimestamp
 
     // encode the cache and pass it along to the game
-    val json = Json  {
+    val json = Json {
         encodeDefaults = true
     }
     val cacheJson = json.encodeToString(cache)
@@ -264,6 +259,7 @@ private fun handleMessage(
                         TAG,
                         "Incremented attempt count"
                     )
+                    GameStorage(context).eefrtAttemptCount++
                 }
 
                 // ensure the game data is reset if we've actually closed the task, similar scenario to the shouldShowExitDialog
@@ -272,6 +268,7 @@ private fun handleMessage(
                         TAG,
                         "Task will be restarted on next load"
                     )
+                    viewModel.setCurrentGameState(context, null)
                 }
 
                 if (closeMessage.shouldShowExitDialog) {

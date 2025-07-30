@@ -126,14 +126,14 @@ class EefrtScreenViewModel(
         showExitDialog.value = false
     }
 
-    fun onConfirmCloseDialog(loggingTag: String) {
-        // No business logic for this app but a placeholder for the main apps
+    fun onConfirmCloseDialog(context: Context, loggingTag: String) {
         closeMessage.value?.let {
             if (it.incrementAttemptCount) {
                 Log.d(
                     loggingTag,
                     "Incremented attempt count"
                 )
+                GameStorage(context).eefrtAttemptCount++
             }
 
             if (it.taskRequiresRestart) {
@@ -141,6 +141,7 @@ class EefrtScreenViewModel(
                     loggingTag,
                     "Task will be restarted on next load"
                 )
+                GameStorage(context).cachedGameState = null
             }
         }
 
