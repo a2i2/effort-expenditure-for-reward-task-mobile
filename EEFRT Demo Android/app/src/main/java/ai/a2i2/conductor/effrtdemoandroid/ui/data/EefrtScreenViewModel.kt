@@ -5,18 +5,16 @@ import ai.a2i2.conductor.effrtdemoandroid.persistence.GameCache
 import ai.a2i2.conductor.effrtdemoandroid.persistence.GameStorage
 import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
-import ai.a2i2.conductor.effrtdemoandroid.ui.EefrtScreen
 import ai.a2i2.conductor.effrtdemoandroid.util.GameConfigUtils
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import java.time.Instant
 
 class EefrtScreenViewModel(
     private val appDatabase: AppDatabase,
@@ -31,10 +29,18 @@ class EefrtScreenViewModel(
     var interruptionTimestamp = mutableStateOf<Long?>(null)
     var closeMessage = mutableStateOf<CloseMessage?>(null)
 
+    var eefrtAttemptCount: MutableState<Int>
+    var gameMarkedAsComplete: MutableState<Boolean>
+
     init {
         refreshData()
-        val currentGameState = GameStorage(context).cachedGameState
-        resumeTrialAvailable = mutableStateOf(currentGameState?.isResumeTrialAvailable() ?: false)
+
+        val gameStorage = GameStorage(context)
+        val currentGameState = gameStorage.cachedGameState
+        resumeTrialAvailable =
+            mutableStateOf(currentGameState?.isResumeTrialAvailable(context) ?: false)
+        eefrtAttemptCount = mutableIntStateOf(gameStorage.eefrtAttemptCount)
+        gameMarkedAsComplete = mutableStateOf(gameStorage.gameMarkedAsComplete)
     }
 
     private fun refreshData() {
@@ -91,7 +97,7 @@ class EefrtScreenViewModel(
 
     fun setCurrentGameState(context: Context, newGameState: GameCache?) {
         GameStorage(context).cachedGameState = newGameState
-        resumeTrialAvailable.value = newGameState?.isResumeTrialAvailable() ?: false
+        resumeTrialAvailable.value = newGameState?.isResumeTrialAvailable(context) ?: false
     }
 
     fun getCurrentGameState(context: Context): GameCache? {
@@ -126,14 +132,15 @@ class EefrtScreenViewModel(
         showExitDialog.value = false
     }
 
-    fun onConfirmCloseDialog(loggingTag: String) {
-        // No business logic for this app but a placeholder for the main apps
+    fun onConfirmCloseDialog(context: Context, loggingTag: String) {
         closeMessage.value?.let {
             if (it.incrementAttemptCount) {
                 Log.d(
                     loggingTag,
                     "Incremented attempt count"
                 )
+                val currentValue = GameStorage(context).eefrtAttemptCount
+                updateEEFRTAttemptCount(context, currentValue + 1)
             }
 
             if (it.taskRequiresRestart) {
@@ -141,10 +148,32 @@ class EefrtScreenViewModel(
                     loggingTag,
                     "Task will be restarted on next load"
                 )
+                GameStorage(context).cachedGameState = null
+                resumeTrialAvailable.value = false
             }
         }
 
         // dismiss the dialog
         dismissCloseDialog()
+    }
+
+    fun updateEEFRTAttemptCount(context: Context, newAttemptNumber: Int? = null) {
+        GameStorage(context).eefrtAttemptCount =
+            newAttemptNumber ?: 1 // if no value provided, then reset to the default value
+        eefrtAttemptCount.value = newAttemptNumber ?: 1
+    }
+
+    fun updateGameMarkedAsComplete(context: Context, newGameMarkedAsComplete: Boolean) {
+        GameStorage(context).gameMarkedAsComplete = newGameMarkedAsComplete
+        gameMarkedAsComplete.value = newGameMarkedAsComplete
+    }
+
+    fun determineResumeTrialString(context: Context): String {
+        val cache = GameStorage(context).cachedGameState
+        return if (cache == null || !cache.practiceComplete) {
+            "Tutorial"
+        } else {
+            "Trial ${cache.trialNumber + 1}" // remove the 0-indexing from the trial number
+        }
     }
 }

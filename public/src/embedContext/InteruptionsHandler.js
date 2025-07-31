@@ -25,15 +25,15 @@ export default class InteruptionsHandler {
 
         // scenario 2 - interupted after practice but before the 2 calibration trials are complete:
         /*
-            2A: Away for over 3 mins - task ends but allowed to return (infinately?)
+            2A: Away for over 3 mins - exit task, reset task progress to beginning but allow them to return (infinately?)
             2B: Away for less than 3 mins - task still active, let them continue
         */
         if (cache.practiceComplete == true && cache.trialNumber <= 1) {
             // 2A
             if (interuptionLengthMs > threeMinsMs) {
-                // show exit task dialog to let the user know they need to exit and return to the task from where they left off
+                // show exit task dialog to let the user know they need to exit, reset task progress to beginning
                 console.log('2A');
-                context.taskRequiresRestart = false;
+                context.taskRequiresRestart = true;
                 context.interruptionExitTaskDialog = true;
 
                 return;

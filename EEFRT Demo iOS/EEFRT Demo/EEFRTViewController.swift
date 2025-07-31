@@ -52,6 +52,11 @@ struct EEFRTView: UIViewControllerRepresentable {
         }
 
         func eefrtViewControllerDidRequestClose(_ controller: EEFRTViewController) {
+            // check to see if the eefrt attempt count is exceeded, show on the home screen that the task would be maked as complete
+            if Defaults.eefrtAttemptCount > GameConfigUtils.maxEefrtAttempts {
+                Defaults.gameMarkedAsComplete = true
+            }
+
             parent.presentationMode.wrappedValue.dismiss()
         }
     }
@@ -198,11 +203,13 @@ class EEFRTViewController: UIViewController {
                 if closeMessage.incrementAttemptCount {
                     // increment attempt count in the main app
                     os_log(.debug, "Incremented attempt count")
+                    Defaults.eefrtAttemptCount += 1
                 }
 
                 if closeMessage.taskRequiresRestart {
                     // the task needs to be restarted
                     os_log(.debug, "Task will be restarted on next load")
+                    Defaults.gameCache = nil
                 }
 
                 delegate?.eefrtViewControllerDidRequestClose(self)
@@ -242,12 +249,14 @@ extension EEFRTViewController: WKScriptMessageHandler {
                 if !closeMessage.shouldShowExitDialog, closeMessage.incrementAttemptCount {
                     // increment attempt count - in main app
                     os_log(.debug, "Incremented attempt count")
+                    Defaults.eefrtAttemptCount += 1
                 }
 
                 // ensure the game data is reset if we've actually closed the task, similar scenario to the shouldShowExitDialog
                 if !closeMessage.shouldShowExitDialog, closeMessage.taskRequiresRestart {
                     // the task needs to be restarted
                     os_log(.debug, "Task will be restarted on next load")
+                    Defaults.gameCache = nil
                 }
 
                 if closeMessage.shouldShowExitDialog {
@@ -313,8 +322,9 @@ extension EEFRTViewController: WKScriptMessageHandler {
             }
 
         case Self.gameCompleteKey:
-            // clear the cache as the user has finished the task
-            Defaults.clearEEFRTData()
+            // clear the cache and mark the task as done
+            Defaults.gameCache = nil
+            Defaults.gameMarkedAsComplete = true
             delegate?.eefrtViewControllerDidRequestClose(self)
 
         default:
@@ -346,7 +356,19 @@ extension EEFRTViewController: WKScriptMessageHandler {
     func appWillBeTerminated() {
         // if the app is terminated while the task is active, increment the attempt count,
         // reset task progress or submit the task as complete if not the first attempt,
+
+        // increment attempt count
+        Defaults.eefrtAttemptCount += 1
         os_log(.debug, "Incremented attempt count")
+
+        // reset attempt count back to 1 if we've passed the max attempts
+        if Defaults.eefrtAttemptCount > GameConfigUtils.maxEefrtAttempts {
+            // need to reset task since the app is about to be terminated and we wont get to the close handler function
+            Defaults.eefrtAttemptCount = 1
+        }
+
+        // reset game progress
+        Defaults.gameCache = nil
         os_log(.debug, "Task will be restarted on next load")
     }
 }
@@ -355,6 +377,8 @@ extension DefaultsKeys {
     var gameCache: DefaultsKey<GameCache?> { .init("gameCache", defaultValue: nil) }
     var calibrationComplete: DefaultsKey<Bool?> { .init("calibrationComplete", defaultValue: nil) }
     var calibratedMaxPressCount: DefaultsKey<Int?> { .init("calibratedMaxPressCount", defaultValue: nil) }
+    var eefrtAttemptCount: DefaultsKey<Int> { .init("eefrtAttemptCount", defaultValue: 1) }
+    var gameMarkedAsComplete: DefaultsKey<Bool> { .init("gameMarkedAsComplete", defaultValue: false) }
 }
 
 private extension OSLog {

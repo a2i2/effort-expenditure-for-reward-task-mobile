@@ -23,10 +23,12 @@ struct ContentView: View {
                     Button("Cancel", role: .cancel) {}
                 }
 
-                if let cache = viewModel.gameCache, cache.isResumeTrialAvailable()  {
-                    NavigationLink(destination: EEFRTView(gameCache: cache)
-                        .ignoresSafeArea()
-                        .navigationBarBackButtonHidden()) {
+                if let cache = viewModel.gameCache, cache.isResumeTrialAvailable() {
+                    NavigationLink(
+                        destination: EEFRTView(gameCache: cache)
+                            .ignoresSafeArea()
+                            .navigationBarBackButtonHidden()
+                    ) {
                         Text("Resume current EEFRT Task")
                     }
                 }
@@ -34,6 +36,20 @@ struct ContentView: View {
                 NavigationLink(destination: EventLogsView()) {
                     Text("View Event Logs")
                 }
+
+                #if DEBUG
+                if let eefrtAttemptCount = viewModel.eefrtAttemptCount {
+                    Text("Current EEFRT attempt number: \(eefrtAttemptCount)")
+                }
+
+                if let gameMarkedAsComplete = viewModel.gameMarkedAsComplete {
+                    Text("Current game marked as complete: \(gameMarkedAsComplete)")
+                }
+                
+                if let cache = Defaults.gameCache, cache.isResumeTrialAvailable() {
+                    Text("Can resume from: \(viewModel.determineTrialNumberStringFromCache())")
+                }
+                #endif
             }
             .padding()
             .navigationDestination(isPresented: $navigateToEEFRT) {
@@ -46,7 +62,7 @@ struct ContentView: View {
 
     private func startTrial(number: Int) {
         var newGameCache = GameCache()
-        switch(number) {
+        switch number {
         case 2:
             newGameCache.trialSeqFilename = "trial-seq-2.json"
         case 3:
@@ -55,6 +71,8 @@ struct ContentView: View {
             newGameCache.trialSeqFilename = "trial-seq-1.json"
         }
         Defaults.gameCache = newGameCache
+        Defaults.gameMarkedAsComplete = false
+        Defaults.eefrtAttemptCount = 1
         navigateToEEFRT = true
     }
 }

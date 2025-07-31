@@ -6,6 +6,7 @@ import android.content.Context
 class GameConfigUtils {
     companion object {
         const val REWARD_PAYMENT_THRESHOLD = 0.8
+        const val MAX_EEFRT_ATTEMPTS = 2
 
         fun rewardThresholdReached(context: Context): Boolean {
             val trialNumber = GameStorage(context).cachedGameState?.trialNumber?.plus(1) ?: 0

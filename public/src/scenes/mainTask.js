@@ -984,7 +984,6 @@ var showExitTaskDialog = function(context) {
     let retryTaskText = "You've been away too long, and may need to try again.";
     let showExitDialog = false;
     let incrementAttemptCount = false;
-    context.taskRequiresRestart = false;
 
     showBottomScreenPanel(
         context,

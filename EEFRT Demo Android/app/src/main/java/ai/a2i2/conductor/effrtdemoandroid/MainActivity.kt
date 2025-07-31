@@ -2,6 +2,7 @@ package ai.a2i2.conductor.effrtdemoandroid
 
 import ai.a2i2.conductor.effrtdemoandroid.persistence.DatabaseProvider
 import ai.a2i2.conductor.effrtdemoandroid.persistence.GameCache
+import ai.a2i2.conductor.effrtdemoandroid.persistence.GameStorage
 import ai.a2i2.conductor.effrtdemoandroid.ui.EefrtScreen
 import ai.a2i2.conductor.effrtdemoandroid.ui.EventLogsView
 import ai.a2i2.conductor.effrtdemoandroid.ui.EefrtTrialDetailView
@@ -17,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import ai.a2i2.conductor.effrtdemoandroid.ui.theme.EFFRTDemoAndroidTheme
+import ai.a2i2.conductor.effrtdemoandroid.util.GameConfigUtils
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -76,7 +78,7 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
         OptionsDialog(
             onDismissRequest = { showDialog.value = false },
             onOptionSelected = { option ->
-                selectedOption.value = when(option) {
+                selectedOption.value = when (option) {
                     "Trial 2" -> "trial-seq-2.json"
                     "Trial 3" -> "trial-seq-3.json"
                     else -> "trial-seq-1.json" // default
@@ -93,6 +95,8 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
                         calibrationComplete = false
                     )
                 )
+                eefrtScreenViewModel.updateGameMarkedAsComplete(context, false)
+                eefrtScreenViewModel.updateEEFRTAttemptCount(context, 1)
                 showDialog.value = false
             }
         )
@@ -118,6 +122,13 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
             EefrtScreen(
                 viewModel = eefrtScreenViewModel,
                 onBack = {
+                    // check to see if the EEFRT attempt count is exceeded,
+                    // show on the home screen that the task would be marked as complete
+                    if (GameStorage(context).eefrtAttemptCount > GameConfigUtils.MAX_EEFRT_ATTEMPTS) {
+                        eefrtScreenViewModel.updateGameMarkedAsComplete(context, true)
+                    }
+
+                    // close the view
                     selectedOption.value = null
                     navController.popBackStack()
                 }
@@ -174,6 +185,8 @@ fun HomeScreen(
     onResumeTaskPressed: () -> Unit,
     onViewEventLogsPressed: () -> Unit,
 ) {
+    val context = LocalContext.current
+
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -199,6 +212,16 @@ fun HomeScreen(
                 modifier = Modifier.padding(innerPadding),
                 onClick = onViewEventLogsPressed
             )
+
+            if (BuildConfig.DEBUG) {
+                Text("Current EEFRT attempt number: ${eefrtScreenViewModel.eefrtAttemptCount.value}")
+
+                Text("Current game marked as complete: ${eefrtScreenViewModel.gameMarkedAsComplete.value}")
+
+                if (eefrtScreenViewModel.resumeTrialAvailable.value) {
+                    Text("Can resume from: ${eefrtScreenViewModel.determineResumeTrialString(context)}")
+                }
+            }
         }
     }
 }
