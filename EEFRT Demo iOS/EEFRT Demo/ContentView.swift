@@ -37,6 +37,7 @@ struct ContentView: View {
                     Text("View Event Logs")
                 }
 
+                #if DEBUG
                 if let eefrtAttemptCount = viewModel.eefrtAttemptCount {
                     Text("Current EEFRT attempt number: \(eefrtAttemptCount)")
                 }
@@ -48,6 +49,7 @@ struct ContentView: View {
                 if let cache = Defaults.gameCache, cache.isResumeTrialAvailable() {
                     Text("Can resume from: \(viewModel.determineTrialNumberStringFromCache())")
                 }
+                #endif
             }
             .padding()
             .navigationDestination(isPresented: $navigateToEEFRT) {

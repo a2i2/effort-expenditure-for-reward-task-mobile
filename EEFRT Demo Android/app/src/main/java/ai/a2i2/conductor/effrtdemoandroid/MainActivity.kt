@@ -213,14 +213,15 @@ fun HomeScreen(
                 onClick = onViewEventLogsPressed
             )
 
-            Text("Current EEFRT attempt number: ${eefrtScreenViewModel.eefrtAttemptCount.value}")
+            if (BuildConfig.DEBUG) {
+                Text("Current EEFRT attempt number: ${eefrtScreenViewModel.eefrtAttemptCount.value}")
 
-            Text("Current game marked as complete: ${eefrtScreenViewModel.gameMarkedAsComplete.value}")
+                Text("Current game marked as complete: ${eefrtScreenViewModel.gameMarkedAsComplete.value}")
 
-            if (eefrtScreenViewModel.resumeTrialAvailable.value) {
-                Text("Can resume from: ${eefrtScreenViewModel.determineResumeTrialString(context)}")
+                if (eefrtScreenViewModel.resumeTrialAvailable.value) {
+                    Text("Can resume from: ${eefrtScreenViewModel.determineResumeTrialString(context)}")
+                }
             }
-
         }
     }
 }
