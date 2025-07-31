@@ -259,7 +259,8 @@ private fun handleMessage(
                         TAG,
                         "Incremented attempt count"
                     )
-                    GameStorage(context).eefrtAttemptCount++
+                    val currentAttemptCount = GameStorage(context).eefrtAttemptCount
+                    viewModel.updateEEFRTAttemptCount(context, currentAttemptCount + 1)
                 }
 
                 // ensure the game data is reset if we've actually closed the task, similar scenario to the shouldShowExitDialog
@@ -269,6 +270,7 @@ private fun handleMessage(
                         "Task will be restarted on next load"
                     )
                     viewModel.setCurrentGameState(context, null)
+                    viewModel.resumeTrialAvailable.value = false
                 }
 
                 if (closeMessage.shouldShowExitDialog) {
@@ -318,6 +320,7 @@ private fun handleMessage(
 
             "gameComplete" -> {
                 viewModel.clearEEFRTData(context)
+                viewModel.updateGameMarkedAsComplete(context, true)
                 exitRequested.value = true
                 dismiss(onBack)
             }

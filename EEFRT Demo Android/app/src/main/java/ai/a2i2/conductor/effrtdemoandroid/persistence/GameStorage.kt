@@ -6,7 +6,6 @@ import hu.autsoft.krate.booleanPref
 import hu.autsoft.krate.default.withDefault
 import hu.autsoft.krate.intPref
 import hu.autsoft.krate.kotlinx.kotlinxPref
-import hu.autsoft.krate.longPref
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -21,8 +20,8 @@ data class GameCache(
     var calibrationComplete: Boolean = false,
     var interruptionTimestamp: Long? = null
 ) {
-    fun isResumeTrialAvailable(): Boolean {
-        return practiceComplete || trialNumber > 0
+    fun isResumeTrialAvailable(context: Context): Boolean {
+        return (practiceComplete || trialNumber > 0) && !GameStorage(context).gameMarkedAsComplete
     }
 }
 

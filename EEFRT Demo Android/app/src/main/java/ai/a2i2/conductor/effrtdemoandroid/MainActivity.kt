@@ -95,8 +95,8 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
                         calibrationComplete = false
                     )
                 )
-                GameStorage(context).gameMarkedAsComplete = false
-                GameStorage(context).eefrtAttemptCount = 1
+                eefrtScreenViewModel.updateGameMarkedAsComplete(context, false)
+                eefrtScreenViewModel.updateEEFRTAttemptCount(context, 1)
                 showDialog.value = false
             }
         )
@@ -125,7 +125,7 @@ fun NavigationController(eefrtScreenViewModel: EefrtScreenViewModel) {
                     // check to see if the EEFRT attempt count is exceeded,
                     // show on the home screen that the task would be marked as complete
                     if (GameStorage(context).eefrtAttemptCount > GameConfigUtils.MAX_EEFRT_ATTEMPTS) {
-                        GameStorage(context).gameMarkedAsComplete = true
+                        eefrtScreenViewModel.updateGameMarkedAsComplete(context, true)
                     }
 
                     // close the view
@@ -185,6 +185,8 @@ fun HomeScreen(
     onResumeTaskPressed: () -> Unit,
     onViewEventLogsPressed: () -> Unit,
 ) {
+    val context = LocalContext.current
+
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -210,6 +212,15 @@ fun HomeScreen(
                 modifier = Modifier.padding(innerPadding),
                 onClick = onViewEventLogsPressed
             )
+
+            Text("Current EEFRT attempt number: ${eefrtScreenViewModel.eefrtAttemptCount.value}")
+
+            Text("Current game marked as complete: ${eefrtScreenViewModel.gameMarkedAsComplete.value}")
+
+            if (eefrtScreenViewModel.resumeTrialAvailable.value) {
+                Text("Can resume from: ${eefrtScreenViewModel.determineResumeTrialString(context)}")
+            }
+
         }
     }
 }
