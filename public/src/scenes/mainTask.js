@@ -983,7 +983,7 @@ var showBreakDialog = function(context) {
 var showExitTaskDialog = function(context) {
     let retryTaskText = "You've been away too long, and may need to try again.";
     let showExitDialog = false;
-    let incrementAttemptCount = false;
+    let incrementAttemptCount = true;
 
     showBottomScreenPanel(
         context,
