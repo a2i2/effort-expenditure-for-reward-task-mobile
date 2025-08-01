@@ -935,13 +935,13 @@ var showMissedTrialDialog = function(context) {
 }
 
 var showTimeUpDialog = function(context) {
-    var timeoutMessage;
+    // if we are up to at least round 36 then just show the game complete dialog instead
     if (trialNo + 1 >= nTrials * taskRewardsPayoutThreshold) {
-        timeoutMessage = "Unfortunately you've run out of time to continue the this task, but you'll still recieve a bonus payout.";
-    } else {
-        timeoutMessage = "Unfortunately you've run out of time to continue the this task. Try again to recieve a bonus payment.";
+        showTaskCompleteDialog(context);
+        return;
     }
 
+    let timeoutMessage = "Unfortunately you've run out of time to continue the this task. Try again to recieve a bonus payment.";
     let showExitDialog = false;
     let incrementAttemptCount = true;
 
