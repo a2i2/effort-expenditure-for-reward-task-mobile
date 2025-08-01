@@ -656,13 +656,20 @@ var effortOutcome = function() {
         powerCountdown = 0;
         choiceCompleteTime = 0;
 
+        // if the interruption results in the task being exited then we dont want to tell the user that we are skipping to the next trial
+        var messageText = "Task was interrupted"
+        let taskWillExit = this.interruptionExitTaskDialog == true || this.interruptionGameCompleteDialog == true || this.interruptionShowTimesUpDialog == true
+        if (!taskWillExit) {
+            messageText += ",\nskipping ahead to the next trial."
+        }
+
         // display interruption message for a couple of seconds
         this.feedbackMessage = new Message(
             this,
             gameWidth,
             0xFFDBDB,
             0xFF9696,
-            "Task was interrupted,\nskipping ahead to the next trial.",
+            messageText,
             "#9B0000",
             80
         );
