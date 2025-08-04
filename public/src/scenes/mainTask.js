@@ -656,13 +656,20 @@ var effortOutcome = function() {
         powerCountdown = 0;
         choiceCompleteTime = 0;
 
+        // if the interruption results in the task being exited then we dont want to tell the user that we are skipping to the next trial
+        var messageText = "Task was interrupted"
+        let taskWillExit = this.interruptionExitTaskDialog == true || this.interruptionGameCompleteDialog == true || this.interruptionShowTimesUpDialog == true
+        if (!taskWillExit) {
+            messageText += ",\nskipping ahead to the next trial."
+        }
+
         // display interruption message for a couple of seconds
         this.feedbackMessage = new Message(
             this,
             gameWidth,
             0xFFDBDB,
             0xFF9696,
-            "Task was interrupted,\nskipping ahead to the next trial.",
+            messageText,
             "#9B0000",
             80
         );
@@ -935,13 +942,13 @@ var showMissedTrialDialog = function(context) {
 }
 
 var showTimeUpDialog = function(context) {
-    var timeoutMessage;
+    // if we are up to at least round 36 then just show the game complete dialog instead
     if (trialNo + 1 >= nTrials * taskRewardsPayoutThreshold) {
-        timeoutMessage = "Unfortunately you've run out of time to continue the this task, but you'll still recieve a bonus payout.";
-    } else {
-        timeoutMessage = "Unfortunately you've run out of time to continue the this task. Try again to recieve a bonus payment.";
+        showTaskCompleteDialog(context);
+        return;
     }
 
+    let timeoutMessage = "Unfortunately you've run out of time to continue the this task. Try again to recieve a bonus payment.";
     let showExitDialog = false;
     let incrementAttemptCount = true;
 
@@ -983,7 +990,7 @@ var showBreakDialog = function(context) {
 var showExitTaskDialog = function(context) {
     let retryTaskText = "You've been away too long, and may need to try again.";
     let showExitDialog = false;
-    let incrementAttemptCount = false;
+    let incrementAttemptCount = true;
 
     showBottomScreenPanel(
         context,

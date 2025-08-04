@@ -35,6 +35,7 @@ export default class InteruptionsHandler {
                 console.log('2A');
                 context.taskRequiresRestart = true;
                 context.interruptionExitTaskDialog = true;
+                context.continueAfterInterruption();
 
                 return;
             } else { // 2B
