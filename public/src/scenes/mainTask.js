@@ -25,7 +25,7 @@ import { POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
 import GameCache from "../embedContext/GameCache.js";
 import TaskAttempt from "../embedContext/TaskAttempt.js";
 import { POWER_COUNTDOWN_KEY } from "../elements/CountdownPanel.js";
-import { BREAK_TAG, TIMEOUT_TAG, ARE_YOU_THERE_TAG, EXIT_TASK_TAG, GAME_COMPLETE_TAG } from "../elements/BottomScreenPanel.js";
+import { BREAK_TAG, TIMEOUT_TAG, ARE_YOU_THERE_TAG, EXIT_TASK_TAG, GAME_COMPLETE_TAG, TASK_INTERRUPTED_TAG } from "../elements/BottomScreenPanel.js";
 import InteruptionsHandler from "../embedContext/InteruptionsHandler.js";
 import CloseMessage from "../embedContext/CloseMessage.js";
 
@@ -763,7 +763,7 @@ var trialEnd = function () {
     // if an interruption occured and we need to show the are you still there dialog, show it
     else if (this.interruptionShowAreYouThereDialog == true && !isLastTrial) {
         stopPlayer(this);
-        showMissedTrialDialog(this);
+        showTaskInterruptedDialog(this);
         this.interruptionShowAreYouThereDialog = false;
     }
     // if an interruption occured and we need to show the times up dialog, show it
@@ -1016,6 +1016,26 @@ var showTaskCompleteDialog = function(context) {
         GAME_COMPLETE_TAG,
         () => { gameCompleted(); }, // game is complete, exit the task
         () => { gameCompleted(); }
+    );
+}
+
+var showTaskInterruptedDialog = function(context) {
+    // check to see if this is the first attempt and show a different message explaining that they cannot return if its the 2nd attempt
+    let cache = GameCache.cache;
+    var taskInterruptedText = "Ready to continue? Keep going in the next 2 mins to keep collecting coins";
+    if (cache != null && cache.attemptCount > 1) {
+        taskInterruptedText = "Ready to continue? Keep going in the next 2 mins or else you wont be able to return to the task and collect more coins.";
+    }
+
+    showBottomScreenPanel(
+        context,
+        "Task interrupted",
+        taskInterruptedText,
+        "CONTINUE",
+        breakTime,
+        TASK_INTERRUPTED_TAG,
+        () => { continueGameAfterBreak(context); },
+        () => { showTimeUpDialog(context); }
     );
 }
 
