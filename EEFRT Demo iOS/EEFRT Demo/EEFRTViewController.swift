@@ -204,6 +204,7 @@ class EEFRTViewController: UIViewController {
                     // increment attempt count in the main app
                     os_log(.debug, "Incremented attempt count")
                     Defaults.eefrtAttemptCount += 1
+                    Defaults.gameCache?.attemptCount += 1
                 }
 
                 if closeMessage.taskRequiresRestart {
@@ -250,6 +251,7 @@ extension EEFRTViewController: WKScriptMessageHandler {
                     // increment attempt count - in main app
                     os_log(.debug, "Incremented attempt count")
                     Defaults.eefrtAttemptCount += 1
+                    Defaults.gameCache?.attemptCount += 1
                 }
 
                 // ensure the game data is reset if we've actually closed the task, similar scenario to the shouldShowExitDialog

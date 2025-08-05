@@ -261,6 +261,7 @@ private fun handleMessage(
                     )
                     val currentAttemptCount = GameStorage(context).eefrtAttemptCount
                     viewModel.updateEEFRTAttemptCount(context, currentAttemptCount + 1)
+                    GameStorage(context).cachedGameState?.attemptCount++
                 }
 
                 // ensure the game data is reset if we've actually closed the task, similar scenario to the shouldShowExitDialog
