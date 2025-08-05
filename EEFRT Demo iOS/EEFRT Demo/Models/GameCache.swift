@@ -11,6 +11,7 @@ struct GameCache: Codable, DefaultsSerializable {
     var trialSeqFilename: String?
     var calibrationComplete: Bool
     var interruptionTimestamp: Int64?
+    var attemptCount: Int
 
     // Default initializer with default values
     init(
@@ -22,7 +23,8 @@ struct GameCache: Codable, DefaultsSerializable {
         randTrialsIdx: [Int]? = nil,
         trialSeqFilename: String? = nil,
         calibrationComplete: Bool = false,
-        interuptionTimestamp: Int64? = nil
+        interuptionTimestamp: Int64? = nil,
+        attemptCount: Int = 1
     ) {
         self.practiceComplete = practiceComplete
         self.trialNumber = trialNumber
@@ -33,6 +35,7 @@ struct GameCache: Codable, DefaultsSerializable {
         self.trialSeqFilename = trialSeqFilename
         self.calibrationComplete = calibrationComplete
         self.interruptionTimestamp = interuptionTimestamp
+        self.attemptCount = attemptCount
     }
 
     // Decoder initializer
@@ -47,6 +50,7 @@ struct GameCache: Codable, DefaultsSerializable {
         self.trialSeqFilename = try container.decodeIfPresent(String.self, forKey: .trialSeqFilename)
         self.calibrationComplete = try container.decode(Bool.self, forKey: .calibrationComplete)
         self.interruptionTimestamp = try container.decodeIfPresent(Int64.self, forKey: .interruptionTimestamp)
+        self.attemptCount = try container.decode(Int.self, forKey: .attemptCount)
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -60,6 +64,7 @@ struct GameCache: Codable, DefaultsSerializable {
         try container.encodeIfPresent(trialSeqFilename, forKey: .trialSeqFilename)
         try container.encodeIfPresent(calibrationComplete, forKey: .calibrationComplete)
         try container.encodeIfPresent(interruptionTimestamp, forKey: .interruptionTimestamp)
+        try container.encode(attemptCount, forKey: .attemptCount)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -72,6 +77,7 @@ struct GameCache: Codable, DefaultsSerializable {
         case trialSeqFilename
         case calibrationComplete
         case interruptionTimestamp
+        case attemptCount
     }
 
     func stringify() throws -> String {
@@ -79,7 +85,7 @@ struct GameCache: Codable, DefaultsSerializable {
         let data = try encoder.encode(self)
         return String(decoding: data, as: UTF8.self)
     }
-    
+
     func isResumeTrialAvailable() -> Bool {
         (practiceComplete || trialNumber > 0) && !Defaults.gameMarkedAsComplete
     }

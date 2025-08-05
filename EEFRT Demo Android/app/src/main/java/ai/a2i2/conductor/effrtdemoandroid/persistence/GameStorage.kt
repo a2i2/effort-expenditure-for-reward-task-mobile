@@ -18,7 +18,8 @@ data class GameCache(
     val randTrialsIdx: List<Int>? = null,
     val trialSeqFilename: String? = null,
     var calibrationComplete: Boolean = false,
-    var interruptionTimestamp: Long? = null
+    var interruptionTimestamp: Long? = null,
+    var attemptCount: Int = 1
 ) {
     fun isResumeTrialAvailable(context: Context): Boolean {
         return (practiceComplete || trialNumber > 0) && !GameStorage(context).gameMarkedAsComplete
