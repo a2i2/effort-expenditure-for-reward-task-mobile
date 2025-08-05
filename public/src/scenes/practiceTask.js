@@ -332,9 +332,10 @@ export default class PracticeTask extends BaseScene {
             3. If the power up scene is active
             4. If the user has already completed the trial and is crossing the bridge, show the dialog once pickle reaches the end of the bridge
         */
-            let isLastPracticeTrial = pracTrial == nPracTrials - 1;
+        let isLastPracticeTrial = pracTrial == nPracTrials - 1;
+        let routeOrPowerAnimationKeys = ['powerup', 'wait'];
 
-            if (this.player.sprite.x <= decisionPointX && this.player.sprite.anims.currentAnim.key == 'run' && !isLastPracticeTrial) {
+        if (this.player.sprite.x <= decisionPointX && this.player.sprite.anims.currentAnim.key == 'run' && !isLastPracticeTrial) {
             console.log('1A-A');
 
             // no active panel, stop the player and show the dialog
@@ -357,7 +358,7 @@ export default class PracticeTask extends BaseScene {
             // show the exit task dialog in its place
             stopPlayer(this);
             showExitTaskDialog(this);
-        } else if (this.powerPanel != null && ['powerup', 'wait'].includes(this.player.sprite.anims.currentAnim.key) && !isLastPracticeTrial) {
+        } else if (this.powerPanel != null && routeOrPowerAnimationKeys.includes(this.player.sprite.anims.currentAnim.key) && !isLastPracticeTrial) {
             console.log('1A-C');
 
             // mark that an interruption occured so the feedback message dismiss handler doesn't run
