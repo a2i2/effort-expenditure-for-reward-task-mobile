@@ -145,6 +145,7 @@ class EEFRTViewController: UIViewController {
             cache.calibrationComplete = calibrationComplete
             cache.maxPressCount = calibratedMaxPressCount
         }
+        cache.attemptCount = Defaults.eefrtAttemptCount
 
         if let stringifiedGameCache = try? cache.stringify() {
             let gameCacheJsString = "window.setupGameWithCache(\(stringifiedGameCache));"

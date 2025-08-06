@@ -120,6 +120,7 @@ fun EefrtScreen(
                                 cache.calibrationComplete = true
                                 cache.maxPressCount = gameStorage.calibratedMaxPressCount!!
                             }
+                            cache.attemptCount = gameStorage.eefrtAttemptCount
 
                             val json = Json {
                                 encodeDefaults = true
