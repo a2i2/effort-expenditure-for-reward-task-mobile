@@ -988,13 +988,16 @@ var showBreakDialog = function(context) {
 }
 
 var showExitTaskDialog = function(context) {
-    let retryTaskText = "You've been away too long, and may need to try again.";
+    let isSecondAttempt = GameCache.cache?.attemptCount == 2;
+    let retryTaskText = isSecondAttempt ? "You've been away too long, unfortunately you wont be able to earn any more coins." : "You've been away too long, try again to earn more coins to increase your reward."
+    let titleText = isSecondAttempt ? "Exit Task" : "Retry Task"
+    
     let showExitDialog = false;
     let incrementAttemptCount = true;
 
     showBottomScreenPanel(
         context,
-        "Retry task",
+        titleText,
         retryTaskText,
         "EXIT",
         null,
