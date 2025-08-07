@@ -259,7 +259,16 @@ extension EEFRTViewController: WKScriptMessageHandler {
                 if !closeMessage.shouldShowExitDialog, closeMessage.taskRequiresRestart {
                     // the task needs to be restarted
                     os_log(.debug, "Task will be restarted on next load")
-                    Defaults.gameCache = nil
+
+                    // Allow the resume button to appear if they trigger the 2A interruption
+                    // Need to check for the trialNumber >=2 since the trial number is already incremented before this check is done
+                    // The '2' value below being compared to the current trial number is generated due to the following:
+                    // 1 (index of trial 2) + 1 (above increment to trial number which occurs before the interruption dialog is shown)
+                    if let cache = Defaults.gameCache, cache.practiceComplete, cache.trialNumber <= 2 {
+                        Defaults.gameCache = GameCache()
+                    } else {
+                        Defaults.gameCache = nil
+                    }
                 }
 
                 if closeMessage.shouldShowExitDialog {

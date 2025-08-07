@@ -87,6 +87,11 @@ struct GameCache: Codable, DefaultsSerializable {
     }
 
     func isResumeTrialAvailable() -> Bool {
-        (practiceComplete || trialNumber > 0) && !Defaults.gameMarkedAsComplete
+        // Allow the user to resume from the beginning if triggering 2A interruption scenario
+        if practiceComplete == false, !Defaults.gameMarkedAsComplete, Defaults.eefrtAttemptCount == GameConfigUtils.maxEefrtAttempts {
+            return true
+        }
+
+        return (practiceComplete || trialNumber > 0) && !Defaults.gameMarkedAsComplete
     }
 }

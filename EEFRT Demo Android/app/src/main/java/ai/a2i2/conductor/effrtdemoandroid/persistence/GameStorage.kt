@@ -1,5 +1,6 @@
 package ai.a2i2.conductor.effrtdemoandroid.persistence
 
+import ai.a2i2.conductor.effrtdemoandroid.util.GameConfigUtils
 import android.content.Context
 import hu.autsoft.krate.SimpleKrate
 import hu.autsoft.krate.booleanPref
@@ -22,6 +23,12 @@ data class GameCache(
     var attemptCount: Int = 1
 ) {
     fun isResumeTrialAvailable(context: Context): Boolean {
+        // Allow the user to resume from the beginning if triggering 2A interruption scenario
+        val gameStorage = GameStorage(context)
+        if (!practiceComplete && !gameStorage.gameMarkedAsComplete && gameStorage.eefrtAttemptCount == GameConfigUtils.MAX_EEFRT_ATTEMPTS) {
+            return true
+        }
+
         return (practiceComplete || trialNumber > 0) && !GameStorage(context).gameMarkedAsComplete
     }
 }
