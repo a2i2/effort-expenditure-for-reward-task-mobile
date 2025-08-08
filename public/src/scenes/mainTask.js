@@ -25,7 +25,7 @@ import { POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
 import GameCache from "../embedContext/GameCache.js";
 import TaskAttempt from "../embedContext/TaskAttempt.js";
 import { POWER_COUNTDOWN_KEY } from "../elements/CountdownPanel.js";
-import { BREAK_TAG, TIMEOUT_TAG, ARE_YOU_THERE_TAG, EXIT_TASK_TAG, GAME_COMPLETE_TAG } from "../elements/BottomScreenPanel.js";
+import { BREAK_TAG, TIMEOUT_TAG, ARE_YOU_THERE_TAG, EXIT_TASK_TAG, GAME_COMPLETE_TAG, TASK_INTERRUPTED_TAG } from "../elements/BottomScreenPanel.js";
 import InteruptionsHandler from "../embedContext/InteruptionsHandler.js";
 import CloseMessage from "../embedContext/CloseMessage.js";
 
@@ -763,7 +763,7 @@ var trialEnd = function () {
     // if an interruption occured and we need to show the are you still there dialog, show it
     else if (this.interruptionShowAreYouThereDialog == true && !isLastTrial) {
         stopPlayer(this);
-        showMissedTrialDialog(this);
+        showTaskInterruptedDialog(this);
         this.interruptionShowAreYouThereDialog = false;
     }
     // if an interruption occured and we need to show the times up dialog, show it
@@ -822,7 +822,7 @@ var loadGameFromCache = function(context) {
     const cache = GameCache.cache;
     if (cache == null) {
         // if no cache to load from, create a new one with the default values
-        GameCache.cache = new GameCache(true, 0, undefined, 0, {}, [], context.trialSequenceFile, null);
+        GameCache.cache = new GameCache(true, 0, undefined, 0, {}, [], context.trialSequenceFile, false, null, 1);
         return;
     }
 
@@ -948,7 +948,7 @@ var showTimeUpDialog = function(context) {
         return;
     }
 
-    let timeoutMessage = "Unfortunately you've run out of time to continue the this task. Try again to recieve a bonus payment.";
+    let timeoutMessage = "Unfortunately you\'ve run out of time to continue the this task. Try again to recieve a bonus payment.";
     let showExitDialog = false;
     let incrementAttemptCount = true;
 
@@ -988,13 +988,16 @@ var showBreakDialog = function(context) {
 }
 
 var showExitTaskDialog = function(context) {
-    let retryTaskText = "You've been away too long, and may need to try again.";
+    let isSecondAttempt = GameCache.cache?.attemptCount == 2;
+    let retryTaskText = isSecondAttempt ? "You\'ve been away too long, and it was your second attempt. Unfortunately you wont be able to earn any more coins." : "You\'ve been away too long, try again for a chance to earn more coins."
+    let titleText = isSecondAttempt ? "Exit task" : "Try again"
+    
     let showExitDialog = false;
     let incrementAttemptCount = true;
 
     showBottomScreenPanel(
         context,
-        "Retry task",
+        titleText,
         retryTaskText,
         "EXIT",
         null,
@@ -1005,7 +1008,7 @@ var showExitTaskDialog = function(context) {
 }
 
 var showTaskCompleteDialog = function(context) {
-    let taskCompleteText = "You've reached the minimum required number of completed trials but due to an interruption you cannot progress through the rest of the trials. You will still recieve your bonus payment.";
+    let taskCompleteText = "You\'ve reached the minimum required number of completed rounds but due to an interruption you cannot progress through the rest of the rounds. You will still recieve your bonus payment.";
 
     showBottomScreenPanel(
         context,
@@ -1016,6 +1019,26 @@ var showTaskCompleteDialog = function(context) {
         GAME_COMPLETE_TAG,
         () => { gameCompleted(); }, // game is complete, exit the task
         () => { gameCompleted(); }
+    );
+}
+
+var showTaskInterruptedDialog = function(context) {
+    // check to see if this is the first attempt and show a different message explaining that they cannot return if its the 2nd attempt
+    let cache = GameCache.cache;
+    var taskInterruptedText = "Ready to continue? Keep going in the next 2 mins to keep collecting coins.";
+    if (cache != null && cache.attemptCount > 1) {
+        taskInterruptedText = "Ready to continue? This is your last attempt to collect more coins.";
+    }
+
+    showBottomScreenPanel(
+        context,
+        "Task interrupted",
+        taskInterruptedText,
+        "CONTINUE",
+        breakTime,
+        TASK_INTERRUPTED_TAG,
+        () => { continueGameAfterBreak(context); },
+        () => { showTimeUpDialog(context); }
     );
 }
 
@@ -1157,9 +1180,10 @@ var saveData = function(context) {
 
     // if the user has reached at least 80% then we can mark the calibration as completed
     var calibrationComplete = GameCache.cache?.calibrationComplete == true || trialNo + 1 >= nTrials * taskRewardsPayoutThreshold;
+    let eefrtAttemptCount = GameCache.cache?.attemptCount ?? 1;
 
     // notify the native apps of what the current game state is so they can cache it
-    let currentGameState = new GameCache(true, trialNo + 1, thresholdMax, nCoins, coinChoices, randTrialsIdx, context.trialSequenceFile, calibrationComplete);
+    let currentGameState = new GameCache(true, trialNo + 1, thresholdMax, nCoins, coinChoices, randTrialsIdx, context.trialSequenceFile, calibrationComplete, null, eefrtAttemptCount);
     GameCache.cache = currentGameState;
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
 }

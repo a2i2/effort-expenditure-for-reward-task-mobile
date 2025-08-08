@@ -7,6 +7,7 @@ import Coins from "../elements/coins.js";
 import RouteSelectorPanel from "../elements/RouteSelectorPanel.js";
 import ProgressBar from "../elements/progressBar.js";
 import PowerPanel, { PRACTICE_POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
+import { ENTRY_POINT_PRACTICE } from "../scenes/startTaskScene.js";
 
 // import our custom events center for passsing info between scenes annd relevant data saving function
 import eventsCenter from '../eventsCenter.js'
@@ -22,6 +23,7 @@ import InteruptionsHandler from "../embedContext/InteruptionsHandler.js";
 import CloseMessage from "../embedContext/CloseMessage.js";
 import BottomScreenPanel from "../elements/BottomScreenPanel.js";
 import { EXIT_TASK_TAG } from "../elements/BottomScreenPanel.js"
+import StartTaskScene from "./startTaskScene.js";
 
 // initialize some global vars
 var gameHeight;
@@ -302,6 +304,9 @@ export default class PracticeTask extends BaseScene {
             Once we complete all 4 practice trials we we want to save the maxPressCount to the cache and the registry so it can be used in the main trials.
         */
         if (pracTrial == nPracTrials) {
+            // let the start task scene know we arrived from the practice screens
+            StartTaskScene.entryPoint = ENTRY_POINT_PRACTICE;
+
             let calibrationComplete = false;
             if (GameCache.cache?.calibrationComplete == true) {
                 calibrationComplete = true;
@@ -310,7 +315,8 @@ export default class PracticeTask extends BaseScene {
 
             // signal to the cache that the practice is complete
             let trialSeqFilename = GameCache.cache?.trialSeqFilename || null;
-            let cache = new GameCache(true, 0, maxPressCount, 0, {}, null, trialSeqFilename, calibrationComplete, null)
+            let eefrtAttemptCount = GameCache.cache?.attemptCount ?? 1;
+            let cache = new GameCache(true, 0, maxPressCount, 0, {}, null, trialSeqFilename, calibrationComplete, null, eefrtAttemptCount)
             GameCache.cache = cache;
             EmbedContext.sendMessage('currentGameCache', cache.stringify());
 
@@ -331,9 +337,10 @@ export default class PracticeTask extends BaseScene {
             3. If the power up scene is active
             4. If the user has already completed the trial and is crossing the bridge, show the dialog once pickle reaches the end of the bridge
         */
-            let isLastPracticeTrial = pracTrial == nPracTrials - 1;
+        let isLastPracticeTrial = pracTrial == nPracTrials - 1;
+        let routeOrPowerAnimationKeys = ['powerup', 'wait'];
 
-            if (this.player.sprite.x <= decisionPointX && this.player.sprite.anims.currentAnim.key == 'run' && !isLastPracticeTrial) {
+        if (this.player.sprite.x <= decisionPointX && this.player.sprite.anims.currentAnim.key == 'run' && !isLastPracticeTrial) {
             console.log('1A-A');
 
             // no active panel, stop the player and show the dialog
@@ -356,7 +363,7 @@ export default class PracticeTask extends BaseScene {
             // show the exit task dialog in its place
             stopPlayer(this);
             showExitTaskDialog(this);
-        } else if (this.powerPanel != null && ['powerup', 'wait'].includes(this.player.sprite.anims.currentAnim.key) && !isLastPracticeTrial) {
+        } else if (this.powerPanel != null && routeOrPowerAnimationKeys.includes(this.player.sprite.anims.currentAnim.key) && !isLastPracticeTrial) {
             console.log('1A-C');
 
             // mark that an interruption occured so the feedback message dismiss handler doesn't run

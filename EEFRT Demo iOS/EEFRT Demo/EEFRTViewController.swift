@@ -145,6 +145,7 @@ class EEFRTViewController: UIViewController {
             cache.calibrationComplete = calibrationComplete
             cache.maxPressCount = calibratedMaxPressCount
         }
+        cache.attemptCount = Defaults.eefrtAttemptCount
 
         if let stringifiedGameCache = try? cache.stringify() {
             let gameCacheJsString = "window.setupGameWithCache(\(stringifiedGameCache));"
@@ -204,6 +205,7 @@ class EEFRTViewController: UIViewController {
                     // increment attempt count in the main app
                     os_log(.debug, "Incremented attempt count")
                     Defaults.eefrtAttemptCount += 1
+                    Defaults.gameCache?.attemptCount += 1
                 }
 
                 if closeMessage.taskRequiresRestart {
@@ -250,13 +252,23 @@ extension EEFRTViewController: WKScriptMessageHandler {
                     // increment attempt count - in main app
                     os_log(.debug, "Incremented attempt count")
                     Defaults.eefrtAttemptCount += 1
+                    Defaults.gameCache?.attemptCount += 1
                 }
 
                 // ensure the game data is reset if we've actually closed the task, similar scenario to the shouldShowExitDialog
                 if !closeMessage.shouldShowExitDialog, closeMessage.taskRequiresRestart {
                     // the task needs to be restarted
                     os_log(.debug, "Task will be restarted on next load")
-                    Defaults.gameCache = nil
+
+                    // Allow the resume button to appear if they trigger the 2A interruption
+                    // Need to check for the trialNumber >=2 since the trial number is already incremented before this check is done
+                    // The '2' value below being compared to the current trial number is generated due to the following:
+                    // 1 (index of trial 2) + 1 (above increment to trial number which occurs before the interruption dialog is shown)
+                    if let cache = Defaults.gameCache, cache.practiceComplete, cache.trialNumber <= 2 {
+                        Defaults.gameCache = GameCache()
+                    } else {
+                        Defaults.gameCache = nil
+                    }
                 }
 
                 if closeMessage.shouldShowExitDialog {

@@ -6,6 +6,7 @@ import ai.a2i2.conductor.effrtdemoandroid.persistence.PracticeTaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.persistence.TaskAttempt
 import ai.a2i2.conductor.effrtdemoandroid.ui.data.CloseMessage
 import ai.a2i2.conductor.effrtdemoandroid.ui.data.EefrtScreenViewModel
+import ai.a2i2.conductor.effrtdemoandroid.util.GameConfigUtils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
@@ -120,6 +121,7 @@ fun EefrtScreen(
                                 cache.calibrationComplete = true
                                 cache.maxPressCount = gameStorage.calibratedMaxPressCount!!
                             }
+                            cache.attemptCount = gameStorage.eefrtAttemptCount
 
                             val json = Json {
                                 encodeDefaults = true
@@ -261,6 +263,7 @@ private fun handleMessage(
                     )
                     val currentAttemptCount = GameStorage(context).eefrtAttemptCount
                     viewModel.updateEEFRTAttemptCount(context, currentAttemptCount + 1)
+                    GameStorage(context).cachedGameState?.attemptCount++
                 }
 
                 // ensure the game data is reset if we've actually closed the task, similar scenario to the shouldShowExitDialog
@@ -269,8 +272,22 @@ private fun handleMessage(
                         TAG,
                         "Task will be restarted on next load"
                     )
-                    viewModel.setCurrentGameState(context, null)
-                    viewModel.resumeTrialAvailable.value = false
+
+                    // Allow the resume button to appear if they trigger the 2A interruption
+                    // Need to check for the trialNumber >=2 since the trial number is already incremented before this check is done
+                    // The '2' value below being compared to the current trial number is generated due to the following:
+                    // 1 (index of trial 2) + 1 (above increment to trial number which occurs before the interruption dialog is shown)
+                    val gameStorage = GameStorage(context)
+                    val cache = gameStorage.cachedGameState
+                    if (cache != null && cache.practiceComplete && cache.trialNumber <= 2) {
+                        viewModel.setCurrentGameState(context, GameCache())
+
+                        // only show the resume button if its within the 2 attempts
+                        viewModel.resumeTrialAvailable.value = gameStorage.eefrtAttemptCount <= GameConfigUtils.MAX_EEFRT_ATTEMPTS
+                    } else {
+                        viewModel.setCurrentGameState(context, null)
+                        viewModel.resumeTrialAvailable.value = false
+                    }
                 }
 
                 if (closeMessage.shouldShowExitDialog) {

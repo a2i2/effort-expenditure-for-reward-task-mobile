@@ -1,7 +1,12 @@
 import { BaseScene } from "./baseScene.js";
 import CloseMessage from "../embedContext/CloseMessage.js";
+import GameCache from "../embedContext/GameCache.js";
+
+export const ENTRY_POINT_PRACTICE = "entryPointPractice";
 
 export default class StartTaskScene extends BaseScene {
+    static entryPoint = null;
+
     constructor() {
         super({
             key: 'StartTaskScene'
@@ -50,8 +55,22 @@ export default class StartTaskScene extends BaseScene {
             space: { top: 35, bottom: 35, item: 20 }
         });
 
+        // default text for first attempt
+        var titleText = "Let's get started!";
+        var subtitleText = "Nice work! You are now ready to start the main part of the game.\n\nFrom now on, every coin you collect matters – good luck!";
+
+        let cache = GameCache.cache;
+        if (cache != null && cache.attemptCount > 1 && StartTaskScene.entryPoint == ENTRY_POINT_PRACTICE) {
+            // if the user triggers 2A, they will return from the practice trials so we can show this specific message.
+            subtitleText = "Nice work! You are now ready to start the main part of the game.\n\nThis is your second attempt and any further interruptions may invalidate your opportunity to complete this task.";
+        } else if (cache != null && cache.attemptCount > 1 && StartTaskScene.entryPoint != ENTRY_POINT_PRACTICE) {
+            // if there is no entry point defined then we can assume the user will resume from the main trials.
+            titleText = "Let's continue!"
+            subtitleText = "Welcome back! You can continue where you left off, but any further interruptions may invalidate your opportunity to win any coins.";
+        }
+
         // Title
-        const title = this.add.text(0, 0, "Let’s get started!", {
+        const title = this.add.text(0, 0, titleText, {
             fontSize: '18px',
             fontFamily: 'DMSans',
             color: '#000'
@@ -74,16 +93,13 @@ export default class StartTaskScene extends BaseScene {
             .setDisplaySize(displayWidth, displayHeight);
 
         // Description
-        const descText = this.add.text(0, 0,
-            "Nice work! You are now ready to start the main part of the game.\n\nFrom now on, every coin you collect matters – good luck!",
-            {
-                fontSize: '16px',
-                fontFamily: 'DMSans',
-                color: '#404040',
-                lineSpacing: 4,
-                wordWrap: { width: maxWidth }
-            }
-        );
+        const descText = this.add.text(0, 0, subtitleText, {
+            fontSize: '16px',
+            fontFamily: 'DMSans',
+            color: '#404040',
+            lineSpacing: 4,
+            wordWrap: { width: maxWidth }
+        });
 
         // Get Started Button
         const buttonBackground = this.rexUI.add.roundRectangle(0, 0, 0, 0, 30, 0xFFFFFF);

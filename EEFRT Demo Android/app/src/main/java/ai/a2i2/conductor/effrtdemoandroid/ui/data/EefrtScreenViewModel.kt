@@ -141,6 +141,7 @@ class EefrtScreenViewModel(
                 )
                 val currentValue = GameStorage(context).eefrtAttemptCount
                 updateEEFRTAttemptCount(context, currentValue + 1)
+                GameStorage(context).cachedGameState?.attemptCount++
             }
 
             if (it.taskRequiresRestart) {
