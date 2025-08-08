@@ -948,7 +948,7 @@ var showTimeUpDialog = function(context) {
         return;
     }
 
-    let timeoutMessage = "Unfortunately you've run out of time to continue the this task. Try again to recieve a bonus payment.";
+    let timeoutMessage = "Unfortunately you\'ve run out of time to continue the this task. Try again to recieve a bonus payment.";
     let showExitDialog = false;
     let incrementAttemptCount = true;
 
@@ -989,8 +989,8 @@ var showBreakDialog = function(context) {
 
 var showExitTaskDialog = function(context) {
     let isSecondAttempt = GameCache.cache?.attemptCount == 2;
-    let retryTaskText = isSecondAttempt ? "You've been away too long, unfortunately you wont be able to earn any more coins." : "You've been away too long, try again to earn more coins to increase your reward."
-    let titleText = isSecondAttempt ? "Exit Task" : "Retry Task"
+    let retryTaskText = isSecondAttempt ? "You\'ve been away too long, and it was your second attempt. Unfortunately you wont be able to earn any more coins." : "You\'ve been away too long, try again for a chance to earn more coins."
+    let titleText = isSecondAttempt ? "Exit task" : "Try again"
     
     let showExitDialog = false;
     let incrementAttemptCount = true;
@@ -1008,7 +1008,7 @@ var showExitTaskDialog = function(context) {
 }
 
 var showTaskCompleteDialog = function(context) {
-    let taskCompleteText = "You've reached the minimum required number of completed trials but due to an interruption you cannot progress through the rest of the trials. You will still recieve your bonus payment.";
+    let taskCompleteText = "You\'ve reached the minimum required number of completed rounds but due to an interruption you cannot progress through the rest of the rounds. You will still recieve your bonus payment.";
 
     showBottomScreenPanel(
         context,
@@ -1025,9 +1025,9 @@ var showTaskCompleteDialog = function(context) {
 var showTaskInterruptedDialog = function(context) {
     // check to see if this is the first attempt and show a different message explaining that they cannot return if its the 2nd attempt
     let cache = GameCache.cache;
-    var taskInterruptedText = "Ready to continue? Keep going in the next 2 mins to keep collecting coins";
+    var taskInterruptedText = "Ready to continue? Keep going in the next 2 mins to keep collecting coins.";
     if (cache != null && cache.attemptCount > 1) {
-        taskInterruptedText = "Ready to continue? Keep going in the next 2 mins or else you wont be able to return to the task and collect more coins.";
+        taskInterruptedText = "Ready to continue? This is your last attempt to collect more coins.";
     }
 
     showBottomScreenPanel(
