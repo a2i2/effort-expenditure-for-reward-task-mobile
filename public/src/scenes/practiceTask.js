@@ -7,6 +7,7 @@ import Coins from "../elements/coins.js";
 import RouteSelectorPanel from "../elements/RouteSelectorPanel.js";
 import ProgressBar from "../elements/progressBar.js";
 import PowerPanel, { PRACTICE_POWER_UP_COMPLETE_KEY } from "../elements/PowerPanel.js";
+import { ENTRY_POINT_PRACTICE } from "../scenes/startTaskScene.js";
 
 // import our custom events center for passsing info between scenes annd relevant data saving function
 import eventsCenter from '../eventsCenter.js'
@@ -22,6 +23,7 @@ import InteruptionsHandler from "../embedContext/InteruptionsHandler.js";
 import CloseMessage from "../embedContext/CloseMessage.js";
 import BottomScreenPanel from "../elements/BottomScreenPanel.js";
 import { EXIT_TASK_TAG } from "../elements/BottomScreenPanel.js"
+import StartTaskScene from "./startTaskScene.js";
 
 // initialize some global vars
 var gameHeight;
@@ -302,6 +304,9 @@ export default class PracticeTask extends BaseScene {
             Once we complete all 4 practice trials we we want to save the maxPressCount to the cache and the registry so it can be used in the main trials.
         */
         if (pracTrial == nPracTrials) {
+            // let the start task scene know we arrived from the practice screens
+            StartTaskScene.entryPoint = ENTRY_POINT_PRACTICE;
+
             let calibrationComplete = false;
             if (GameCache.cache?.calibrationComplete == true) {
                 calibrationComplete = true;
