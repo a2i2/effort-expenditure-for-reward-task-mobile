@@ -12,6 +12,7 @@ struct GameCache: Codable, DefaultsSerializable {
     var calibrationComplete: Bool
     var interruptionTimestamp: Int64?
     var attemptCount: Int
+    var trialSelections: [String: String]
 
     // Default initializer with default values
     init(
@@ -24,7 +25,8 @@ struct GameCache: Codable, DefaultsSerializable {
         trialSeqFilename: String? = nil,
         calibrationComplete: Bool = false,
         interuptionTimestamp: Int64? = nil,
-        attemptCount: Int = 1
+        attemptCount: Int = 1,
+        trialSelections: [String: String] = [:]
     ) {
         self.practiceComplete = practiceComplete
         self.trialNumber = trialNumber
@@ -36,6 +38,7 @@ struct GameCache: Codable, DefaultsSerializable {
         self.calibrationComplete = calibrationComplete
         self.interruptionTimestamp = interuptionTimestamp
         self.attemptCount = attemptCount
+        self.trialSelections = trialSelections
     }
 
     // Decoder initializer
@@ -51,6 +54,7 @@ struct GameCache: Codable, DefaultsSerializable {
         self.calibrationComplete = try container.decode(Bool.self, forKey: .calibrationComplete)
         self.interruptionTimestamp = try container.decodeIfPresent(Int64.self, forKey: .interruptionTimestamp)
         self.attemptCount = try container.decode(Int.self, forKey: .attemptCount)
+        self.trialSelections = try container.decode([String: String].self, forKey: .trialSelections)
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -65,6 +69,7 @@ struct GameCache: Codable, DefaultsSerializable {
         try container.encodeIfPresent(calibrationComplete, forKey: .calibrationComplete)
         try container.encodeIfPresent(interruptionTimestamp, forKey: .interruptionTimestamp)
         try container.encode(attemptCount, forKey: .attemptCount)
+        try container.encode(trialSelections, forKey: .trialSelections)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -78,6 +83,7 @@ struct GameCache: Codable, DefaultsSerializable {
         case calibrationComplete
         case interruptionTimestamp
         case attemptCount
+        case trialSelections
     }
 
     func stringify() throws -> String {

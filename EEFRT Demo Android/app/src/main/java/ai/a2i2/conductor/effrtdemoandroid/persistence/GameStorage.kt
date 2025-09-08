@@ -20,7 +20,8 @@ data class GameCache(
     val trialSeqFilename: String? = null,
     var calibrationComplete: Boolean = false,
     var interruptionTimestamp: Long? = null,
-    var attemptCount: Int = 1
+    var attemptCount: Int = 1,
+    var trialSelections: Map<String, String> = emptyMap()
 ) {
     fun isResumeTrialAvailable(context: Context): Boolean {
         // Allow the user to resume from the beginning if triggering 2A interruption scenario
