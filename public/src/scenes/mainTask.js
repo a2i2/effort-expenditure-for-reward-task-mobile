@@ -822,7 +822,7 @@ var loadGameFromCache = function(context) {
     const cache = GameCache.cache;
     if (cache == null) {
         // if no cache to load from, create a new one with the default values
-        GameCache.cache = new GameCache(true, 0, undefined, 0, {}, [], context.trialSequenceFile, false, null, 1);
+        GameCache.cache = new GameCache(true, 0, undefined, 0, {}, [], context.trialSequenceFile, false, null, 1, {});
         return;
     }
 
@@ -1178,12 +1178,16 @@ var saveData = function(context) {
     let coinChoices = GameCache.cache?.trialResults ?? {};
     coinChoices['trial' + trialNo] = trialSuccess ? coinsWonThisTrial : 0;
 
+    // save the previous trial seclections to the cache
+    let trialSelections = GameCache.cache?.trialSelections ?? {};
+    trialSelections['trial' + trialNo] = choice;
+
     // if the user has reached at least 80% then we can mark the calibration as completed
     var calibrationComplete = GameCache.cache?.calibrationComplete == true || trialNo + 1 >= nTrials * taskRewardsPayoutThreshold;
     let eefrtAttemptCount = GameCache.cache?.attemptCount ?? 1;
 
     // notify the native apps of what the current game state is so they can cache it
-    let currentGameState = new GameCache(true, trialNo + 1, thresholdMax, nCoins, coinChoices, randTrialsIdx, context.trialSequenceFile, calibrationComplete, null, eefrtAttemptCount);
+    let currentGameState = new GameCache(true, trialNo + 1, thresholdMax, nCoins, coinChoices, randTrialsIdx, context.trialSequenceFile, calibrationComplete, null, eefrtAttemptCount, trialSelections);
     GameCache.cache = currentGameState;
     EmbedContext.sendMessage('currentGameCache', currentGameState.stringify());
 }
