@@ -437,10 +437,14 @@ export default class MainTask extends BaseScene {
     }
 
     switchToTimesUpDialog() {
-        // ensure the are you still there dialog is there
-        if (this.bottomScreenPanel != null && this.bottomScreenPanel.tag != ARE_YOU_THERE_TAG) {
+        // ensure the currenty presented bottom screen panel is either the 'Are you there' or 'Break' dialog.
+        if (this.bottomScreenPanel != null && (this.bottomScreenPanel.tag != ARE_YOU_THERE_TAG && this.bottomScreenPanel.tag != BREAK_TAG)) {
             return;
         }
+
+        // remove the existing panel first, ensuring no accidental timeout handlers fire
+        this.bottomScreenPanel.destroy();
+        this.bottomScreenPanel = null;
 
         // show the times up dialog
         showTimeUpDialog(this);
@@ -983,7 +987,7 @@ var showBreakDialog = function(context) {
         breakTime,
         BREAK_TAG,
         () => { continueGameAfterBreak(context); }, // continue the game regardless after the break is automatically or manually stopped
-        () => { continueGameAfterBreak(context); }
+        () => {}
     );
 }
 

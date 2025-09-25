@@ -123,5 +123,6 @@ export default class BottomScreenPanel {
         this.panelBg?.destroy();
         this.container?.destroy();
         this.underlay?.destroy();
+        eventsCenter.removeAllListeners();
     }
 }
