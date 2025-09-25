@@ -442,6 +442,10 @@ export default class MainTask extends BaseScene {
             return;
         }
 
+        // remove the existing panel first, ensuring no accidental timeout handlers fire
+        this.bottomScreenPanel.destroy();
+        this.bottomScreenPanel = null;
+
         // show the times up dialog
         showTimeUpDialog(this);
     }
@@ -983,7 +987,7 @@ var showBreakDialog = function(context) {
         breakTime,
         BREAK_TAG,
         () => { continueGameAfterBreak(context); }, // continue the game regardless after the break is automatically or manually stopped
-        () => { continueGameAfterBreak(context); }
+        () => {}
     );
 }
 
