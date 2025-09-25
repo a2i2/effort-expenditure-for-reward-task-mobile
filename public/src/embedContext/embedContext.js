@@ -78,6 +78,7 @@ window.EmbedContext = (function () {
       sendMessage: androidSendMessage,
       getMessage: getMessage,
       getInsetTop: getInsetTop,
+      setInsetTop: setInsetTop,
     };
   } else {
     return {
