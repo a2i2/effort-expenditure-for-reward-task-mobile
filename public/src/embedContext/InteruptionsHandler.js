@@ -1,4 +1,4 @@
-import { ARE_YOU_THERE_TAG, TIMEOUT_TAG } from "../elements/BottomScreenPanel";
+import { ARE_YOU_THERE_TAG, TIMEOUT_TAG, BREAK_TAG } from "../elements/BottomScreenPanel";
 import { taskRewardsPayoutThreshold, missedTrialDialogLimit } from "../versionInfo";
 
 export default class InteruptionsHandler {
@@ -53,6 +53,8 @@ export default class InteruptionsHandler {
             3D: User is gone for 3-5 mins and there is no active dialog - show the are you still there dialog (or the times up dialog if shown before)
             3E: User is gone for over 5 mins and theres no active dialog - Show the Times up dialog and restart the task from the beginning (if first attempt) or submit as complete if not.
             3F: User is gone for less than 3 mins and theres no active dialog - dont let the user interract with the current trial and skip ahead to the next trial.
+            3G: User is gone for less than 2 mins while the break dialog is active - no action, the timer will continue to tick down from where it left off.
+            3H: User is gone for more than 2 mins while the break dialog is active - switch to the times up dialog.
         */
         if (cache.trialNumber >= 2 && cache.trialNumber < completionThresholdTrialNo) {
             // 3A
@@ -124,6 +126,19 @@ export default class InteruptionsHandler {
             // 3F
             if (!context.bottomScreenPanel && interuptionLengthMs < threeMinsMs) {
                 context.continueAfterInterruption();
+                return;
+            }
+
+            // 3G
+            if (context.bottomScreenPanel && context.bottomScreenPanel.tag == BREAK_TAG && interuptionLengthMs < twoMinsMs) {
+                console.log('3G');
+                return;
+            }
+
+            // 3H
+            if (context.bottomScreenPanel && context.bottomScreenPanel.tag == BREAK_TAG && interuptionLengthMs >= twoMinsMs) {
+                console.log('3H');
+                context.switchToTimesUpDialog();
                 return;
             }
         }
