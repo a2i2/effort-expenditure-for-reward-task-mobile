@@ -18,7 +18,40 @@ export class BaseScene extends Phaser.Scene {
 
     // function to make coin sprites disappear upon contact with player
     // (so player appears to 'collect' them)
-    collectCoins = function(player, coin) {
-        coin.disableBody(true, true);      // individual gems from physics group become invisible upon overlap
-    };
+    collectCoins(player, coin) {
+        coin.disableBody(true, true);      // individual coins from physics group become invisible upon overlap
+    }
+
+    // helper: collect coins individually when player passes their x position
+    collectCoinsPassedInGroup(group) {
+        if (!group || !group.children || !this?.player?.sprite) {
+            return;
+        }
+        const playerX = this.player.sprite.x;
+
+        group.children.iterate((child) => {
+            if (!child) {
+                return;
+            }
+            if (child.active && child.visible && typeof child.x === 'number' && playerX >= child.x) {
+                this.collectCoins(null, child);
+            }
+        });
+    }
+
+    // Detects if the player has passes by coins on the selected route. If the coins are still visible then they are auto-collected
+    autoCollectCoinsIfRequired() {
+        if (this.player?.sprite?.x != null && this.player.sprite.anims?.currentAnim?.key == 'float') {
+            // determine which route was selected for this trial
+            const chosenRoute = this.registry.get('choice');
+
+            if (this.coins1?.sprite && chosenRoute === 'route 1') {
+                // top route coins: collect individually as player passes each coin
+                this.collectCoinsPassedInGroup(this.coins1.sprite);
+            } else if (this.coins2?.sprite && chosenRoute === 'route 2') {
+                // bottom route coins: collect individually as player passes each coin
+                this.collectCoinsPassedInGroup(this.coins2.sprite);
+            }
+        }
+    }
 } 

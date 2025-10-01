@@ -330,23 +330,6 @@ export default class PracticeTask extends BaseScene {
         }
     }
 
-    // Detects if the player has passes by coins on the selected route. If the coins are still visible then they are auto-collected
-    autoCollectCoinsIfRequired() {
-        if (this.player?.sprite?.x != null && this.player.sprite.anims?.currentAnim?.key == 'float') {
-            // determine which route was selected for this trial
-            const chosenRoute = this.registry.get('choice');
-
-            // top route coins: collect individually as player passes each coin
-            if (this.coins1?.sprite && chosenRoute === 'route 1') {
-                collectCoinsPassedInGroup(this, this.coins1.sprite);
-            }
-            // bottom route coins: collect individually as player passes each coin
-            if (this.coins2?.sprite && chosenRoute === 'route 2') {
-                collectCoinsPassedInGroup(this, this.coins2.sprite);
-            }
-        }
-    }
-
     showExitDialogAfterInterruption() {
         // a user was interrupted whilst in the middle of an individual trial, in this scenario we won't allow them to
         // continue to the next practice trial.
@@ -762,8 +745,6 @@ var effortOutcome = function() {
     }
 };
 
-
-
 // 4. When player hits end of scene, save trial data and move on to the next trial (reload the scene)
 var pracTrialEnd = function () {
     // if the interruption needs to be shown, just show that, no practice trial data will be sent off,
@@ -817,25 +798,7 @@ var pracTrialEnd = function () {
     this.scene.restart();
 };
 
-
 //////////////////////MISC FUNCTIONS/////////////////////
-// helper: collect coins individually when player passes their x position
-var collectCoinsPassedInGroup = function(context, group) {
-    if (!group || !group.children || !context?.player?.sprite) {
-        return;
-    }
-    const playerX = context.player.sprite.x;
-
-    group.children.iterate((child) => {
-        if (!child) {
-            return;
-        }
-        if (child.active && child.visible && typeof child.x === 'number' && playerX >= child.x) {
-            context.collectCoins(null, child);
-        }
-    });
-};
-
 // function to get player up other side of bridge by performing single jump
 // used on reject and unsucessful accept trials
 var onejump = function () {
