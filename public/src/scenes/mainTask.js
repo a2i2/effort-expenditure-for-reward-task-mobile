@@ -377,12 +377,29 @@ export default class MainTask extends BaseScene {
             GameCache.cache.interruptionTimestamp = null; // prevent this from being evaluated in subsequent updates
         }
 
+        // Fallback: if player has passed the coins' max X, collect any remaining coins
+        // This covers cases where overlap callbacks don't fire due to timing/physics quirks
+        this.autoCollectCoinsIfRequired();
+
         ////////////GAME COMPLETE WHEN ALL TRIALS HAVE RUN////////////////
         if (trialNo == maxTrials) {
             // Send message to the app to indicate that the game is complete
             EmbedContext.sendMessage('gameComplete', {});
             // Stop the scene so that all visuals are removed
             this.scene.stop();
+        }
+    }
+
+    // Detects if the player has passes by coins on the selected route. If the coins are still visible then they are auto-collected
+    autoCollectCoinsIfRequired() {
+        if (this.player?.sprite?.x != null && this.player.sprite.anims?.currentAnim?.key == 'float') {
+            const chosenRoute = this.registry.get('choice');
+            if (this.coins1?.sprite && chosenRoute === 'route 1') {
+                collectCoinsPassedInGroup(this, this.coins1.sprite);
+            }
+            if (this.coins2?.sprite && chosenRoute === 'route 2') {
+                collectCoinsPassedInGroup(this, this.coins2.sprite);
+            }
         }
     }
 
@@ -567,7 +584,7 @@ var effortOutcome = function() {
                                 this.feedbackMessage.destroy();
                                 this.player.sprite.anims.play('float', true);    
                                 this.player.sprite.setVelocityX(playerVelocity/3);
-                                this.time.addEvent({ delay: 120,
+                                this.time.addEvent({ delay: 320,
                                                      callback: function(){this.player.sprite.setVelocityY(-280);},
                                                      callbackScope: this, 
                                                      repeat: 5 });
@@ -608,7 +625,7 @@ var effortOutcome = function() {
                                 this.feedbackMessage.destroy();
                                 this.player.sprite.anims.play('float', true);    
                                 this.player.sprite.setVelocityX(playerVelocity/3);
-                                this.time.addEvent({ delay: 100,
+                                this.time.addEvent({ delay: 300,
                                                      callback: function(){this.player.sprite.setVelocityY(-120);},
                                                      callbackScope: this, 
                                                      repeat: 8 });
@@ -819,6 +836,23 @@ var onejump = function() {
 // (so player appears to 'collect' them)
 var collectCoins = function(player, coin, trial) {
     coin.disableBody(true, true);   // individual coins from group become invisible upon overlap
+};
+
+// helper: collect coins individually when player passes their x position
+var collectCoinsPassedInGroup = function(context, group) {
+    if (!group || !group.children || !context?.player?.sprite) {
+        return;
+    }
+    const playerX = context.player.sprite.x;
+
+    group.children.iterate((child) => {
+        if (!child) {
+            return;
+        }
+        if (child.active && child.visible && typeof child.x === 'number' && playerX >= child.x) {
+            collectCoins(null, child);
+        }
+    });
 };
 
 // function which restores the game state based on the given cache state

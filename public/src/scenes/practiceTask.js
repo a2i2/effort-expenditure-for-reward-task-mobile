@@ -296,6 +296,10 @@ export default class PracticeTask extends BaseScene {
         // allow player to move
         this.player.update(); 
         
+        // Fallback: if player has passed the coins' max X, collect any remaining coins
+        // This covers cases where overlap callbacks don't fire due to timing/physics quirks
+        this.autoCollectCoinsIfRequired();
+        
         /*
             In the practice trials we use the maxPressCount to determine the maximum effort the user can achieve and calculate
             the required number of presses to complete each trial. In the event the user reaches 80% of the trials completed
@@ -323,6 +327,23 @@ export default class PracticeTask extends BaseScene {
             // progress to the next scene
             this.registry.set('maxPressCount', maxPressCount);
             this.launchNextScene();
+        }
+    }
+
+    // Detects if the player has passes by coins on the selected route. If the coins are still visible then they are auto-collected
+    autoCollectCoinsIfRequired() {
+        if (this.player?.sprite?.x != null && this.player.sprite.anims?.currentAnim?.key == 'float') {
+            // determine which route was selected for this trial
+            const chosenRoute = this.registry.get('choice');
+
+            // top route coins: collect individually as player passes each coin
+            if (this.coins1?.sprite && chosenRoute === 'route 1') {
+                collectCoinsPassedInGroup(this, this.coins1.sprite);
+            }
+            // bottom route coins: collect individually as player passes each coin
+            if (this.coins2?.sprite && chosenRoute === 'route 2') {
+                collectCoinsPassedInGroup(this, this.coins2.sprite);
+            }
         }
     }
 
@@ -667,7 +688,7 @@ var effortOutcome = function() {
                     feedbackMessage?.destroy();
                     this.player.sprite.anims.play('float', true);    
                     this.player.sprite.setVelocityX(playerVelocity/playerSpeedAdjustment);
-                    this.time.addEvent({ delay: 120, 
+                    this.time.addEvent({ delay: 320, 
                                         callback: function(){this.player.sprite.setVelocityY(-280);},
                                         callbackScope: this, 
                                         repeat: 5 });
@@ -682,7 +703,7 @@ var effortOutcome = function() {
                     feedbackMessage?.destroy();
                     this.player.sprite.anims.play('float', true);    
                     this.player.sprite.setVelocityX(playerVelocity/3);
-                    this.time.addEvent({ delay: 100,
+                    this.time.addEvent({ delay: 300,
                                         callback: function(){this.player.sprite.setVelocityY(-120);},
                                         callbackScope: this, 
                                         repeat: 8 });
@@ -802,6 +823,23 @@ var pracTrialEnd = function () {
 // (so player appears to 'collect' them)
 var collectGems = function(player, gem) {
     gem.disableBody(true, true);      // individual gems from physics group become invisible upon overlap
+};
+
+// helper: collect coins individually when player passes their x position
+var collectCoinsPassedInGroup = function(context, group) {
+    if (!group || !group.children || !context?.player?.sprite) {
+        return;
+    }
+    const playerX = context.player.sprite.x;
+
+    group.children.iterate((child) => {
+        if (!child) {
+            return;
+        }
+        if (child.active && child.visible && typeof child.x === 'number' && playerX >= child.x) {
+            collectGems(null, child);
+        }
+    });
 };
 
 // function to get player up other side of bridge by performing single jump
