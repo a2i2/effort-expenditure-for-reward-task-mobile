@@ -377,6 +377,10 @@ export default class MainTask extends BaseScene {
             GameCache.cache.interruptionTimestamp = null; // prevent this from being evaluated in subsequent updates
         }
 
+        // Fallback: if player has passed the coins' max X, collect any remaining coins
+        // This covers cases where overlap callbacks don't fire due to timing/physics quirks
+        this.autoCollectCoinsIfRequired();
+
         ////////////GAME COMPLETE WHEN ALL TRIALS HAVE RUN////////////////
         if (trialNo == maxTrials) {
             // Send message to the app to indicate that the game is complete
@@ -539,7 +543,7 @@ var effortOutcome = function() {
         consecutiveMissedTrials = 0;
 
         // add overlap colliders so coins disappear when overlap with player body
-        this.physics.add.overlap(this.player.sprite, this.coins1.sprite, collectCoins, null, this);
+        this.physics.add.overlap(this.player.sprite, this.coins1.sprite, this.collectCoins, null, this);
 
         // display success message for a couple of seconds,
         this.feedbackMessage = new Message(
@@ -580,7 +584,7 @@ var effortOutcome = function() {
         consecutiveMissedTrials = 0;
 
         // add overlap colliders so coins disappear when overlap with player body
-        this.physics.add.overlap(this.player.sprite, this.coins2.sprite, collectCoins, null, this, trialNo); 
+        this.physics.add.overlap(this.player.sprite, this.coins2.sprite, this.collectCoins, null, this, trialNo); 
 
         // display success message for a couple of seconds,
         this.feedbackMessage = new Message(
@@ -813,12 +817,6 @@ var onejump = function() {
     this.player.sprite.setVelocityY(jumpHeight);
     let jumpAnimDuration = 1100;
     this.time.delayedCall(jumpAnimDuration, () => { this.player.sprite.setVelocityX(playerVelocity/5); }, null, this);
-};
-
-// function to make coin sprites disappear upon contact with player
-// (so player appears to 'collect' them)
-var collectCoins = function(player, coin, trial) {
-    coin.disableBody(true, true);   // individual coins from group become invisible upon overlap
 };
 
 // function which restores the game state based on the given cache state

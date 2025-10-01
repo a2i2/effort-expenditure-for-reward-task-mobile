@@ -296,6 +296,10 @@ export default class PracticeTask extends BaseScene {
         // allow player to move
         this.player.update(); 
         
+        // Fallback: if player has passed the coins' max X, collect any remaining coins
+        // This covers cases where overlap callbacks don't fire due to timing/physics quirks
+        this.autoCollectCoinsIfRequired();
+        
         /*
             In the practice trials we use the maxPressCount to determine the maximum effort the user can achieve and calculate
             the required number of presses to complete each trial. In the event the user reaches 80% of the trials completed
@@ -630,10 +634,10 @@ var effortOutcome = function() {
 
         if (selectedReward == trialReward1 && this.coins1) {
             // add physics colision to the top coins
-            this.physics.add.overlap(this.player.sprite, this.coins1.sprite, collectGems, null, this);
+            this.physics.add.overlap(this.player.sprite, this.coins1.sprite, this.collectCoins, null, this);
         } else if (selectedReward == trialReward2 && this.coins2) {
             // add physics colision to the bottom coins
-            this.physics.add.overlap(this.player.sprite, this.coins2.sprite, collectGems, null, this);
+            this.physics.add.overlap(this.player.sprite, this.coins2.sprite, this.collectCoins, null, this);
         }
 
         feedbackMessage = new Message(
@@ -741,8 +745,6 @@ var effortOutcome = function() {
     }
 };
 
-
-
 // 4. When player hits end of scene, save trial data and move on to the next trial (reload the scene)
 var pracTrialEnd = function () {
     // if the interruption needs to be shown, just show that, no practice trial data will be sent off,
@@ -796,14 +798,7 @@ var pracTrialEnd = function () {
     this.scene.restart();
 };
 
-
 //////////////////////MISC FUNCTIONS/////////////////////
-// function to make coin sprites disappear upon contact with player
-// (so player appears to 'collect' them)
-var collectGems = function(player, gem) {
-    gem.disableBody(true, true);      // individual gems from physics group become invisible upon overlap
-};
-
 // function to get player up other side of bridge by performing single jump
 // used on reject and unsucessful accept trials
 var onejump = function () {
