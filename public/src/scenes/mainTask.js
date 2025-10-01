@@ -584,7 +584,7 @@ var effortOutcome = function() {
                                 this.feedbackMessage.destroy();
                                 this.player.sprite.anims.play('float', true);    
                                 this.player.sprite.setVelocityX(playerVelocity/3);
-                                this.time.addEvent({ delay: 320,
+                                this.time.addEvent({ delay: 120,
                                                      callback: function(){this.player.sprite.setVelocityY(-280);},
                                                      callbackScope: this, 
                                                      repeat: 5 });
@@ -625,7 +625,7 @@ var effortOutcome = function() {
                                 this.feedbackMessage.destroy();
                                 this.player.sprite.anims.play('float', true);    
                                 this.player.sprite.setVelocityX(playerVelocity/3);
-                                this.time.addEvent({ delay: 300,
+                                this.time.addEvent({ delay: 100,
                                                      callback: function(){this.player.sprite.setVelocityY(-120);},
                                                      callbackScope: this, 
                                                      repeat: 8 });
