@@ -556,7 +556,7 @@ var effortOutcome = function() {
         consecutiveMissedTrials = 0;
 
         // add overlap colliders so coins disappear when overlap with player body
-        this.physics.add.overlap(this.player.sprite, this.coins1.sprite, collectCoins, null, this);
+        this.physics.add.overlap(this.player.sprite, this.coins1.sprite, this.collectCoins, null, this);
 
         // display success message for a couple of seconds,
         this.feedbackMessage = new Message(
@@ -597,7 +597,7 @@ var effortOutcome = function() {
         consecutiveMissedTrials = 0;
 
         // add overlap colliders so coins disappear when overlap with player body
-        this.physics.add.overlap(this.player.sprite, this.coins2.sprite, collectCoins, null, this, trialNo); 
+        this.physics.add.overlap(this.player.sprite, this.coins2.sprite, this.collectCoins, null, this, trialNo); 
 
         // display success message for a couple of seconds,
         this.feedbackMessage = new Message(
@@ -832,12 +832,6 @@ var onejump = function() {
     this.time.delayedCall(jumpAnimDuration, () => { this.player.sprite.setVelocityX(playerVelocity/5); }, null, this);
 };
 
-// function to make coin sprites disappear upon contact with player
-// (so player appears to 'collect' them)
-var collectCoins = function(player, coin, trial) {
-    coin.disableBody(true, true);   // individual coins from group become invisible upon overlap
-};
-
 // helper: collect coins individually when player passes their x position
 var collectCoinsPassedInGroup = function(context, group) {
     if (!group || !group.children || !context?.player?.sprite) {
@@ -850,7 +844,7 @@ var collectCoinsPassedInGroup = function(context, group) {
             return;
         }
         if (child.active && child.visible && typeof child.x === 'number' && playerX >= child.x) {
-            collectCoins(null, child);
+            context.collectCoins(null, child);
         }
     });
 };

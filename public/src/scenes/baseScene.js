@@ -15,4 +15,10 @@ export class BaseScene extends Phaser.Scene {
             this.scene.start(nextSceneKey);
         }
     }
+
+    // function to make coin sprites disappear upon contact with player
+    // (so player appears to 'collect' them)
+    collectCoins = function(player, coin) {
+        coin.disableBody(true, true);      // individual gems from physics group become invisible upon overlap
+    };
 } 

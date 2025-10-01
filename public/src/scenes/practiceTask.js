@@ -651,10 +651,10 @@ var effortOutcome = function() {
 
         if (selectedReward == trialReward1 && this.coins1) {
             // add physics colision to the top coins
-            this.physics.add.overlap(this.player.sprite, this.coins1.sprite, collectGems, null, this);
+            this.physics.add.overlap(this.player.sprite, this.coins1.sprite, this.collectCoins, null, this);
         } else if (selectedReward == trialReward2 && this.coins2) {
             // add physics colision to the bottom coins
-            this.physics.add.overlap(this.player.sprite, this.coins2.sprite, collectGems, null, this);
+            this.physics.add.overlap(this.player.sprite, this.coins2.sprite, this.collectCoins, null, this);
         }
 
         feedbackMessage = new Message(
@@ -819,12 +819,6 @@ var pracTrialEnd = function () {
 
 
 //////////////////////MISC FUNCTIONS/////////////////////
-// function to make coin sprites disappear upon contact with player
-// (so player appears to 'collect' them)
-var collectGems = function(player, gem) {
-    gem.disableBody(true, true);      // individual gems from physics group become invisible upon overlap
-};
-
 // helper: collect coins individually when player passes their x position
 var collectCoinsPassedInGroup = function(context, group) {
     if (!group || !group.children || !context?.player?.sprite) {
@@ -837,7 +831,7 @@ var collectCoinsPassedInGroup = function(context, group) {
             return;
         }
         if (child.active && child.visible && typeof child.x === 'number' && playerX >= child.x) {
-            collectGems(null, child);
+            context.collectCoins(null, child);
         }
     });
 };
