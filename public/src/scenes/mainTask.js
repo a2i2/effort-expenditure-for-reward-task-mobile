@@ -985,7 +985,7 @@ var showBreakDialog = function(context) {
         breakTime,
         BREAK_TAG,
         () => { continueGameAfterBreak(context); }, // continue the game regardless after the break is automatically or manually stopped
-        () => {}
+        () => { continueGameAfterBreak(context); }
     );
 }
 
