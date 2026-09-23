@@ -2,6 +2,10 @@
 
 This project takes the existing work from Dr Agnes Norbury [[1](#attributions)] and ports it to Android and iOS projects for easy testing and evaluation.
 
+## Funding
+
+This project was developed for Project PHONOTYPE, funded by the Wellcome Trust (grant number 303030/Z/23/Z; Principal Investigator: Associate Professor Alexis Whitton).
+
 ## Overview
 
 The project is a stripped down version of the original fork, removing dependencies on Firebase and any analytics components to focus primarily on the task itself.
