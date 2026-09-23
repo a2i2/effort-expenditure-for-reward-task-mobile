@@ -1,4 +1,4 @@
-# Effor Expenditure for Reward Task
+# Effort Expenditure for Reward Task
 
 This project takes the existing work from Dr Agnes Norbury [[1](#attributions)] and ports it to Android and iOS projects for easy testing and evaluation.
 
