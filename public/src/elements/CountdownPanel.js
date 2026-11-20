@@ -4,11 +4,13 @@ import { timeout } from '../versionInfo.js';
 export const POWER_COUNTDOWN_KEY = 'powerCountdown';
 
 export default class CountdownPanel {
-    constructor(scene, x, y, duration = timeout, timeoutKey, startImmediately = true) {
+    // startedKey: an event to emit with the start time when the countdown starts, or null for none
+    constructor(scene, x, y, duration = timeout, timeoutKey, startImmediately = true, startedKey = null) {
         this.scene = scene;
         this.duration = duration;
         this.timeLeft = duration; // start with the full duration to then countdown
         this.timeoutKey = timeoutKey;
+        this.startedKey = startedKey;
 
         // Background
         this.panel = scene.rexUI.add.roundRectangle(21, 0, 90, 30, 6, 0xF2F4F7);
@@ -80,7 +82,9 @@ export default class CountdownPanel {
     startCountdown() {
         const updateInterval = 50; // Update every 50ms for smooth animation
 
-        eventsCenter.emit(POWER_COUNTDOWN_KEY, Math.round(this.scene.time.now));
+        if (this.startedKey) {
+            eventsCenter.emit(this.startedKey, Math.round(this.scene.time.now));
+        }
         
         this.timer = this.scene.time.addEvent({
             delay: updateInterval,

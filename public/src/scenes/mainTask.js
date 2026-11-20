@@ -349,6 +349,8 @@ export default class MainTask extends BaseScene {
         // once this event us detected, perform the function trialEnd (only once)
         eventsCenter.once('trialEndHit', trialEnd, this);
 
+        // set when the power panel's countdown starts; stays 0 if there's no tapping phase this round
+        powerCountdown = 0;
         eventsCenter.once(POWER_COUNTDOWN_KEY, storeCountdownStarted, this);
         
         // // 3. if desired, add listener functions to pause game when focus taken away
@@ -1135,6 +1137,7 @@ var saveData = function(context) {
         pressStartTime = 0;
         pressEndTime = 0;
         coinsWonThisTrial = 0;
+        powerCountdown = 0;
     }
     // as a fallback for the case where the player misses the coins, we will add the coins regardless if the player touches them or not
     else if (trialSuccess && choice == 'route 1') {

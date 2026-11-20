@@ -1,4 +1,4 @@
-import CountdownPanel from "./CountdownPanel.js";
+import CountdownPanel, { POWER_COUNTDOWN_KEY } from "./CountdownPanel.js";
 import eventsCenter from "../eventsCenter.js";
 import PowerMeterBar from "./PowerMeterBar.js";
 
@@ -56,7 +56,7 @@ export default class PowerPanel {
             color: '#000000'
         });
 
-        this.countdownPanel = new CountdownPanel(this.scene, 0, 0, 10000, POWER_UP_TIMEOUT_KEY, !isPractice);
+        this.countdownPanel = new CountdownPanel(this.scene, 0, 0, 10000, POWER_UP_TIMEOUT_KEY, !isPractice, POWER_COUNTDOWN_KEY);
         headerRow.add(titleText, { expand: true });
         headerRow.add(this.countdownPanel.container);
 
