@@ -261,6 +261,8 @@ export default class PracticeTask extends BaseScene {
         // once this event us detected, perform the function trialEnd (only once)
         eventsCenter.once('practiceTrialEndHit', pracTrialEnd, this);
 
+        // set when the power panel's countdown starts; stays 0 if there's no tapping phase this round
+        powerCountdown = 0;
         eventsCenter.once(POWER_COUNTDOWN_KEY, storeCountdownStarted, this);
 
         // // 3. if desired, add listener functions to pause game when focus taken away
@@ -572,9 +574,13 @@ var effortOutcome = function() {
     
     // if ppt chooses high effort and clears trial effort threshold, fly across sky and collect coins!
     if (choice == 'timeout') {
+        // no route was chosen, so don't carry over the previous round's reward and effort
+        selectedReward = 0;
+        selectedEffort = 0;
         trialSuccess = 0;
         pressCount = 0;
         pressTimes = [];
+        powerCountdown = 0;
 
         if (feedbackMessage) {
             // remove feedback message from the screen if its still there
@@ -771,6 +777,9 @@ var pracTrialEnd = function () {
     this.registry.set('maxPressCount', maxPressCount);
 
     // set data to be saved into registry
+    // the first two rounds offer no route choice
+    let choice = pracTrial < 2 ? null : this.registry.get('choice');
+
     let practiceTaskAttempt = new PracticeTaskAttempt(
         pracTrial,
         selectedReward, 
@@ -779,7 +788,8 @@ var pracTrialEnd = function () {
         pressTimes,
         trialSuccess,
         maxPressCount,
-        powerCountdown
+        powerCountdown,
+        choice
     );
     this.registry.set("pracTrial"+pracTrial, practiceTaskAttempt);
     // save data
